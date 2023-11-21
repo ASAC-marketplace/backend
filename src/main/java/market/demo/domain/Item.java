@@ -28,6 +28,7 @@ public class Item {
 //    @Enumerated(EnumType.STRING)
 //    private ItemStatus status;
 
+
     @OneToMany(mappedBy = "item")
     private List<Review> reviews = new ArrayList<>();
 
