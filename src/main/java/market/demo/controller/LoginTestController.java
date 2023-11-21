@@ -11,6 +11,4 @@ public class LoginTestController {
     public String login() {
         return "login";
     }
-
-
 }
