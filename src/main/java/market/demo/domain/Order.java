@@ -2,7 +2,6 @@ package market.demo.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
 import market.demo.domain.status.OrderStatus;
 
 import java.time.LocalDateTime;
@@ -15,7 +14,6 @@ import static jakarta.persistence.FetchType.LAZY;
 @Entity
 @Getter
 @Table(name = "orders")
-@Setter
 public class Order {
     @Id
     @GeneratedValue
@@ -40,4 +38,14 @@ public class Order {
     private Delivery delivery;
 
     private Long totalAmount;
+
+    // 연관관계 편의 메서드
+
+    // 주문 상품
+    public void addOrderItem(OrderItem orderItem) {
+        orderItems.add(orderItem);
+        if (orderItem.getOrder() != this) {
+            orderItem.setOrder(this);
+        }
+    }
 }

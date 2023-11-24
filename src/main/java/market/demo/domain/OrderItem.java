@@ -2,13 +2,11 @@ package market.demo.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
 
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
-@Setter
 public class OrderItem {
 
     @Id
@@ -27,4 +25,12 @@ public class OrderItem {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
+
+    // 연관관계 편의 메서드
+    public void setOrder(Order order) {
+        this.order = order;
+        if (order != null && !order.getOrderItems().contains(this)) {
+            order.getOrderItems().add(this);
+        }
+    }
 }

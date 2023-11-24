@@ -10,10 +10,10 @@ import java.util.List;
 
 @Entity
 @Getter
-@Setter
 public class Inquiry {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "Inquiry_id") //erd 수정
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

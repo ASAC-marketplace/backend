@@ -2,13 +2,14 @@ package market.demo.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
-@Setter
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,4 +26,11 @@ public class Review {
 
     private int rating;
     private String comment;
+    private Integer helpful; // 도움돼요
+
+    // 리뷰 이미지
+    @ElementCollection
+    @CollectionTable(name = "review_image", joinColumns = @JoinColumn(name = "review_id"))
+    @Column(name = "image_url")
+    private List<String> imageUrls = new ArrayList<>();
 }

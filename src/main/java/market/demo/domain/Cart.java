@@ -12,7 +12,6 @@ import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
-@Setter
 public class Cart {
 
     @Id @GeneratedValue
@@ -24,5 +23,5 @@ public class Cart {
     private Member member;
 
     @OneToMany(mappedBy = "cart", cascade = ALL)
-    private List<CartItem> Items = new ArrayList<>();
+    private List<CartItem> items = new ArrayList<>();
 }

@@ -8,7 +8,6 @@ import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
-@Setter
 public class CartItem {
 
     @Id

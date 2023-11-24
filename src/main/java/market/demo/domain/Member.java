@@ -2,7 +2,6 @@ package market.demo.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -10,7 +9,6 @@ import java.util.List;
 
 @Entity
 @Getter
-@Setter
 public class Member {
 
     @Id
@@ -34,6 +32,9 @@ public class Member {
 
     //sns 연동
 
+    @OneToOne(mappedBy = "member")
+    private Cart cart;
+
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Inquiry> inquiries = new ArrayList<>();
 
@@ -45,4 +46,7 @@ public class Member {
 
     @OneToMany(mappedBy = "member")
     private List<Review> reviews;
+
+    @OneToMany(mappedBy = "issuedTo")
+    private List<Coupon> coupons = new ArrayList<>();
 }
