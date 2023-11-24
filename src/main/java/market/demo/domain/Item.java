@@ -2,7 +2,6 @@ package market.demo.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
 import market.demo.domain.status.ItemStatus;
 
 import java.time.LocalDateTime;
@@ -43,4 +42,6 @@ public class Item {
 
     @OneToOne(mappedBy = "item", cascade = ALL, fetch = LAZY)
     private ItemDetail itemDetail;
+
+    private Integer stockQuantity;
 }

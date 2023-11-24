@@ -1,4 +1,4 @@
-package market.demo.domain;
+package market.demo.domain.type;
 
 public enum Role {
     ROLE_USER,
