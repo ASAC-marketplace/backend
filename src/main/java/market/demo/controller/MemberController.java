@@ -4,10 +4,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import market.demo.domain.Member;
 import market.demo.dto.MemberDeletionRequest;
+import market.demo.dto.recoverypassword.RecoveryPasswordRequestDto;
 import market.demo.dto.registermember.EmailAvailabilityDto;
 import market.demo.dto.registermember.MemberRegistrationDto;
 import market.demo.dto.registermember.LoginIdAvailabilityDto;
 import market.demo.service.MemberService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,6 +44,15 @@ public class MemberController {
         return ResponseEntity.ok().body("회원 탈퇴 성공");
     }
 
+    @PostMapping("/verify-credentials")
+    public ResponseEntity<String> verifyCredentialsInRecoveryPassword(@RequestBody RecoveryPasswordRequestDto request) {
+        boolean exists = memberService.isMemberExists(request.getLoginId(), request.getEmail());
+        if (exists) {
+            return ResponseEntity.ok("OK");
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 실패");
+        }
+    }
 //    @PostMapping("/send-verification-code")
 //    public ResponseEntity<Void> sendVerificationCode(@RequestBody PhoneNumberVerificationDto dto) {
 //        memberService.sendVerificationCode(dto.getPhoneNumber());
