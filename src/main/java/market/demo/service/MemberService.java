@@ -2,7 +2,9 @@ package market.demo.service;
 
 import lombok.RequiredArgsConstructor;
 import market.demo.domain.Member;
+import market.demo.dto.MemberDeletionRequest;
 import market.demo.dto.registermember.MemberRegistrationDto;
+import market.demo.exception.MemberNotFoundException;
 import market.demo.repository.MemberRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,12 @@ public class MemberService {
                 registrationDto.getPhoneNumber()
         );
         return memberRepository.save(member);
+    }
+
+    public void deleteMember(MemberDeletionRequest deletionRequest) {
+        Member member = memberRepository.findById(deletionRequest.getMemberId())
+                .orElseThrow(() -> new MemberNotFoundException("멤버를 찾을 수 없습니다. ID: " + deletionRequest.getMemberId()));
+        memberRepository.delete(member);
     }
 
 //    // 인증번호 발송 로직 (실제 구현 필요)
