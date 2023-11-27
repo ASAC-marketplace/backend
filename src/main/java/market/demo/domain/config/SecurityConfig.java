@@ -3,6 +3,7 @@ package market.demo.domain.config;
 import market.demo.service.OAuth2UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -12,6 +13,7 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -38,9 +40,25 @@ public class SecurityConfig {
                                 .userInfoEndpoint(userInfo -> userInfo
                                         .userService(oAuth2UserService)
                                 )
+                )
+                .logout(logout -> logout
+                        .logoutSuccessUrl("/login") //로그아웃 성공 후 리다이렉트될 URL
+                        .logoutSuccessHandler(logoutSuccessHandler()) //로그아웃 성공 핸들러
+                        .invalidateHttpSession(true) //HTTP 세션 무효화
+                        .deleteCookies("JSESSIONID") //쿠키 삭제
+                        .clearAuthentication(true) // 인증 정보 클리어
                 );
 
         return http.build();
+    }
+
+    private LogoutSuccessHandler logoutSuccessHandler() {
+        return (request, response, authentication) -> {
+            response.setStatus(HttpStatus.OK.value());
+            PrintWriter writer =response.getWriter();
+            writer.println("logout");
+            writer.flush();
+        };
     }
 
     @Bean
