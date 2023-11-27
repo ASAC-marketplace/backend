@@ -61,4 +61,8 @@ public class Member {
         this.password = password;
         this.phoneNumber = phoneNumber;
     }
+
+    public Member() {
+
+    }
 }
