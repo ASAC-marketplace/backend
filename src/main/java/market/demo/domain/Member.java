@@ -1,6 +1,7 @@
 package market.demo.domain;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
@@ -15,6 +16,8 @@ public class Member {
     @GeneratedValue
     @Column(name = "member_id")
     private Long id;
+
+    private String loginId;
 
     private String memberName;
 
@@ -49,4 +52,17 @@ public class Member {
 
     @OneToMany(mappedBy = "issuedTo")
     private List<Coupon> coupons = new ArrayList<>();
+
+    @Builder
+    public Member(String loginId, String memberName, String email, String password, String phoneNumber) {
+        this.loginId = loginId;
+        this.memberName = memberName;
+        this.email = email;
+        this.password = password;
+        this.phoneNumber = phoneNumber;
+    }
+
+    public Member() {
+
+    }
 }

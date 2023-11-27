@@ -2,6 +2,7 @@ package market.demo.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import market.demo.domain.type.PaymentStatus;
 
 import java.time.LocalDateTime;
 
@@ -21,7 +22,7 @@ public class Payment {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status")
-    private String paymentStatus;
+    private PaymentStatus paymentStatus;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
