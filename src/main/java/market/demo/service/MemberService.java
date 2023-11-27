@@ -9,6 +9,7 @@ import market.demo.repository.MemberRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @Service
 @Transactional
@@ -45,6 +46,10 @@ public class MemberService {
         Member member = memberRepository.findById(deletionRequest.getMemberId())
                 .orElseThrow(() -> new MemberNotFoundException("멤버를 찾을 수 없습니다. ID: " + deletionRequest.getMemberId()));
         memberRepository.delete(member);
+    }
+
+    public boolean isMemberExists(String loginId, String email) {
+        return memberRepository.existsByLoginIdAndEmail(loginId, email);
     }
 
 //    // 인증번호 발송 로직 (실제 구현 필요)
