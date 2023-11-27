@@ -16,7 +16,7 @@ build/
 bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
-/src/main/resources/application-asac.properties.properties
+/src/main/resources/application-asac_service.properties.properties
 ### IntelliJ IDEA ###
 .idea
 *.iws
