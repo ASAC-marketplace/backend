@@ -3,6 +3,7 @@ package market.demo.domain;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -64,5 +65,15 @@ public class Member {
 
     public Member() {
 
+    }
+
+    public void updatePassword(String newPassword, PasswordEncoder passwordEncoder) {
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            throw new IllegalArgumentException("새 비밀번호는 비어 있을 수 없습니다.");
+        }
+
+        //비밀번호 암호화
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        this.password = encodedPassword;
     }
 }
