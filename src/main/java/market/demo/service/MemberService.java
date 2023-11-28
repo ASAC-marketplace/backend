@@ -3,13 +3,17 @@ package market.demo.service;
 import lombok.RequiredArgsConstructor;
 import market.demo.domain.Member;
 import market.demo.dto.MemberDeletionRequest;
+import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.registermember.MemberRegistrationDto;
 import market.demo.exception.MemberNotFoundException;
 import market.demo.repository.MemberRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Service
 @Transactional
@@ -56,4 +60,20 @@ public class MemberService {
 //    public void sendVerificationCode(String phoneNumber) {
 //        // SMS 서비스를 통한 인증번호 발송 로직
 //    }
+
+    public boolean changePassword(PasswordChangeDto passwordChangeDto) {
+        if (!passwordChangeDto.getNewPassword().equals(passwordChangeDto.getConfirmPassword())) {
+            throw new IllegalArgumentException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
+        }
+
+        Member member = memberRepository.findByLoginId(passwordChangeDto.getLoginId());
+        if (member == null) {
+            return false;
+        }
+
+        String encodedPassword = passwordEncoder.encode(passwordChangeDto.getNewPassword());
+        member.updatePassword(encodedPassword, passwordEncoder);
+        memberRepository.save(member);
+        return true;
+    }
 }
