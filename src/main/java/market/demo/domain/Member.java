@@ -54,6 +54,10 @@ public class Member {
     @OneToMany(mappedBy = "issuedTo")
     private List<Coupon> coupons = new ArrayList<>();
 
+    //찜목
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
+    private Wishlist wishlist;
+
     @Builder
     public Member(String loginId, String memberName, String email, String password, String phoneNumber) {
         this.loginId = loginId;

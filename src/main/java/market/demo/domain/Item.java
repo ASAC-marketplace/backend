@@ -44,4 +44,12 @@ public class Item {
     private ItemDetail itemDetail;
 
     private Integer stockQuantity;
+
+    @ManyToMany
+    @JoinTable(
+            name = "item_promotion",
+            joinColumns = @JoinColumn(name = "item_id"),
+            inverseJoinColumns = @JoinColumn(name = "promotion_id")
+    )
+    private List<Promotion> promotions = new ArrayList<>();
 }
