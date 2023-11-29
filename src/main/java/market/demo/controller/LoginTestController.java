@@ -11,4 +11,8 @@ public class LoginTestController {
     public String login() {
         return "login";
     }
+    @GetMapping("/verify")
+    public String verify() {
+        return "verifyPassword";
+    }
 }

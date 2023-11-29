@@ -1,5 +1,6 @@
 package market.demo.domain.config;
 
+import market.demo.dto.CustomOAuth2User;
 import market.demo.service.OAuth2UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -64,9 +65,10 @@ public class SecurityConfig {
     @Bean
     public AuthenticationSuccessHandler successHandler() {
         return ((request, response, authentication) -> {
-            DefaultOAuth2User defaultOAuth2User = (DefaultOAuth2User) authentication.getPrincipal();
+            CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
+//            DefaultOAuth2User defaultOAuth2User = (DefaultOAuth2User) authentication.getPrincipal();
 
-            String id = defaultOAuth2User.getAttributes().get("id").toString();
+            String id = customOAuth2User.getAttributes().get("id").toString();
             String body = """
                     {"id":"%s"}
                     """.formatted(id);

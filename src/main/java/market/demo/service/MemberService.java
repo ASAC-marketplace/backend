@@ -9,6 +9,7 @@ import market.demo.exception.MemberNotFoundException;
 import market.demo.repository.MemberRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,5 +76,21 @@ public class MemberService {
         member.updatePassword(encodedPassword, passwordEncoder);
         memberRepository.save(member);
         return true;
+    }
+
+    public Member verifyPassword(String email, String password) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+
+        if (!passwordEncoder.matches(password, member.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        return member;
+    }
+
+    public void updateSocialInfo(Member member, String provider, String providerId) {
+        member.updateSocialLoginInfo(provider, providerId);
+        memberRepository.save(member);
     }
 }
