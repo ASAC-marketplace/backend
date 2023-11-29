@@ -3,10 +3,15 @@ package market.demo.service;
 import lombok.RequiredArgsConstructor;
 import market.demo.domain.Member;
 import market.demo.dto.MemberDeletionRequest;
+import market.demo.dto.changememberinfo.CheckMemberInfoDto;
+import market.demo.dto.changememberinfo.MemberInfoDto;
+import market.demo.dto.changememberinfo.ModifyMemberInfoDto;
 import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.registermember.MemberRegistrationDto;
 import market.demo.exception.MemberNotFoundException;
 import market.demo.repository.MemberRepository;
+import org.hibernate.annotations.Check;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @Transactional
 @RequiredArgsConstructor
 public class MemberService {
-    private final MemberRepository memberRepository;
+    private static final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
     public boolean checkLoginIdAvailability(String loginId) {
@@ -75,5 +80,36 @@ public class MemberService {
         member.updatePassword(encodedPassword, passwordEncoder);
         memberRepository.save(member);
         return true;
+    }
+
+
+    public boolean checkPassword(String loginId, String password){
+        Member member = memberRepository.findByLoginId(loginId);
+
+        return member.getPassword().equals(password);
+    }
+
+    public static MemberInfoDto getMemberinfo(String loginId) {
+        Member member = memberRepository.findByLoginId(loginId);
+
+        MemberInfoDto memberInfoDto = new MemberInfoDto();
+        BeanUtils.copyProperties(member, memberInfoDto);
+
+        return memberInfoDto;
+    }
+
+    public boolean modifymember(String loginId, ModifyMemberInfoDto modifyMemberInfoDto) {
+        Member member = memberRepository.findByLoginId(loginId);
+
+        if(member == null) return false;
+
+        member.setPassword(modifyMemberInfoDto.getNewPassword());
+        member.setLoginId(modifyMemberInfoDto.getLoginId());
+        member.setEmail(modifyMemberInfoDto.getEmail());
+        member.setPhoneNumber(modifyMemberInfoDto.getPhoneNumber());
+        member.setMemberName(modifyMemberInfoDto.getMemberName());
+
+       memberRepository.save(member);
+       return true;
     }
 }
