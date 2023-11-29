@@ -1,4 +1,4 @@
-package market.demo.dto;
+package market.demo.dto.social;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -17,19 +17,32 @@ import java.util.Map;
 public class CustomOAuth2User implements OAuth2User {
     private final Map<String, Object> attributes;
     @Getter
+    @Setter
     private final Member existingMember;
+
+
     private String provider;
     private String providerId;
+    private String email;
 
     public CustomOAuth2User(Map<String, Object> attributes, Member existingMember) {
         this.attributes = attributes;
         this.existingMember = existingMember;
         // existingMember의 null 여부 체크 및 로깅
         if (existingMember == null) {
+            this.provider = existingMember.getProvider(); // provider 추가
+            this.providerId = existingMember.getProviderId(); // providerId 추가
+            this.email = existingMember.getEmail(); // email 추
             log.error("CustomOAuth2User 생성 실패: existingMember가 null입니다.");
         } else {
             this.provider = existingMember.getProvider(); // provider 추가
             this.providerId = existingMember.getProviderId(); // providerId 추가
+            this.email = existingMember.getEmail(); // email 추성
+            log.info("CustomOAuth2User 생성 성공: Member Info: {}", existingMember);
+
+
+            // provider와 providerId 로깅
+            log.info("CustomOAuth2User 생성: provider={}, providerId={}", provider, providerId);
             log.info("CustomOAuth2User 생성 성공: Member Info: {}", existingMember);
         }
     }

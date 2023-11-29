@@ -4,19 +4,23 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.Member;
-import market.demo.dto.CustomOAuth2User;
+import market.demo.dto.social.CustomOAuth2User;
 import market.demo.dto.MemberDeletionRequest;
-import market.demo.dto.PasswordVerificationRequestDto;
+import market.demo.dto.social.PasswordVerificationRequestDto;
 import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.recoverypassword.RecoveryPasswordRequestDto;
 import market.demo.dto.registermember.EmailAvailabilityDto;
 import market.demo.dto.registermember.MemberRegistrationDto;
 import market.demo.dto.registermember.LoginIdAvailabilityDto;
+import market.demo.repository.MemberRepository;
 import market.demo.service.MemberService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/members")
@@ -25,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 public class MemberController {
 
     private final MemberService memberService;
+    private final MemberRepository memberRepository;
 
     @PostMapping("/check-loginid")
     public ResponseEntity<Boolean> checkLoginIdAvailability(@Valid @RequestBody LoginIdAvailabilityDto dto) {
@@ -76,36 +81,6 @@ public class MemberController {
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
     }
 
-    //    @PostMapping("/verify-password")
-//    public ResponseEntity<?> verifyPassword(@AuthenticationPrincipal CustomOAuth2User customUser,
-//                                            @RequestBody PasswordVerificationRequestDto request) {
-//        // CustomOAuth2User에서 기존 회원 정보 추출
-//
-//        // customUser 객체 상태 로깅
-//        if (customUser == null) {
-//            log.error("verifyPassword 호출 시 customUser가 null입니다.");
-//            // 여기서 적절한 예외 처리 또는 응답 반환
-//        } else {
-//            log.info("verifyPassword 호출 시 customUser 상태: {}", customUser.toString());
-//            // customUser가 null이 아닌 경우의 나머지 로직
-//        }
-//
-//
-//        assert customUser != null;
-//        Member member = customUser.getExistingMember();
-//
-//        log.info("at controller Member Info: {}", member);
-//
-//
-//        // 비밀번호 검증
-//        memberService.verifyPassword(member.getEmail(), request.getPassword());
-//
-//        // 소셜 로그인 정보 업데이트
-//        memberService.updateSocialInfo(member, customUser.getAttributes().get("providerId").toString(),
-//                customUser.getAttributes().get("provider").toString());
-//
-//        return ResponseEntity.ok().build();
-//    }
     @PostMapping("/verify-password")
     public ResponseEntity<?> verifyPassword(@AuthenticationPrincipal CustomOAuth2User customUser,
                                             @RequestBody PasswordVerificationRequestDto request) {
@@ -114,10 +89,27 @@ public class MemberController {
         }
 
         try {
+            // 비밀번호 검증
             memberService.verifyPassword(customUser.getName(), request.getPassword());
-            return ResponseEntity.ok().body("비밀번호 검증 성공");
+
+            // 검증 성공 시, 소셜 로그인 정보 업데이트
+            memberService.updateSocialInfo(customUser.getEmail(), customUser.getProvider(), customUser.getProviderId());
+
+            return ResponseEntity.ok().body("비밀번호 검증 및 소셜 로그인 정보 업데이트 성공");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("비밀번호 검증 실패: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/socialRegister")
+    public ResponseEntity<String> registerMember(@AuthenticationPrincipal CustomOAuth2User customUser,
+                                                 @RequestBody market.demo.dto.social.MemberRegistrationDto request) {
+        // 로그를 찍어보기
+        log.info("Received email: {}", customUser.getEmail());
+        log.info("Received provider: {}", customUser.getProvider());
+        log.info("Received providerId: {}", customUser.getProviderId());
+
+        memberService.socialRegisterNewMember(request, customUser.getEmail(), customUser.getProvider(), customUser.getProviderId());
+        return ResponseEntity.ok().body("회원 등록 성공");
     }
 }

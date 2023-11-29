@@ -13,6 +13,11 @@ public class LoginTestController {
     }
     @GetMapping("/verify")
     public String verify() {
-        return "verifyPassword";
+        return "verifyPass";
+    }
+
+    @GetMapping("/add")
+    public String add() {
+        return "addform";
     }
 }

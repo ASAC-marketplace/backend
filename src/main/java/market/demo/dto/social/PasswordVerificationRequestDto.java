@@ -1,4 +1,4 @@
-package market.demo.dto;
+package market.demo.dto.social;
 
 import lombok.Data;
 

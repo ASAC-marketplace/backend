@@ -59,16 +59,53 @@ public class Member {
     private List<Coupon> coupons = new ArrayList<>();
 
     @Builder
-    public Member(String loginId, String memberName, String email, String password, String phoneNumber) {
+    public static Member createMemberWithLoginId(String loginId, String memberName, String email, String password, String phoneNumber) {
+        Member member = new Member();
+        member.loginId = loginId;
+        member.memberName = memberName;
+        member.email = email;
+        member.password = password;
+        member.phoneNumber = phoneNumber;
+        return member;
+    }
+
+    @Builder
+    public static Member createMemberWithProviderInfo(String email, String loginId, String password, String phoneNumber, String provider, String providerId) {
+        Member member = new Member();
+        member.email = email;
+        member.loginId = loginId;
+        member.password = password;
+        member.phoneNumber = phoneNumber;
+        member.provider = provider;
+        member.providerId = providerId;
+        return member;
+    }
+
+    public void updateLoginId(String loginId) {
         this.loginId = loginId;
-        this.memberName = memberName;
-        this.email = email;
+    }
+
+    public void updatePassword(String password) {
         this.password = password;
+    }
+
+    public void updatePhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public void updateMemberInfo(String loginId, String password, String phoneNumber) {
+        // null 또는 빈 값 체크는 필요에 따라 추가
+        this.loginId = loginId;
+        this.password = password; // 비밀번호는 암호화하는 로직을 추가하는 것이 좋음
         this.phoneNumber = phoneNumber;
     }
 
     public Member() {
 
+    }
+
+    public Member(String email) {
+        this.email = email;
     }
 
     // 소셜 로그인을 위한 생성자
@@ -83,7 +120,6 @@ public class Member {
             log.error("Email is null for Member");
         }
     }
-
 
     public void updatePassword(String newPassword, PasswordEncoder passwordEncoder) {
         if (newPassword == null || newPassword.trim().isEmpty()) {
