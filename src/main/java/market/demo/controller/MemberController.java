@@ -62,7 +62,6 @@ public class MemberController {
         if (exists) {
             return ResponseEntity.ok("OK");
         } else {
-            //service
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 실패");
         }
     }
@@ -72,7 +71,6 @@ public class MemberController {
     public ResponseEntity<String> changePassword(@RequestBody PasswordChangeDto passwordChangeDto) {
         boolean isPasswordChanged = memberService.changePassword(passwordChangeDto);
         if (!isPasswordChanged) {
-            //service
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자를 찾을 수 없습니다.");
         }
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
@@ -124,7 +122,6 @@ public class MemberController {
     public ResponseEntity<?> verifyAndUpdateSocialLogin(@AuthenticationPrincipal CustomOAuth2User customUser,
                                             @RequestBody PasswordVerificationRequestDto request) {
         if (customUser == null) {
-            //exception?
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("사용자 인증 실패");
         }
         // 비밀번호 검증 및 소셜 로그인 정보 업데이트
