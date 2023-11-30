@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Objects;
+
 @RestController
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
@@ -87,9 +89,8 @@ public class MemberController {
 
     //26 api 개인정보 보내기
     @GetMapping("/modify-member")
-    public ResponseEntity<MemberInfoDto> sendMemberinfo(@RequestParam String loginId){
-        MemberInfoDto memberInfoDto = MemberService.getMemberinfo(loginId);
-
+    public ResponseEntity<MemberInfoDto> showMemberinfo(@RequestParam String loginId){
+        MemberInfoDto memberInfoDto = memberService.sendMemberinfo(loginId);
         return ResponseEntity.ok(memberInfoDto);
     }
 
@@ -98,17 +99,17 @@ public class MemberController {
     public ResponseEntity<String> modifyMemberinfo(@RequestParam String loginId, @RequestBody ModifyMemberInfoDto modifyMemberInfoDto){
         //현재 비밀번호 확인
         if(!memberService.checkPassword(loginId, modifyMemberInfoDto.getPassword())){
-            return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("비밀번호가 맞지 않습니다");
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("비밀번호가 맞지 않습니다");
         }
 
         //새 비밀번호 확인
-        if(!modifyMemberInfoDto.getNewPassword().equals(modifyMemberInfoDto.getNewPassword_check())){
-            return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("새로운 비밀번호가 서로 일치하지 않습니다");
+        if(!modifyMemberInfoDto.getNewPassword().equals(modifyMemberInfoDto.getNewPasswordCheck())) {
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("새로운 비밀번호가 서로 일치하지 않습니다");
         }
 
         //회원 정보 수정
         if(!memberService.modifymember(loginId, modifyMemberInfoDto)){
-            return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("회원 정보를 찾을 수 없습니다.");
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("회원 정보를 찾을 수 없습니다.");
         }
 
         return ResponseEntity.ok("수정이 완료되었습니다.");

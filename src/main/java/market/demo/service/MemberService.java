@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @Transactional
 @RequiredArgsConstructor
 public class MemberService {
-    private static final MemberRepository memberRepository;
+    private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
     public boolean checkLoginIdAvailability(String loginId) {
@@ -89,11 +89,14 @@ public class MemberService {
         return member.getPassword().equals(password);
     }
 
-    public static MemberInfoDto getMemberinfo(String loginId) {
+    public MemberInfoDto sendMemberinfo(String loginId) {
         Member member = memberRepository.findByLoginId(loginId);
 
         MemberInfoDto memberInfoDto = new MemberInfoDto();
-        BeanUtils.copyProperties(member, memberInfoDto);
+        memberInfoDto.setLoginId(member.getLoginId());
+        memberInfoDto.setMemberName(member.getMemberName());
+        memberInfoDto.setEmail(member.getEmail());
+        memberInfoDto.setPhoneNumber(member.getPhoneNumber());
 
         return memberInfoDto;
     }
@@ -103,7 +106,9 @@ public class MemberService {
 
         if(member == null) return false;
 
-        member.setPassword(modifyMemberInfoDto.getNewPassword());
+        if(!modifyMemberInfoDto.getNewPassword().isEmpty()) member.setPassword(modifyMemberInfoDto.getNewPassword());
+        else member.setPassword(modifyMemberInfoDto.getPassword());
+
         member.setLoginId(modifyMemberInfoDto.getLoginId());
         member.setEmail(modifyMemberInfoDto.getEmail());
         member.setPhoneNumber(modifyMemberInfoDto.getPhoneNumber());
