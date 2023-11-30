@@ -6,6 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.member.Member;
 import market.demo.dto.social.CustomOAuth2User;
 import market.demo.dto.MemberDeletionRequest;
+import market.demo.dto.changememberinfo.CheckMemberInfoDto;
+import market.demo.dto.changememberinfo.MemberInfoDto;
+import market.demo.dto.changememberinfo.ModifyMemberInfoDto;
 import market.demo.dto.social.PasswordVerificationRequestDto;
 import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.recoverypassword.RecoveryPasswordRequestDto;
@@ -18,6 +21,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/members")
@@ -75,6 +80,45 @@ public class MemberController {
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
     }
 
+    //26 api 회원 비밀번호 확인
+    @PostMapping("/recheck-password")
+    public ResponseEntity<String> recheckPassword(@RequestBody CheckMemberInfoDto checkMemberInfoDto){
+        boolean isPasswordCorrect = memberService.checkPassword(checkMemberInfoDto.getLoginId(), checkMemberInfoDto.getPassword());
+
+        if(!isPasswordCorrect){
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("비밀번호가 맞지 않습니다.");
+        }
+        return ResponseEntity.ok("비밀번호 일치합니다.");
+    }
+
+    //26 api 개인정보 보내기
+    @GetMapping("/modify-member")
+    public ResponseEntity<MemberInfoDto> showMemberinfo(@RequestParam String loginId){
+        MemberInfoDto memberInfoDto = memberService.sendMemberinfo(loginId);
+        return ResponseEntity.ok(memberInfoDto);
+    }
+
+    //26 api 수정하기
+    @PostMapping("/modify-member")
+    public ResponseEntity<String> modifyMemberinfo(@RequestParam String loginId, @RequestBody ModifyMemberInfoDto modifyMemberInfoDto){
+        //현재 비밀번호 확인
+        if(!memberService.checkPassword(loginId, modifyMemberInfoDto.getPassword())){
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("비밀번호가 맞지 않습니다");
+        }
+
+        //새 비밀번호 확인
+        if(!modifyMemberInfoDto.getNewPassword().equals(modifyMemberInfoDto.getNewPasswordCheck())) {
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("새로운 비밀번호가 서로 일치하지 않습니다");
+        }
+
+        //회원 정보 수정
+        if(!memberService.modifymember(loginId, modifyMemberInfoDto)){
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("회원 정보를 찾을 수 없습니다.");
+        }
+
+        return ResponseEntity.ok("수정이 완료되었습니다.");
+    }
+
     //40 api소셜 로그인시 회원가입
     @PostMapping("/verify-password")
     public ResponseEntity<?> verifyAndUpdateSocialLogin(@AuthenticationPrincipal CustomOAuth2User customUser,
@@ -96,5 +140,6 @@ public class MemberController {
         memberService.socialRegisterNewMember(request, customUser.getEmail(), customUser.getProvider(), customUser.getProviderId());
         return ResponseEntity.ok().body("회원 등록 성공");
     }
-    //
+
 }
+

@@ -3,6 +3,7 @@ package market.demo.domain.member;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.etc.Wishlist;
 import market.demo.domain.inquiry.Inquiry;
@@ -17,6 +18,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @Slf4j
 public class Member {
 
