@@ -1,4 +1,4 @@
-package market.demo.domain;
+package market.demo.domain.member;
 
 import jakarta.persistence.Embeddable;
 import lombok.Getter;

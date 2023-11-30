@@ -1,22 +1,22 @@
 package market.demo.domain.config;
 
+import market.demo.domain.member.Member;
+import market.demo.dto.social.CustomOAuth2User;
+import market.demo.repository.MemberRepository;
 import market.demo.service.OAuth2UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 @Configuration
 @EnableWebSecurity
@@ -24,8 +24,11 @@ public class SecurityConfig {
 
     private final OAuth2UserService oAuth2UserService;
 
-    public SecurityConfig(OAuth2UserService oAuth2UserService) {
+    private final MemberRepository memberRepository;
+
+    public SecurityConfig(OAuth2UserService oAuth2UserService, MemberRepository memberRepository) {
         this.oAuth2UserService = oAuth2UserService;
+        this.memberRepository = memberRepository;
     }
 
     @Bean
@@ -35,11 +38,11 @@ public class SecurityConfig {
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests.anyRequest().permitAll())
                 .oauth2Login(oauth2Login -> oauth2Login
-                                .loginPage("/login")
-                                .successHandler(successHandler())
-                                .userInfoEndpoint(userInfo -> userInfo
-                                        .userService(oAuth2UserService)
-                                )
+                        .loginPage("/login")
+                        .successHandler(successHandler())
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(oAuth2UserService)
+                        )
                 )
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login") //로그아웃 성공 후 리다이렉트될 URL
@@ -55,33 +58,34 @@ public class SecurityConfig {
     private LogoutSuccessHandler logoutSuccessHandler() {
         return (request, response, authentication) -> {
             response.setStatus(HttpStatus.OK.value());
-            PrintWriter writer =response.getWriter();
+            PrintWriter writer = response.getWriter();
             writer.println("logout");
             writer.flush();
         };
     }
 
     @Bean
-    public AuthenticationSuccessHandler successHandler() {
-        return ((request, response, authentication) -> {
-            DefaultOAuth2User defaultOAuth2User = (DefaultOAuth2User) authentication.getPrincipal();
-
-            String id = defaultOAuth2User.getAttributes().get("id").toString();
-            String body = """
-                    {"id":"%s"}
-                    """.formatted(id);
-
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-
-            PrintWriter writer = response.getWriter();
-            writer.println(body);
-            writer.flush();
-        });
-    }
-
-    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    public AuthenticationSuccessHandler successHandler() {
+        return ((request, response, authentication) -> {
+            CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
+            String email = customOAuth2User.getEmail();
+
+            // 데이터베이스에서 사용자 조회
+            Optional<Member> memberOptional = memberRepository.findByEmail(email);
+            if (memberOptional.isEmpty())
+                response.sendRedirect("/login/add");
+            String body;
+            Member member = memberOptional.get();
+            if (member.getProvider() != null) {
+                // 소셜 연동된 계정인 경우
+                response.sendRedirect("/main");
+            }
+            // 연동 안된 경우
+            response.sendRedirect("/login/verify");
+        });
     }
 }

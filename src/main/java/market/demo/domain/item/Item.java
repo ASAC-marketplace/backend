@@ -1,4 +1,4 @@
-package market.demo.domain;
+package market.demo.domain.item;
 
 import jakarta.persistence.*;
 import lombok.Getter;

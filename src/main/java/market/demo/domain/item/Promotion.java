@@ -1,7 +1,8 @@
-package market.demo.domain;
+package market.demo.domain.item;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import market.demo.domain.item.Item;
 import market.demo.domain.status.PromotionType;
 
 import java.time.LocalDateTime;
