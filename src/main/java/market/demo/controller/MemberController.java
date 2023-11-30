@@ -90,7 +90,7 @@ public class MemberController {
     //26 api 개인정보 보내기
     @GetMapping("/modify-member")
     public ResponseEntity<MemberInfoDto> sendMemberinfo(@RequestParam String loginId){
-        MemberInfoDto memberInfoDto = MemberService.getMemberinfo(loginId);
+        MemberInfoDto memberInfoDto = memberService.getMemberinfo(loginId);
 
         return ResponseEntity.ok(memberInfoDto);
     }
@@ -104,7 +104,7 @@ public class MemberController {
         }
 
         //새 비밀번호 확인
-        if(!modifyMemberInfoDto.getNewPassword().equals(modifyMemberInfoDto.getNewPassword_check())){
+        if(!modifyMemberInfoDto.getNewPassword().equals(modifyMemberInfoDto.getNewPasswordCheck())){
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("새로운 비밀번호가 서로 일치하지 않습니다");
         }
 

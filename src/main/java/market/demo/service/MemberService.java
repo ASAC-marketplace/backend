@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Slf4j
 public class MemberService {
-    private static final MemberRepository memberRepository;
+    private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
     public boolean checkLoginIdAvailability(String loginId) {
@@ -92,7 +92,7 @@ public class MemberService {
         return member.getPassword().equals(password);
     }
 
-    public static MemberInfoDto getMemberinfo(String loginId) {
+    public MemberInfoDto getMemberinfo(String loginId) {
         Member member = memberRepository.findByLoginId(loginId);
 
         MemberInfoDto memberInfoDto = new MemberInfoDto();
@@ -114,6 +114,8 @@ public class MemberService {
 
        memberRepository.save(member);
        return true;
+    }
+
     public void verifyPassword(String email, String password) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
