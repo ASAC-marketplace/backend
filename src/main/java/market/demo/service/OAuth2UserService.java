@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Map;
 import java.util.Optional;
@@ -28,6 +29,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
 
         // 사용자 정보 추출
         Map<String, Object> attributes = oAuth2User.getAttributes();
+        // 객체
         String providerId = String.valueOf(attributes.get("id")); // 고유 ID 추출
         String provider = userRequest.getClientRegistration().getRegistrationId();
         log.info("OAuth2User attributes: {}", attributes);
@@ -56,7 +58,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         if (attributes.containsKey("kakao_account")) {
             Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
             String email = (String) kakaoAccount.get("email");
-            if (email != null && !email.isEmpty()) {
+            if (StringUtils.hasLength(email)) {
                 return email;
             }
         }

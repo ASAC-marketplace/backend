@@ -25,21 +25,18 @@ public class CustomOAuth2User implements OAuth2User {
     public CustomOAuth2User(Map<String, Object> attributes, Member member) {
         this.attributes = attributes;
         this.member = member;
-            this.provider = member.getProvider(); // provider 추가
-            this.providerId = member.getProviderId(); // providerId 추가
-            this.email = member.getEmail(); // email 추
+        this.provider = member.getProvider(); // provider 추가
+        this.providerId = member.getProviderId(); // providerId 추가
+        this.email = member.getEmail(); // email 추
     }
 
     @Override
     public Map<String, Object> getAttributes() {
-        log.info("OAuth2User Attributes 호출: {}", attributes);
         return attributes;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        log.info("OAuth2User Authorities 호출");
-
         return AuthorityUtils.createAuthorityList("ROLE_USER");
     }
 
@@ -47,8 +44,7 @@ public class CustomOAuth2User implements OAuth2User {
     public String getName() {
         if (member == null) {
             return null;
-        } else {
-            return member.getEmail();
         }
+        return member.getEmail();
     }
 }

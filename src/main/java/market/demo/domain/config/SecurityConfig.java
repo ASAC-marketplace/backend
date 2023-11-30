@@ -38,11 +38,11 @@ public class SecurityConfig {
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests.anyRequest().permitAll())
                 .oauth2Login(oauth2Login -> oauth2Login
-                                .loginPage("/login")
-                                .successHandler(successHandler())
-                                .userInfoEndpoint(userInfo -> userInfo
-                                        .userService(oAuth2UserService)
-                                )
+                        .loginPage("/login")
+                        .successHandler(successHandler())
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(oAuth2UserService)
+                        )
                 )
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login") //로그아웃 성공 후 리다이렉트될 URL
@@ -58,7 +58,7 @@ public class SecurityConfig {
     private LogoutSuccessHandler logoutSuccessHandler() {
         return (request, response, authentication) -> {
             response.setStatus(HttpStatus.OK.value());
-            PrintWriter writer =response.getWriter();
+            PrintWriter writer = response.getWriter();
             writer.println("logout");
             writer.flush();
         };
@@ -68,6 +68,7 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     public AuthenticationSuccessHandler successHandler() {
         return ((request, response, authentication) -> {
             CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
@@ -75,21 +76,16 @@ public class SecurityConfig {
 
             // 데이터베이스에서 사용자 조회
             Optional<Member> memberOptional = memberRepository.findByEmail(email);
-
-            String body;
-            if (memberOptional.isPresent()) {
-                Member member = memberOptional.get();
-                if (member.getProvider() != null) {
-                    // 소셜 연동된 계정인 경우
-                    response.sendRedirect("/main");
-                } else {
-                    // 이메일은 같지만 소셜 연동되지 않은 경우
-                    response.sendRedirect("/login/verify");
-                }
-            } else {
-                // 계정이 없는 경우
+            if (memberOptional.isEmpty())
                 response.sendRedirect("/login/add");
+            String body;
+            Member member = memberOptional.get();
+            if (member.getProvider() != null) {
+                // 소셜 연동된 계정인 경우
+                response.sendRedirect("/main");
             }
+            // 연동 안된 경우
+            response.sendRedirect("/login/verify");
         });
     }
 }
