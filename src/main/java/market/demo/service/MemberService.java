@@ -1,5 +1,6 @@
 package market.demo.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.member.Member;
@@ -86,10 +87,12 @@ public class MemberService {
     }
 
 
-    public boolean checkPassword(String loginId, String password){
+    public void checkPassword(String loginId, String password){
         Member member = memberRepository.findByLoginId(loginId);
 
-        return member.getPassword().equals(password);
+        if(!member.getPassword().equals(password)){
+            throw new InvalidPasswordException("비밀번호가 맞지 않습니다.");
+        }
     }
 
     public MemberInfoDto getMemberinfo(String loginId) {
@@ -101,19 +104,33 @@ public class MemberService {
         return memberInfoDto;
     }
 
-    public boolean modifymember(String loginId, ModifyMemberInfoDto modifyMemberInfoDto) {
+    public void modifymember(String loginId, ModifyMemberInfoDto modifyMemberInfoDto) {
         Member member = memberRepository.findByLoginId(loginId);
 
-        if(member == null) return false;
+        if (member == null) {
+            throw new EntityNotFoundException("회원 정보를 찾을 수 없습니다.");
+        }
 
-        member.setPassword(modifyMemberInfoDto.getNewPassword());
+        // 비밀번호 확인 로직
+        if (!member.getPassword().equals(modifyMemberInfoDto.getPassword())) {
+            throw new InvalidPasswordException("비밀번호가 맞지 않습니다.");
+        }
+
+        //새 비밀번호 확인
+        if(!modifyMemberInfoDto.getNewPassword().equals(modifyMemberInfoDto.getNewPasswordCheck())){
+            throw  new IllegalArgumentException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
+        }
+
+        //회원 정보 수정
+        if(modifyMemberInfoDto.getNewPassword().isEmpty()){
+            member.setPassword(modifyMemberInfoDto.getPassword());
+        }else member.setPassword(modifyMemberInfoDto.getNewPassword());
         member.setLoginId(modifyMemberInfoDto.getLoginId());
         member.setEmail(modifyMemberInfoDto.getEmail());
         member.setPhoneNumber(modifyMemberInfoDto.getPhoneNumber());
         member.setMemberName(modifyMemberInfoDto.getMemberName());
 
        memberRepository.save(member);
-       return true;
     }
 
     public void verifyPassword(String email, String password) {
