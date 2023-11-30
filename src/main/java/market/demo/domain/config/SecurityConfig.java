@@ -1,13 +1,12 @@
 package market.demo.domain.config;
 
-import market.demo.domain.Member;
+import market.demo.domain.member.Member;
 import market.demo.dto.social.CustomOAuth2User;
 import market.demo.repository.MemberRepository;
 import market.demo.service.OAuth2UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,7 +16,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @Configuration

@@ -1,6 +1,6 @@
 package market.demo.repository;
 
-import market.demo.domain.Member;
+import market.demo.domain.member.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

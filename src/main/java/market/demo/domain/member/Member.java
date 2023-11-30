@@ -1,16 +1,19 @@
-package market.demo.domain;
+package market.demo.domain.member;
 
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.LoggerFactory;
+import market.demo.domain.etc.Wishlist;
+import market.demo.domain.inquiry.Inquiry;
+import market.demo.domain.item.Review;
+import market.demo.domain.order.Cart;
+import market.demo.domain.order.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 @Entity
 @Getter
@@ -63,17 +66,6 @@ public class Member {
     private Wishlist wishlist;
 
     @Builder
-    public static Member createMemberWithLoginId(String loginId, String memberName, String email, String password, String phoneNumber) {
-        Member member = new Member();
-        member.loginId = loginId;
-        member.memberName = memberName;
-        member.email = email;
-        member.password = password;
-        member.phoneNumber = phoneNumber;
-        return member;
-    }
-
-    @Builder
     public static Member createMemberWithProviderInfo(String email, String loginId, String password, String phoneNumber, String provider, String providerId) {
         Member member = new Member();
         member.email = email;
@@ -83,25 +75,6 @@ public class Member {
         member.provider = provider;
         member.providerId = providerId;
         return member;
-    }
-
-    public void updateLoginId(String loginId) {
-        this.loginId = loginId;
-    }
-
-    public void updatePassword(String password) {
-        this.password = password;
-    }
-
-    public void updatePhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public void updateMemberInfo(String loginId, String password, String phoneNumber) {
-        // null 또는 빈 값 체크는 필요에 따라 추가
-        this.loginId = loginId;
-        this.password = password; // 비밀번호는 암호화하는 로직을 추가하는 것이 좋음
-        this.phoneNumber = phoneNumber;
     }
 
     public Member() {

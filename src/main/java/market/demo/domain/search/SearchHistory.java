@@ -1,4 +1,4 @@
-package market.demo.domain;
+package market.demo.domain.search;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

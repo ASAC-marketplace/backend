@@ -1,7 +1,9 @@
-package market.demo.domain;
+package market.demo.domain.item;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import market.demo.domain.item.Item;
+import market.demo.domain.member.Member;
 
 import java.util.ArrayList;
 import java.util.List;
