@@ -1,7 +1,8 @@
-package market.demo.domain;
+package market.demo.domain.order;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import market.demo.domain.item.Item;
 
 import static jakarta.persistence.FetchType.LAZY;
 

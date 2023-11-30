@@ -1,9 +1,15 @@
-package market.demo.domain;
+package market.demo.domain.member;
 
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import market.demo.domain.etc.Wishlist;
+import market.demo.domain.inquiry.Inquiry;
+import market.demo.domain.item.Review;
+import market.demo.domain.order.Cart;
+import market.demo.domain.order.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
@@ -13,6 +19,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@Slf4j
 public class Member {
 
     @Id
@@ -61,16 +68,47 @@ public class Member {
     private Wishlist wishlist;
 
     @Builder
-    public Member(String loginId, String memberName, String email, String password, String phoneNumber) {
-        this.loginId = loginId;
-        this.memberName = memberName;
-        this.email = email;
-        this.password = password;
-        this.phoneNumber = phoneNumber;
+    public static Member createMemberWithLoginId(String loginId, String memberName, String email, String password, String phoneNumber) {
+        Member member = new Member();
+        member.loginId = loginId;
+        member.memberName = memberName;
+        member.email = email;
+        member.password = password;
+        member.phoneNumber = phoneNumber;
+        return member;
+    }
+
+    @Builder
+    public static Member createMemberWithProviderInfo(String email, String loginId, String password, String phoneNumber, String provider, String providerId) {
+        Member member = new Member();
+        member.email = email;
+        member.loginId = loginId;
+        member.password = password;
+        member.phoneNumber = phoneNumber;
+        member.provider = provider;
+        member.providerId = providerId;
+        return member;
     }
 
     public Member() {
 
+    }
+
+    public Member(String email) {
+        this.email = email;
+    }
+
+    // 소셜 로그인을 위한 생성자
+    public Member(String email, String memberName, String provider, String providerId) {
+        log.info("Creating Member with email: {}", email);
+        this.email = email;
+        this.memberName = memberName;
+        this.provider = provider;
+        this.providerId = providerId;
+
+        if (email == null) {
+            log.error("Email is null for Member");
+        }
     }
 
     public void updatePassword(String newPassword, PasswordEncoder passwordEncoder) {
@@ -81,5 +119,10 @@ public class Member {
         //비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(newPassword);
         this.password = encodedPassword;
+    }
+
+    public void updateSocialLoginInfo(String provider, String providerId) {
+        this.provider = provider;
+        this.providerId = providerId;
     }
 }
