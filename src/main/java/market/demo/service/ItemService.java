@@ -3,6 +3,7 @@ package market.demo.service;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 
+import lombok.RequiredArgsConstructor;
 import market.demo.domain.item.QItem;
 import market.demo.domain.item.QItemDetail;
 
@@ -12,21 +13,18 @@ import market.demo.dto.item.ItemDto;
 import market.demo.dto.item.ItemMainEndDto;
 import market.demo.dto.item.QItemDto;
 import market.demo.dto.item.QItemMainEndDto;
+import market.demo.repository.ItemReposistory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ItemService {
 
     private final JPAQueryFactory queryFactory;
-
-    public ItemService(JPAQueryFactory queryFactory) {
-        this.queryFactory = queryFactory;
-    }
 
     //배너?
     public List<ItemDto> getRecentProducts(int page, int size) {
@@ -47,7 +45,7 @@ public class ItemService {
                 .fetch();
     }
 
-    //메인 마감세일
+    //메인 마감세일, 주말특가
     public List<ItemMainEndDto> getItemByPromotionType(PromotionType promotionType, int page, int size) {
         QItem item = QItem.item;
         QItemDetail itemDetail = QItemDetail.itemDetail;
@@ -73,4 +71,37 @@ public class ItemService {
                 .limit(size)
                 .fetch();
     }
+    //
+
+    //주말특가 스케줄
+    public void updatePromotionTypeForItems(List<Long> itemIds, PromotionType promotionType) {
+        QItem qItem = QItem.item;
+
+        queryFactory
+                .update(qItem)
+                .set(qItem.promotionType, promotionType)
+                .where(qItem.id.in(itemIds))
+                .execute();
+    }
+
+    public void resetPromotionType(PromotionType promotionType) {
+        QItem qItem = QItem.item;
+
+        queryFactory
+                .update(qItem)
+                .set(qItem.promotionType, PromotionType.NONE)
+                .where(qItem.promotionType.eq(promotionType))
+                .execute();
+    }
+
+    public List<Long> findRandomItemIds(int limit) {
+        QItem qItem = QItem.item;
+        return queryFactory
+                .select(qItem.id)
+                .from(qItem)
+                .orderBy(qItem.id.asc())
+                .limit(limit)
+                .fetch();
+    }
+    //
 }
