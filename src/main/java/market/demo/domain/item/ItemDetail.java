@@ -22,7 +22,7 @@ public class ItemDetail {
     private String deliveryMethod;
 
     // 판매자 정보 (예: 이름, 연락처 등)
-    private String SellerInfo;
+    private String sellerInfo;
 
     // 상품 정보 (예: 재료, 제조 방법 등)
     private String productInfo;
@@ -42,6 +42,26 @@ public class ItemDetail {
     @Column(name = "image_url")
     private List<String> detailImages = new ArrayList<>();
 
+    private String promotionImageUrl;
+
     // 추가 설명
     private String additionalDescription;
+
+    ///////////////// 테스트 데이터용
+    public ItemDetail(Item item, String deliveryMethod, String sellerInfo, String productInfo, String packagingType, String notes, Integer likeCount, String additionalDescription, List<String> detailImages) {
+        this.item = item;
+        this.deliveryMethod = deliveryMethod;
+        this.sellerInfo = sellerInfo;
+        this.productInfo = productInfo;
+        this.packagingType = packagingType;
+        this.notes = notes;
+        this.likeCount = likeCount;
+        this.additionalDescription = additionalDescription;
+        this.detailImages.addAll(detailImages);
+    }
+
+    public ItemDetail() {
+
+    }
+    //////////////////
 }

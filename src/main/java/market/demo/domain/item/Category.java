@@ -27,4 +27,15 @@ public class Category {
 
     @OneToMany(mappedBy = "category")
     private List<Item> items = new ArrayList<>();
+
+    ///////////// 테스트 데이터용
+    public Category(String name) {
+        this.name = name;
+    }
+
+    public Category(String name, Category parent) {
+        this.name = name;
+        this.parent = parent;
+    }
+    ////////////
 }
