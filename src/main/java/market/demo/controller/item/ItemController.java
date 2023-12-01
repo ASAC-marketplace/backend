@@ -18,7 +18,7 @@ import java.util.List;
 public class ItemController {
     private final ItemService itemService;
 
-    //11 메인 반응 신상품
+    //배너 추가
     @GetMapping("/recent")
     public List<ItemDto> getRecentProducts(@RequestParam(defaultValue = "1") int page,
                                            @RequestParam(defaultValue = "10") int size) {
@@ -26,9 +26,16 @@ public class ItemController {
     }
 
     //9 메인 마감세일
-    @GetMapping("/EndOfSeason")
+    @GetMapping("/endofseason")
     public List<ItemMainEndDto> getEndOfSeasonSaleItems(@RequestParam(defaultValue = "1") int page,
                                                         @RequestParam(defaultValue = "10") int size) {
         return itemService.getItemByPromotionType(PromotionType.END_OF_SEASON_SALE, page, size);
+    }
+
+    //10 메인 주말특가
+    @GetMapping("/weekend")
+    public List<ItemMainEndDto> getWeekendItems(@RequestParam(defaultValue = "1") int page,
+                                                        @RequestParam(defaultValue = "10") int size) {
+        return itemService.getItemByPromotionType(PromotionType.WEEKEND_SPECIAL, page, size);
     }
 }
