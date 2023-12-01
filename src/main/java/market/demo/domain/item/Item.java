@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import market.demo.domain.status.ItemStatus;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,8 @@ public class Item {
     @Enumerated(EnumType.STRING)
     private ItemStatus status;
 
+    private LocalDate registerdDate;
+
     @OneToMany(mappedBy = "item")
     private List<Review> reviews = new ArrayList<>();
 
@@ -52,4 +55,24 @@ public class Item {
             inverseJoinColumns = @JoinColumn(name = "promotion_id")
     )
     private List<Promotion> promotions = new ArrayList<>();
+
+    ///////////////// 테스트 데이터용
+    public Item(String name, String description, Category category, Double discountRate, ItemStatus status, Integer stockQuantity, LocalDate registerdDate) {
+        this.name = name;
+        this.description = description;
+        this.category = category;
+        this.discountRate = discountRate;
+        this.status = status;
+        this.stockQuantity = stockQuantity;
+        this.registerdDate = registerdDate;
+    }
+
+    public Item() {
+
+    }
+
+    public void setItemDetail(ItemDetail itemDetail) {
+        this.itemDetail = itemDetail;
+    }
+    /////////////////
 }
