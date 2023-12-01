@@ -3,6 +3,7 @@ package market.demo.domain.item;
 import jakarta.persistence.*;
 import lombok.Getter;
 import market.demo.domain.status.ItemStatus;
+import market.demo.domain.type.PromotionType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,7 +25,7 @@ public class Item {
     private String name;
 
     // 할인율, 프로모션 정보 등을 추가
-    private Double discountRate;
+    private Integer discountRate;
     private LocalDateTime promotionStart;
     private LocalDateTime promotionEnd;
 
@@ -48,16 +49,14 @@ public class Item {
 
     private Integer stockQuantity;
 
-    @ManyToMany
-    @JoinTable(
-            name = "item_promotion",
-            joinColumns = @JoinColumn(name = "item_id"),
-            inverseJoinColumns = @JoinColumn(name = "promotion_id")
-    )
-    private List<Promotion> promotions = new ArrayList<>();
+    private Integer price;
+
+    @Enumerated(EnumType.STRING)
+    private PromotionType promotionType = PromotionType.NONE; // 기본값으로 'NONE' 설정
+
 
     ///////////////// 테스트 데이터용
-    public Item(String name, String description, Category category, Double discountRate, ItemStatus status, Integer stockQuantity, LocalDate registerdDate) {
+    public Item(String name, String description, Category category, Integer discountRate, ItemStatus status, Integer stockQuantity, LocalDate registerdDate) {
         this.name = name;
         this.description = description;
         this.category = category;
@@ -67,6 +66,17 @@ public class Item {
         this.registerdDate = registerdDate;
     }
 
+    public Item(String name, String description, Category category, Integer discountRate, ItemStatus status, Integer stockQuantity, LocalDate registerdDate, PromotionType promotionType, Integer price) {
+        this.name = name;
+        this.description = description;
+        this.category = category;
+        this.discountRate = discountRate;
+        this.status = status;
+        this.stockQuantity = stockQuantity;
+        this.registerdDate = registerdDate;
+        this.promotionType = promotionType;
+        this.price = price;
+    }
     public Item() {
 
     }
