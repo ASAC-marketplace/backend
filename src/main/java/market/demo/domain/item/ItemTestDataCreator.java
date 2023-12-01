@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import market.demo.domain.status.ItemStatus;
+import market.demo.domain.type.PromotionType;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -40,10 +41,14 @@ public class ItemTestDataCreator {
                 em.persist(subCategory);
                 parentCategory.getChildren().add(subCategory);
 
+                Integer randomPrice = getRandomPrice(10000, 100000);
+                Integer randomDiscountRate = getRandomDiscountRate(0, 20);
+                PromotionType randomPromotionType = getRandomPromotionType();
                 LocalDate randomDate = createRandomDate(2021, 2023);
                 Item item = new Item("Item " + i, "Description for Item " + i, subCategory,
-                        Math.random() * 0.2, ItemStatus.NEW,
-                        (int) (Math.random() * 100), randomDate);
+                        randomDiscountRate, ItemStatus.NEW,
+                        (int) (Math.random() * 100), randomDate, randomPromotionType, randomPrice);
+
 
                 ItemDetail itemDetail = new ItemDetail(item, "Delivery Method " + i,
                         "Seller Info " + i, "Product Info " + i,
@@ -70,6 +75,20 @@ public class ItemTestDataCreator {
             long maxDay = LocalDate.of(endYear, 1, 1).toEpochDay();
             long randomDay = ThreadLocalRandom.current().nextLong(minDay, maxDay);
             return LocalDate.ofEpochDay(randomDay);
+        }
+
+        private PromotionType getRandomPromotionType() {
+            PromotionType[] promotionTypes = PromotionType.values();
+            int randomIndex = ThreadLocalRandom.current().nextInt(promotionTypes.length);
+            return promotionTypes[randomIndex];
+        }
+
+        private Integer getRandomPrice(int min, int max) {
+            return ThreadLocalRandom.current().nextInt(min, max + 1);
+        }
+
+        private Integer getRandomDiscountRate(int min, int max) {
+            return ThreadLocalRandom.current().nextInt(min, max + 1);
         }
     }
 }

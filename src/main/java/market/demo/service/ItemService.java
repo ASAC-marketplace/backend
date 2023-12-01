@@ -1,13 +1,17 @@
 package market.demo.service;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import market.demo.domain.item.Item;
+
+
 import market.demo.domain.item.QItem;
 import market.demo.domain.item.QItemDetail;
+
+import market.demo.domain.item.QReview;
+import market.demo.domain.type.PromotionType;
 import market.demo.dto.item.ItemDto;
+import market.demo.dto.item.ItemMainEndDto;
 import market.demo.dto.item.QItemDto;
-import org.springframework.data.jpa.repository.JpaRepository;
+import market.demo.dto.item.QItemMainEndDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +33,7 @@ public class ItemService {
         QItem item = QItem.item;
         QItemDetail itemDetail = QItemDetail.itemDetail;
 
-        List<ItemDto> results = queryFactory
+        return queryFactory
                 .select(new QItemDto(
                         item.id,
                         item.registerdDate,
@@ -41,7 +45,32 @@ public class ItemService {
                 .offset((page - 1) * size)
                 .limit(size)
                 .fetch();
+    }
 
-        return results;
+    //메인 마감세일
+    public List<ItemMainEndDto> getItemByPromotionType(PromotionType promotionType, int page, int size) {
+        QItem item = QItem.item;
+        QItemDetail itemDetail = QItemDetail.itemDetail;
+        QReview review = QReview.review;
+
+        return queryFactory
+                .select(new QItemMainEndDto(
+                        item.id,
+                        item.name,
+                        item.discountRate,
+                        item.price.subtract(item.price.multiply(item.discountRate).divide(100)),
+                        item.price,
+                        itemDetail.promotionImageUrl,
+                        review.count()
+                ))
+                .from(item)
+                .leftJoin(item.itemDetail, itemDetail)
+                .leftJoin(item.reviews, review)
+                .where(item.promotionType.eq(promotionType))
+                .groupBy(item.id, item.name, item.discountRate, item.price, itemDetail.promotionImageUrl)
+                .orderBy(item.registerdDate.desc())
+                .offset((page - 1) * size)
+                .limit(size)
+                .fetch();
     }
 }
