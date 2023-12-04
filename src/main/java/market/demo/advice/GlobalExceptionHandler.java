@@ -43,4 +43,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleReviewNotFoundException(ReviewNotFoundException exception) {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(CouponNotFoundException.class)
+    public ResponseEntity<String> handleCouponNotFoundException (CouponNotFoundException exception){
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(CouponFoundException.class)
+    public ResponseEntity<String> handleCouponFoundException (CouponFoundException exception){
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
+    }
 }
+

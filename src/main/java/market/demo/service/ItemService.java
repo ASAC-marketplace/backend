@@ -5,14 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.item.Item;
 import market.demo.domain.item.ItemDetail;
 import market.demo.domain.item.Review;
+import market.demo.domain.member.Coupon;
+import market.demo.domain.member.Member;
+import market.demo.dto.itemdetailinfo.CouponDto;
 import market.demo.dto.itemdetailinfo.ItemDetailDto;
 import market.demo.dto.itemdetailinfo.ItemReviewsDto;
 import market.demo.dto.itemdetailinfo.ReviewDto;
-import market.demo.exception.ItemNotFoundException;
-import market.demo.exception.ReviewNotFoundException;
-import market.demo.repository.ItemDetailRepository;
-import market.demo.repository.ItemRepository;
-import market.demo.repository.ReviewRepository;
+import market.demo.exception.*;
+import market.demo.repository.*;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,8 @@ public class ItemService {
     private final ItemRepository itemRepository;
     private final ItemDetailRepository itemDetailRepository;
     private final ReviewRepository reviewRepository;
+    private final CouponRepository couponRepository;
+    private final MemberRepository memberRepository;
 
     public ItemDetailDto searchItemDetail(Long itemId){
         Optional<Item> optionalItem = itemRepository.findById(itemId);
@@ -37,6 +40,28 @@ public class ItemService {
         ItemDetail itemDetail = itemDetailRepository.findByItem(item);
         if(itemDetail == null) throw new ItemNotFoundException("사용자를 찾을 수 없습니다.");
 
+        String couponName = "할인쿠폰";
+        Optional<Coupon> optionalCoupon = couponRepository.findByCouponName(couponName);
+        CouponDto couponDto = new CouponDto();
+        if (optionalCoupon.isEmpty()) {
+            System.out.println("none");
+            return getItemDetailDto(item, itemDetail, couponDto);
+        }
+        System.out.println("in");
+        Coupon coupon = optionalCoupon.get();
+        couponDto.setCouponId(coupon.getId());
+        couponDto.setCouponName(coupon.getCouponName());
+        couponDto.setDiscountType(coupon.getDiscountType());
+        couponDto.setDiscountValue(coupon.getDiscountValue());
+        couponDto.setValidTo(coupon.getValidTo());
+        couponDto.setValidFrom(coupon.getValidFrom());
+        couponDto.setMinimumOrderPrice(coupon.getMinimumOrderPrice());
+
+        return getItemDetailDto(item, itemDetail, couponDto);
+    }
+
+    @NotNull
+    private static ItemDetailDto getItemDetailDto(Item item, ItemDetail itemDetail, CouponDto couponDto) {
         ItemDetailDto itemDetailDto = new ItemDetailDto();
 
         itemDetailDto.setItemId(item.getId());
@@ -54,7 +79,7 @@ public class ItemService {
         itemDetailDto.setLikeCount(itemDetail.getLikeCount());
         itemDetailDto.setDetailImages(itemDetail.getDetailImages());
         itemDetailDto.setAdditionalDescription(itemDetail.getAdditionalDescription());
-
+        itemDetailDto.setCoupon(couponDto);
         return itemDetailDto;
     }
 
@@ -119,5 +144,34 @@ public class ItemService {
         review.setHelpful(review.getHelpful() - 1 );
 
         reviewRepository.save(review);
+    }
+
+    public void getCoupon(String loginId ,Long couponId) {
+        Optional<Coupon> optionalCoupon = couponRepository.findById(couponId);
+
+        if(optionalCoupon.isEmpty()) throw new CouponNotFoundException("쿠폰을 찾을 수 없습니다.");
+        Coupon coupon = optionalCoupon.get();
+
+        Member member = memberRepository.findByLoginId(loginId);
+        if(member == null){
+            throw new MemberNotFoundException("해당 사용자를 찾을 수 없습니다.");
+        }
+
+        Coupon hasCoupon =  couponRepository.findByCouponNameAndIssuedTo(coupon.getCouponName(), member);
+        if(hasCoupon != null){
+            throw new CouponFoundException("해당 쿠폰은 이미 발급 되었습니다.");
+        }
+
+        Coupon newCoupon = new Coupon();
+        newCoupon.setCouponName(coupon.getCouponName());
+        newCoupon.setDiscountType(coupon.getDiscountType());
+        newCoupon.setDiscountValue(coupon.getDiscountValue());
+        newCoupon.setValidFrom(coupon.getValidFrom());
+        newCoupon.setValidTo(coupon.getValidTo());
+        newCoupon.setMinimumOrderPrice(coupon.getMinimumOrderPrice());
+        newCoupon.setUsed(false);
+        newCoupon.setIssuedTo(member);
+
+        couponRepository.save(newCoupon);
     }
 }

@@ -31,7 +31,6 @@ public class ItemController {
     @PostMapping("/reviews/helpful")
     public ResponseEntity<String> helpfulReviews(@RequestParam Long itemId, Long reviewId){
         itemService.helpfulItemReview(itemId, reviewId);
-
         return ResponseEntity.ok("도움돼요 추가 성공");
     }
     @PostMapping("/reviews/helpless")
@@ -39,4 +38,12 @@ public class ItemController {
         itemService.helplessItemReview(itemId, reviewId);
         return ResponseEntity.ok("도움돼요 취소 성공");
     }
+
+    //17 쿠폰 받기
+    @PostMapping("/coupon")
+    public ResponseEntity<String> getCouponMember(@RequestParam String loginId, Long couponId){
+        itemService.getCoupon(loginId,couponId);
+        return ResponseEntity.ok("쿠폰 받기 성공");
+    }
+
 }

@@ -24,5 +24,6 @@ public class ItemDetailDto {
     private Integer likeCount;// 좋아요 수
     private List<String> detailImages;// 상품 상세 이미지 URL 리스트
     private String additionalDescription;// 추가 설명
+    private CouponDto coupon;
 
 }
