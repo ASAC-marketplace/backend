@@ -2,6 +2,7 @@ package market.demo.domain.member;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import market.demo.domain.member.Member;
 import market.demo.domain.type.DiscountType;
 
@@ -9,11 +10,14 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Setter
 public class Coupon {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "coupon_id")
     private Long id;
+
+    private String couponName;
 
     //할인 타입이 퍼센트인지 아닌지
     @Enumerated(EnumType.STRING)
@@ -33,4 +37,5 @@ public class Coupon {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Member issuedTo; // 발급 대상 사용자 null 가능
+
 }

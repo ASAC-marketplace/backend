@@ -2,9 +2,11 @@ package market.demo.domain.item;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import market.demo.domain.item.Item;
 import market.demo.domain.member.Member;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +14,7 @@ import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
+@Setter
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,9 +29,10 @@ public class Review {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    private int rating;
+    private int rating; // 추천 rating
     private String comment;
     private Integer helpful; // 도움돼요
+    private LocalDateTime reviewWriteDate;
 
     // 리뷰 이미지
     @ElementCollection
