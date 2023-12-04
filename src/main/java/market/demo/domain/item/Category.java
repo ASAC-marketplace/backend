@@ -37,5 +37,9 @@ public class Category {
         this.name = name;
         this.parent = parent;
     }
+
+    public Category() {
+
+    }
     ////////////
 }
