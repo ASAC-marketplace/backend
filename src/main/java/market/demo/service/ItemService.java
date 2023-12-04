@@ -43,6 +43,8 @@ public class ItemService {
     private final ReviewRepository reviewRepository;
     private final CouponRepository couponRepository;
     private final MemberRepository memberRepository;
+    private final JPAQueryFactory queryFactory;
+
 
     public ItemDetailDto searchItemDetail(Long itemId){
         Optional<Item> optionalItem = itemRepository.findById(itemId);
@@ -186,8 +188,6 @@ public class ItemService {
 
         couponRepository.save(newCoupon);
     }
-  
-    private final JPAQueryFactory queryFactory;
 
     //배너?
     public List<ItemDto> getRecentProducts(int page, int size) {

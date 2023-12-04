@@ -28,7 +28,7 @@ public class Item {
     private Integer discountRate;
     private LocalDateTime promotionStart;
     private LocalDateTime promotionEnd;
-    private Double itemPrice;
+    private Integer itemPrice;
 
 // 상품 상태 관리 (예: NEW, BESTSELLER 등)
     @Enumerated(EnumType.STRING)

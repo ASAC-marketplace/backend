@@ -9,10 +9,10 @@ import java.util.List;
 @Setter
 public class ItemDetailDto {
     private Long itemId;
-    private Double itemPrice;
-    private Double saleItemPrice;
+    private Integer itemPrice;
+    private Integer saleItemPrice;
     private String itemName;
-    private Double discountRate;
+    private Integer discountRate;
     private String description;
     private Long reviewCount;
     //detail
