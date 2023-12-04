@@ -4,23 +4,26 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.member.Member;
+import market.demo.domain.member.jwt.Authority;
 import market.demo.dto.MemberDeletionRequest;
-import market.demo.dto.changememberinfo.CheckMemberInfoDto;
 import market.demo.dto.changememberinfo.MemberInfoDto;
 import market.demo.dto.changememberinfo.ModifyMemberInfoDto;
+import market.demo.dto.jwt.MemberDto;
 import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.registermember.MemberRegistrationDto;
+import market.demo.exception.DuplicateMemberException;
 import market.demo.exception.InvalidPasswordException;
 import market.demo.exception.MemberNotFoundException;
+import market.demo.exception.NotFoundMemberException;
 import market.demo.repository.MemberRepository;
-import org.hibernate.annotations.Check;
+import market.demo.service.jwt.SecurityUtil;
 import org.springframework.beans.BeanUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
 
 @Service
 @Transactional
@@ -158,5 +161,39 @@ public class MemberService {
                 providerId
         );
         memberRepository.save(member);
+    }
+
+    @Transactional
+    public MemberDto signup(MemberDto memberDto) {
+        if (memberRepository.findOneWithAuthoritiesByLoginId(memberDto.getLoginId()).orElse(null) != null) {
+            throw new DuplicateMemberException("이미 가입되어 있는 유저입니다.");
+        }
+
+        Authority authority = Authority.builder()
+                .authorityName("ROLE_USER")
+                .build();
+
+        Member user = Member.builder()
+                .loginId(memberDto.getLoginId())
+                .password(passwordEncoder.encode(memberDto.getPassword()))
+                .email(memberDto.getEmail())
+                .authorities(Collections.singleton(authority))
+                .build();
+
+        return MemberDto.from(memberRepository.save(user));
+    }
+
+    @Transactional(readOnly = true)
+    public MemberDto getUserWithAuthorities(String username) {
+        return MemberDto.from(memberRepository.findOneWithAuthoritiesByLoginId(username).orElse(null));
+    }
+
+    @Transactional(readOnly = true)
+    public MemberDto getMyUserWithAuthorities() {
+        return MemberDto.from(
+                SecurityUtil.getCurrentUsername()
+                        .flatMap(memberRepository::findOneWithAuthoritiesByLoginId)
+                        .orElseThrow(() -> new NotFoundMemberException("Member not found"))
+        );
     }
 }

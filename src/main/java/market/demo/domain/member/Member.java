@@ -1,13 +1,12 @@
 package market.demo.domain.member;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.etc.Wishlist;
 import market.demo.domain.inquiry.Inquiry;
 import market.demo.domain.item.Review;
+import market.demo.domain.member.jwt.Authority;
 import market.demo.domain.order.Cart;
 import market.demo.domain.order.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,11 +14,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
 @Setter
 @Slf4j
+@Builder
+@AllArgsConstructor
 public class Member {
 
     @Id
@@ -42,6 +44,13 @@ public class Member {
     private String provider;
     private String providerId;
     //Set<Role> roles;
+
+    @ManyToMany
+    @JoinTable(
+            name = "member_authority",
+            joinColumns = {@JoinColumn(name = "member_id", referencedColumnName = "member_id")},
+            inverseJoinColumns = {@JoinColumn(name = "authority_name", referencedColumnName = "authority_name")})
+    private Set<Authority> authorities;
 
     //sns 연동
 

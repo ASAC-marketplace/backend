@@ -4,6 +4,8 @@ import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import market.demo.domain.member.Member;
+import market.demo.domain.member.jwt.Authority;
 import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
 import org.springframework.stereotype.Component;
@@ -23,6 +25,7 @@ public class ItemTestDataCreator {
     @PostConstruct
     public void init() {
         initService.createTestData(100);
+        initService.createMembersAndAuthorities();
     }
 
     @Component
@@ -30,6 +33,14 @@ public class ItemTestDataCreator {
 
         @PersistenceContext
         private EntityManager em;
+
+        @Transactional
+        public void createMembersAndAuthorities() {
+            Authority roleUser = new Authority("ROLE_USER");
+            Authority roleAdmin = new Authority("ROLE_ADMIN");
+            em.persist(roleUser);
+            em.persist(roleAdmin);
+        }
 
         @Transactional
         public void createTestData(int numberOfItems) {
@@ -69,6 +80,8 @@ public class ItemTestDataCreator {
                 }
             }
         }
+
+
 
         private LocalDate createRandomDate(int startYear, int endYear) {
             long minDay = LocalDate.of(startYear, 1, 1).toEpochDay();
