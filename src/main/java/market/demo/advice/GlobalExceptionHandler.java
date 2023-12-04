@@ -1,9 +1,6 @@
 package market.demo.advice;
 
-import market.demo.exception.InvalidEmailException;
-import market.demo.exception.InvalidPasswordException;
-import market.demo.exception.ItemNotFoundException;
-import market.demo.exception.MemberNotFoundException;
+import market.demo.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -39,6 +36,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ItemNotFoundException.class)
     public ResponseEntity<String> handleItemNotFoundException(ItemNotFoundException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ReviewNotFoundException.class)
+    public ResponseEntity<String> handleReviewNotFoundException(ReviewNotFoundException exception) {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
     }
 }

@@ -12,7 +12,4 @@ import java.util.List;
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findAllByItem(Item item);
 
-//    @Query("SELECT r FROM Review r WHERE r.item = :item")
-//    List<Review> findAllByItem(Item item);
-//
 }

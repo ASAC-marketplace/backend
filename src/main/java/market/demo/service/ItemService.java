@@ -9,6 +9,7 @@ import market.demo.dto.itemdetailinfo.ItemDetailDto;
 import market.demo.dto.itemdetailinfo.ItemReviewsDto;
 import market.demo.dto.itemdetailinfo.ReviewDto;
 import market.demo.exception.ItemNotFoundException;
+import market.demo.exception.ReviewNotFoundException;
 import market.demo.repository.ItemDetailRepository;
 import market.demo.repository.ItemRepository;
 import market.demo.repository.ReviewRepository;
@@ -98,5 +99,25 @@ public class ItemService {
         reviewDto.setReviewWriteDate(review.getReviewWriteDate());
         reviewDto.setImageUrls(review.getImageUrls());
         return reviewDto;
+    }
+
+    public void helpfulItemReview(Long itemId, Long reviewId) {
+        Optional<Review> optionalReview = reviewRepository.findById(reviewId);
+
+        if(optionalReview.isEmpty()) throw new ReviewNotFoundException("리뷰를 찾을 수 없습니다.");
+        Review review = optionalReview.get();
+        review.setHelpful(review.getHelpful() + 1);
+
+        reviewRepository.save(review);
+    }
+
+    public void helplessItemReview(Long itemId, Long reviewId) {
+        Optional<Review> optionalReview = reviewRepository.findById(reviewId);
+
+        if(optionalReview.isEmpty()) throw new ReviewNotFoundException("리뷰를 찾을 수 없습니다.");
+        Review review = optionalReview.get();
+        review.setHelpful(review.getHelpful() - 1 );
+
+        reviewRepository.save(review);
     }
 }
