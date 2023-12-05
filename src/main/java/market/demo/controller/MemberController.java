@@ -66,6 +66,7 @@ public class MemberController {
     }
     //
 
+    //비밀번호 찾기
     @PostMapping("/verify-credentials")
     public ResponseEntity<String> verifyCredentialsInRecoveryPassword(@RequestBody RecoveryPasswordRequestDto request) {
         boolean exists = memberService.isMemberExists(request.getLoginId(), request.getEmail());
@@ -76,14 +77,12 @@ public class MemberController {
         }
     }
 
-
-
-    //36 비밀번호 찾기..
     @PostMapping("/change-password")
     public ResponseEntity<String> changePassword(@RequestBody PasswordChangeDto passwordChangeDto) {
         memberService.changePassword(passwordChangeDto);
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
     }
+    //
 
     //26 api 회원 비밀번호 확인
     @PostMapping("/recheck-password")
@@ -119,7 +118,6 @@ public class MemberController {
         memberService.updateSocialInfo(customUser.getEmail(), customUser.getProvider(), customUser.getProviderId());
         return ResponseEntity.ok().body("비밀번호 검증 및 소셜 로그인 정보 업데이트 성공");
     }
-
 
     @PostMapping("/socialRegister")
     public ResponseEntity<String> registerMember(@AuthenticationPrincipal CustomOAuth2User customUser,

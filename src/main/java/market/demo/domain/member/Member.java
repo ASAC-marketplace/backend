@@ -76,6 +76,7 @@ public class Member {
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
     private Wishlist wishlist;
 
+
     @Builder
     public static Member createMemberWithLoginId(String loginId, String memberName, String email, String password, String phoneNumber) {
         Member member = new Member();
@@ -133,5 +134,19 @@ public class Member {
     public void updateSocialLoginInfo(String provider, String providerId) {
         this.provider = provider;
         this.providerId = providerId;
+    }
+
+    public void setAuthorities(Set<Authority> authorities) {
+        this.authorities = authorities;
+    }
+
+    // 테스트 데이터
+    public Member(String memberName, String loginId, String email, String password,String phoneNumber, Address address) {
+        this.memberName = memberName;
+        this.loginId = loginId;
+        this.email = email;
+        this.password = password;
+        this.phoneNumber = phoneNumber;
+        this.address = address;
     }
 }

@@ -24,6 +24,17 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import market.demo.domain.item.QItem;
+import market.demo.domain.item.QItemDetail;
+import market.demo.domain.item.QReview;
+import market.demo.domain.type.PromotionType;
+import market.demo.dto.item.ItemDto;
+import market.demo.dto.item.ItemMainEndDto;
+import market.demo.dto.item.QItemDto;
+import market.demo.dto.item.QItemMainEndDto;
+import org.springframework.transaction.annotation.Transactional;
+=======
 
 @Service
 @Transactional
@@ -78,7 +89,7 @@ public class ItemService {
         itemDetailDto.setStockQuantity(item.getStockQuantity());
         itemDetailDto.setDeliveryMethod(itemDetail.getDeliveryMethod());
         itemDetailDto.setSellerInfo(itemDetail.getSellerInfo());
-        itemDetailDto.setItemInfo(itemDetail.getProductInfo());
+        itemDetailDto.setItemInfo(itemDetail.getItemInfo());
         itemDetailDto.setPackagingType(itemDetail.getPackagingType());
         itemDetailDto.setNotes(itemDetail.getNotes());
         itemDetailDto.setLikeCount(itemDetail.getLikeCount());
@@ -197,8 +208,8 @@ public class ItemService {
                         item.id,
                         item.name,
                         item.discountRate,
-                        item.price.subtract(item.price.multiply(item.discountRate).divide(100)),
-                        item.price,
+                        item.itemPrice.subtract(item.itemPrice.multiply(item.discountRate).divide(100)),
+                        item.itemPrice,
                         itemDetail.promotionImageUrl,
                         review.count()
                 ))
@@ -206,7 +217,7 @@ public class ItemService {
                 .leftJoin(item.itemDetail, itemDetail)
                 .leftJoin(item.reviews, review)
                 .where(item.promotionType.eq(promotionType))
-                .groupBy(item.id, item.name, item.discountRate, item.price, itemDetail.promotionImageUrl)
+                .groupBy(item.id, item.name, item.discountRate, item.itemPrice, itemDetail.promotionImageUrl)
                 .orderBy(item.registerdDate.desc())
                 .offset((page - 1) * size)
                 .limit(size)

@@ -4,8 +4,6 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,6 +28,7 @@ public class TokenProvider implements InitializingBean {
     private final long tokenValidityInMilliseconds;
     private Key key;
 
+    // 생성자를 통해 JWT 비밀키와 토큰 유효시간을 주입받음
     public TokenProvider(
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds) {
@@ -37,13 +36,16 @@ public class TokenProvider implements InitializingBean {
         this.tokenValidityInMilliseconds = tokenValidityInSeconds * 1000;
     }
 
+    // 빈 초기화 시 비밀키로부터 Key 인스턴스를 생성
     @Override
     public void afterPropertiesSet() {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
+    // 인증 정보를 기반으로 JWT 생성
     public String createToken(Authentication authentication) {
+        // 인증된 사용자의 권한 정보를 문자열로 변환
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
@@ -51,6 +53,8 @@ public class TokenProvider implements InitializingBean {
         long now = (new Date()).getTime();
         Date validity = new Date(now + this.tokenValidityInMilliseconds);
 
+
+        // JWT 토큰 생성 및 반환
         return Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim(AUTHORITIES_KEY, authorities)
@@ -59,7 +63,9 @@ public class TokenProvider implements InitializingBean {
                 .compact();
     }
 
+    // JWT로부터 인증 정보를 추출
     public Authentication getAuthentication(String token) {
+        // 토큰 검증 및 클레임 추출
         Claims claims = Jwts
                 .parserBuilder()
                 .setSigningKey(key)
@@ -67,18 +73,21 @@ public class TokenProvider implements InitializingBean {
                 .parseClaimsJws(token)
                 .getBody();
 
+        // 클레임으로부터 권한 정보 추출
         Collection<? extends GrantedAuthority> authorities =
                 Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 
+        // 사용자 인증 정보 생성 및 반환
         User principal = new User(claims.getSubject(), "", authorities);
-
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
 
+    // 토큰의 유효성 검증
     public boolean validateToken(String token) {
         try {
+            // 토큰 파싱 및 유효성 검증
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
