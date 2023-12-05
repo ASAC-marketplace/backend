@@ -81,10 +81,7 @@ public class MemberController {
     //36 비밀번호 찾기..
     @PostMapping("/change-password")
     public ResponseEntity<String> changePassword(@RequestBody PasswordChangeDto passwordChangeDto) {
-        boolean isPasswordChanged = memberService.changePassword(passwordChangeDto);
-        if (!isPasswordChanged) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자를 찾을 수 없습니다.");
-        }
+        memberService.changePassword(passwordChangeDto);
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
     }
 

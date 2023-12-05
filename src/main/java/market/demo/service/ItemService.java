@@ -1,12 +1,17 @@
 package market.demo.service;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import market.demo.domain.item.Item;
-import market.demo.domain.item.ItemDetail;
-import market.demo.domain.item.Review;
+import market.demo.domain.item.*;
 import market.demo.domain.member.Coupon;
 import market.demo.domain.member.Member;
+import market.demo.domain.type.PromotionType;
+import market.demo.dto.item.ItemDto;
+import market.demo.dto.item.ItemMainEndDto;
+import market.demo.dto.item.QItemDto;
+import market.demo.dto.item.QItemMainEndDto;
 import market.demo.dto.itemdetailinfo.CouponDto;
 import market.demo.dto.itemdetailinfo.ItemDetailDto;
 import market.demo.dto.itemdetailinfo.ItemReviewsDto;
@@ -15,23 +20,10 @@ import market.demo.exception.*;
 import market.demo.repository.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import market.demo.domain.item.QItem;
-import market.demo.domain.item.QItemDetail;
-import market.demo.domain.item.QReview;
-import market.demo.domain.type.PromotionType;
-import market.demo.dto.item.ItemDto;
-import market.demo.dto.item.ItemMainEndDto;
-import market.demo.dto.item.QItemDto;
-import market.demo.dto.item.QItemMainEndDto;
-import market.demo.repository.ItemReposistory;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @Transactional
@@ -44,34 +36,32 @@ public class ItemService {
     private final CouponRepository couponRepository;
     private final MemberRepository memberRepository;
     private final JPAQueryFactory queryFactory;
-
-
+    private static final String DISCOUNT_COUPON_NAME = "할인쿠폰";
     public ItemDetailDto searchItemDetail(Long itemId){
-        Optional<Item> optionalItem = itemRepository.findById(itemId);
-        if(optionalItem.isEmpty()) throw new ItemNotFoundException("상품을 찾을 수 없습니다.");
-        Item item = optionalItem.get();
+        Item item = itemRepository.findById(itemId).
+                orElseThrow(()-> new ItemNotFoundException("상품을 찾을 수 없습니다."));
+        ItemDetail itemDetail = itemDetailRepository.findByItem(item)
+                .orElseThrow(() -> new ItemNotFoundException("사용자를 찾을 수 없습니다."));
 
-        ItemDetail itemDetail = itemDetailRepository.findByItem(item);
-        if(itemDetail == null) throw new ItemNotFoundException("사용자를 찾을 수 없습니다.");
-
-        String couponName = "할인쿠폰";
-        Optional<Coupon> optionalCoupon = couponRepository.findByCouponName(couponName);
-        CouponDto couponDto = new CouponDto();
-        if (optionalCoupon.isEmpty()) {
-            System.out.println("none");
-            return getItemDetailDto(item, itemDetail, couponDto);
-        }
-        System.out.println("in");
-        Coupon coupon = optionalCoupon.get();
-        couponDto.setCouponId(coupon.getId());
-        couponDto.setCouponName(coupon.getCouponName());
-        couponDto.setDiscountType(coupon.getDiscountType());
-        couponDto.setDiscountValue(coupon.getDiscountValue());
-        couponDto.setValidTo(coupon.getValidTo());
-        couponDto.setValidFrom(coupon.getValidFrom());
-        couponDto.setMinimumOrderPrice(coupon.getMinimumOrderPrice());
-
+        Optional<Coupon> optionalCoupon = couponRepository.findByCouponName(DISCOUNT_COUPON_NAME);
+        CouponDto couponDto = getCouponDto(optionalCoupon);
         return getItemDetailDto(item, itemDetail, couponDto);
+    }
+
+    @NotNull
+    private static CouponDto getCouponDto(Optional<Coupon> optionalCoupon) {
+        CouponDto couponDto = new CouponDto();
+        if (optionalCoupon.isPresent()) {
+            Coupon coupon = optionalCoupon.get();
+            couponDto.setCouponId(coupon.getId());
+            couponDto.setCouponName(coupon.getCouponName());
+            couponDto.setDiscountType(coupon.getDiscountType());
+            couponDto.setDiscountValue(coupon.getDiscountValue());
+            couponDto.setValidTo(coupon.getValidTo());
+            couponDto.setValidFrom(coupon.getValidFrom());
+            couponDto.setMinimumOrderPrice(coupon.getMinimumOrderPrice());
+        }
+        return couponDto;
     }
 
     @NotNull
@@ -79,12 +69,13 @@ public class ItemService {
         ItemDetailDto itemDetailDto = new ItemDetailDto();
 
         itemDetailDto.setItemId(item.getId());
-        itemDetailDto.setItemPrice(item.getItemPrice());
-        itemDetailDto.setSaleItemPrice(item.getItemPrice()* (1 - item.getDiscountRate()));
+        itemDetailDto.setItemPrice(item.getPrice());
+        itemDetailDto.setSaleItemPrice((int) (item.getPrice()* (100 - item.getDiscountRate()) * 0.01));
         itemDetailDto.setItemName(item.getName());
         itemDetailDto.setDiscountRate(item.getDiscountRate());
         itemDetailDto.setDescription(item.getDescription());
         itemDetailDto.setReviewCount((long) item.getReviews().size());
+        itemDetailDto.setStockQuantity(item.getStockQuantity());
         itemDetailDto.setDeliveryMethod(itemDetail.getDeliveryMethod());
         itemDetailDto.setSellerInfo(itemDetail.getSellerInfo());
         itemDetailDto.setItemInfo(itemDetail.getProductInfo());
@@ -94,27 +85,25 @@ public class ItemService {
         itemDetailDto.setDetailImages(itemDetail.getDetailImages());
         itemDetailDto.setAdditionalDescription(itemDetail.getAdditionalDescription());
         itemDetailDto.setCoupon(couponDto);
+
         return itemDetailDto;
     }
 
     public ItemReviewsDto searchItemReview(Long itemId) {
-        Optional<Item> optionalItem = itemRepository.findById(itemId);
-        if(optionalItem.isEmpty()) throw new ItemNotFoundException("사용자를 찾을 수 없습니다.");
-        Item item = optionalItem.get();
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ItemNotFoundException("아이템을 찾을 수 없습니다."));
 
         ItemReviewsDto itemReviewsDto = new ItemReviewsDto();
         //멤버별 리뷰 정보 저장
         List<Review> reviews = reviewRepository.findAllByItem(item);
-        //if(reviews.isEmpty()) throw new RuntimeException("리뷰 정보가 없습니다.");
+        if(reviews.isEmpty()) throw new RuntimeException("리뷰 정보가 없습니다.");
 
         List<ReviewDto> reviewInfos = new ArrayList<>();
         List<String> images = new ArrayList<>();
         
         for(Review review : reviews){
-            System.out.println(review.getId());
             ReviewDto reviewDto = getReviewDto(review);
             images.addAll(review.getImageUrls());
-
             reviewInfos.add(reviewDto);
         }
 
@@ -141,40 +130,29 @@ public class ItemService {
     }
 
     public void helpfulItemReview(Long itemId, Long reviewId) {
-        Optional<Review> optionalReview = reviewRepository.findById(reviewId);
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
-        if(optionalReview.isEmpty()) throw new ReviewNotFoundException("리뷰를 찾을 수 없습니다.");
-        Review review = optionalReview.get();
         review.setHelpful(review.getHelpful() + 1);
-
         reviewRepository.save(review);
     }
 
     public void helplessItemReview(Long itemId, Long reviewId) {
-        Optional<Review> optionalReview = reviewRepository.findById(reviewId);
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
-        if(optionalReview.isEmpty()) throw new ReviewNotFoundException("리뷰를 찾을 수 없습니다.");
-        Review review = optionalReview.get();
         review.setHelpful(review.getHelpful() - 1 );
-
         reviewRepository.save(review);
     }
 
     public void getCoupon(String loginId ,Long couponId) {
-        Optional<Coupon> optionalCoupon = couponRepository.findById(couponId);
+        Coupon coupon = couponRepository.findById(couponId)
+                .orElseThrow(() -> new CouponNotFoundException("쿠폰을 찾을 수 없습니다."));
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new MemberNotFoundException("해당 사용자를 찾을 수 없습니다."));
 
-        if(optionalCoupon.isEmpty()) throw new CouponNotFoundException("쿠폰을 찾을 수 없습니다.");
-        Coupon coupon = optionalCoupon.get();
-
-        Member member = memberRepository.findByLoginId(loginId);
-        if(member == null){
-            throw new MemberNotFoundException("해당 사용자를 찾을 수 없습니다.");
-        }
-
-        Coupon hasCoupon =  couponRepository.findByCouponNameAndIssuedTo(coupon.getCouponName(), member);
-        if(hasCoupon != null){
-            throw new CouponFoundException("해당 쿠폰은 이미 발급 되었습니다.");
-        }
+        Optional<Coupon> hasCoupon =  couponRepository.findByCouponNameAndIssuedTo(coupon.getCouponName(), member);
+        if(hasCoupon.isPresent()) throw new CouponFoundException("해당 쿠폰은 이미 발급 되었습니다.");
 
         Coupon newCoupon = new Coupon();
         newCoupon.setCouponName(coupon.getCouponName());
