@@ -81,8 +81,6 @@ public class ItemTestDataCreator {
             }
         }
 
-
-
         private LocalDate createRandomDate(int startYear, int endYear) {
             long minDay = LocalDate.of(startYear, 1, 1).toEpochDay();
             long maxDay = LocalDate.of(endYear, 1, 1).toEpochDay();
