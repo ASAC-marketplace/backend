@@ -25,7 +25,7 @@ public class ItemDetail {
     private String sellerInfo;
 
     // 상품 정보 (예: 재료, 제조 방법 등)
-    private String productInfo;
+    private String itemInfo;
 
     // 포장 타입
     private String packagingType;
@@ -48,20 +48,22 @@ public class ItemDetail {
     private String additionalDescription;
 
     ///////////////// 테스트 데이터용
-    public ItemDetail(Item item, String deliveryMethod, String sellerInfo, String productInfo, String packagingType, String notes, Integer likeCount, String additionalDescription, List<String> detailImages) {
+    public ItemDetail(Item item, String deliveryMethod, String sellerInfo, String itemInfo, String packagingType, String notes, Integer likeCount, String additionalDescription, List<String> detailImages, String promotionImageUrl) {
         this.item = item;
         this.deliveryMethod = deliveryMethod;
         this.sellerInfo = sellerInfo;
-        this.productInfo = productInfo;
+        this.itemInfo = itemInfo;
         this.packagingType = packagingType;
         this.notes = notes;
         this.likeCount = likeCount;
         this.additionalDescription = additionalDescription;
         this.detailImages.addAll(detailImages);
+        this.promotionImageUrl = promotionImageUrl;
     }
 
     public ItemDetail() {
 
     }
+
     //////////////////
 }

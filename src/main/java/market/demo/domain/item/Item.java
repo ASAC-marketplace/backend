@@ -28,7 +28,7 @@ public class Item {
     private Integer discountRate;
     private LocalDateTime promotionStart;
     private LocalDateTime promotionEnd;
-    private Integer itemPrice;
+//    private Integer itemPrice;
 
 // 상품 상태 관리 (예: NEW, BESTSELLER 등)
     @Enumerated(EnumType.STRING)
@@ -50,7 +50,7 @@ public class Item {
 
     private Integer stockQuantity;
 
-    private Integer price;
+    private Integer itemPrice;
 
     @Enumerated(EnumType.STRING)
     private PromotionType promotionType = PromotionType.NONE; // 기본값으로 'NONE' 설정
@@ -67,7 +67,7 @@ public class Item {
         this.registerdDate = registerdDate;
     }
 
-    public Item(String name, String description, Category category, Integer discountRate, ItemStatus status, Integer stockQuantity, LocalDate registerdDate, PromotionType promotionType, Integer price) {
+    public Item(String name, String description, Category category, Integer discountRate, ItemStatus status, Integer stockQuantity, LocalDate registerdDate, PromotionType promotionType, Integer itemPrice) {
         this.name = name;
         this.description = description;
         this.category = category;
@@ -76,7 +76,7 @@ public class Item {
         this.stockQuantity = stockQuantity;
         this.registerdDate = registerdDate;
         this.promotionType = promotionType;
-        this.price = price;
+        this.itemPrice = itemPrice;
     }
     public Item() {
 
