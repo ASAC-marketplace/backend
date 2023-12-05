@@ -73,33 +73,35 @@ public class MemberService {
 //        // SMS 서비스를 통한 인증번호 발송 로직
 //    }
 
-    public boolean changePassword(PasswordChangeDto passwordChangeDto) {
+    public void changePassword(PasswordChangeDto passwordChangeDto) {
         if (!passwordChangeDto.getNewPassword().equals(passwordChangeDto.getConfirmPassword())) {
             throw new IllegalArgumentException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
         }
 
-        Member member = memberRepository.findByLoginId(passwordChangeDto.getLoginId());
-        if (member == null) {
-            return false;
-        }
+//        Member member = memberRepository.findByLoginId(passwordChangeDto.getLoginId());
+//        if (member == null) {
+//            return false;
+//        }
+
+        Member member = memberRepository.findByLoginId(passwordChangeDto.getLoginId())
+                .orElseThrow(()-> new MemberNotFoundException("사용자를 찾을 수 없습니다"));
 
         String encodedPassword = passwordEncoder.encode(passwordChangeDto.getNewPassword());
         member.updatePassword(encodedPassword, passwordEncoder);
         memberRepository.save(member);
-        return true;
     }
 
 
     public void checkPassword(String loginId, String password){
-        Member member = memberRepository.findByLoginId(loginId);
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다"));
 
-        if(!member.getPassword().equals(password)){
-            throw new InvalidPasswordException("비밀번호가 맞지 않습니다.");
-        }
+        if(!member.getPassword().equals(password)) throw new InvalidPasswordException("비밀번호가 맞지 않습니다.");
     }
 
     public MemberInfoDto getMemberinfo(String loginId) {
-        Member member = memberRepository.findByLoginId(loginId);
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다"));
 
         MemberInfoDto memberInfoDto = new MemberInfoDto();
         BeanUtils.copyProperties(member, memberInfoDto);
@@ -108,16 +110,11 @@ public class MemberService {
     }
 
     public void modifymember(String loginId, ModifyMemberInfoDto modifyMemberInfoDto) {
-        Member member = memberRepository.findByLoginId(loginId);
-
-        if (member == null) {
-            throw new EntityNotFoundException("회원 정보를 찾을 수 없습니다.");
-        }
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다"));
 
         // 비밀번호 확인 로직
-        if (!member.getPassword().equals(modifyMemberInfoDto.getPassword())) {
-            throw new InvalidPasswordException("비밀번호가 맞지 않습니다.");
-        }
+        if (!member.getPassword().equals(modifyMemberInfoDto.getPassword())) throw new InvalidPasswordException("비밀번호가 맞지 않습니다.");
 
         //새 비밀번호 확인
         if(!modifyMemberInfoDto.getNewPassword().equals(modifyMemberInfoDto.getNewPasswordCheck())){
@@ -125,9 +122,9 @@ public class MemberService {
         }
 
         //회원 정보 수정
-        if(modifyMemberInfoDto.getNewPassword().isEmpty()){
-            member.setPassword(modifyMemberInfoDto.getPassword());
-        }else member.setPassword(modifyMemberInfoDto.getNewPassword());
+        if(modifyMemberInfoDto.getNewPassword().isEmpty()) member.setPassword(modifyMemberInfoDto.getPassword());
+        else member.setPassword(modifyMemberInfoDto.getNewPassword());
+
         member.setLoginId(modifyMemberInfoDto.getLoginId());
         member.setEmail(modifyMemberInfoDto.getEmail());
         member.setPhoneNumber(modifyMemberInfoDto.getPhoneNumber());

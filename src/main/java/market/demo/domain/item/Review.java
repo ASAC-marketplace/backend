@@ -48,5 +48,9 @@ public class Review {
         this.helpful = helpful;
         this.imageUrls.addAll(imageUrls);
     }
+
+    public Review() {
+
+    }
     ///////////////
 }

@@ -63,5 +63,6 @@ public class ItemDetail {
     public ItemDetail() {
 
     }
+
     //////////////////
 }

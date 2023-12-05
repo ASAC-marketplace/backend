@@ -15,6 +15,7 @@ public class ItemDetailDto {
     private Integer discountRate;
     private String description;
     private Long reviewCount;
+    private Integer stockQuantity;//재고
     //detail
     private String deliveryMethod;// 배송 방식
     private String SellerInfo;// 판매자 정보 (예: 이름, 연락처 등)
