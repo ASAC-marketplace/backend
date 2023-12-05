@@ -42,13 +42,18 @@ public class Review {
     private List<String> imageUrls = new ArrayList<>();
 
     //////////////// 테스트 데이터용
-    public Review(Item item, String comment, int rating, Integer helpful, List<String> imageUrls, LocalDateTime reviewWriteDate) {
+    public Review(Member member, Item item, String comment, int rating, Integer helpful, List<String> imageUrls, LocalDateTime reviewWriteDate) {
+        this.member = member;
         this.item = item;
         this.comment = comment;
         this.rating = rating;
         this.helpful = helpful;
         this.imageUrls.addAll(imageUrls);
         this.reviewWriteDate = reviewWriteDate;
+    }
+
+    public Review() {
+
     }
     ///////////////
 }

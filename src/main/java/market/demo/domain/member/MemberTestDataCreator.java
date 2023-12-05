@@ -1,6 +1,5 @@
 package market.demo.domain.member;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -19,7 +18,6 @@ public class MemberTestDataCreator {
         this.initMemberService = initMemberService;
     }
 
-    @PostConstruct
     public void init() {
         initMemberService.createMembersAndAuthorities();
         initMemberService.createTestMembers(50);

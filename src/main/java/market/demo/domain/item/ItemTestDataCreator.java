@@ -23,7 +23,6 @@ public class ItemTestDataCreator {
         this.initService = initService;
     }
 
-    @PostConstruct
     public void init() {
         initService.createTestData(100);
 //        initService.createMembersAndAuthorities();
@@ -100,7 +99,14 @@ public class ItemTestDataCreator {
             int reviewCount = ThreadLocalRandom.current().nextInt(1, maxReviewCount + 1);
 
             for (int i = 0; i < reviewCount; i++) {
-                Review review = new Review(item, getRandomReviewComment(),
+                // 랜덤 멤버 ID 생성 (1부터 50까지)
+                long memberId = ThreadLocalRandom.current().nextLong(1, 51);
+
+                // 멤버 엔티티 조회 (엔티티 매니저를 사용하여 ID에 해당하는 멤버 조회)
+                Member member = em.find(Member.class, memberId);
+
+                // 리뷰 생성 시 멤버 객체를 할당
+                Review review = new Review(member, item, getRandomReviewComment(),
                         (int) (Math.random() * 5) + 1,
                         (int) (Math.random() * 100),
                         Arrays.asList("Review Image URL " + i),
