@@ -79,12 +79,13 @@ public class ItemTestDataCreator {
             Integer discountRate = getRandomDiscountRate(0, 20);
             PromotionType promotionType = getRandomPromotionType();
             LocalDate date = createRandomDate(2021, 2023);
+            String brand = getRandomBrandName();
 
             Item item = new Item(name, "Description for " + name, category,
                     discountRate, ItemStatus.NEW,
                     (int) (Math.random() * 100), date, promotionType, price);
 
-            ItemDetail itemDetail = new ItemDetail(item, getRandomDeliveryMethod(),
+            ItemDetail itemDetail = new ItemDetail(item, getRandomDeliveryMethod(), brand,
                     name + "을 위한 판매자 정보", getRandomProductInfo(),
                     getRandomPackagingType(), name + "을 위한 주의 사항",
                     (int) (Math.random() * 100), getRandomAdditionalDescription(),
@@ -207,6 +208,11 @@ public class ItemTestDataCreator {
                     "해당 카테고리에서 베스트셀러"
             };
             return descriptions[ThreadLocalRandom.current().nextInt(descriptions.length)];
+        }
+
+        private String getRandomBrandName() {
+            String[] brandNames = {"삼성", "애플", "구글", "아마존", "나이키", "아디다스", "LG", "소니", "샤오미"};
+            return brandNames[ThreadLocalRandom.current().nextInt(brandNames.length)];
         }
     }
 }

@@ -24,17 +24,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import market.demo.domain.item.QItem;
 import market.demo.domain.item.QItemDetail;
 import market.demo.domain.item.QReview;
-import market.demo.domain.type.PromotionType;
-import market.demo.dto.item.ItemDto;
-import market.demo.dto.item.ItemMainEndDto;
-import market.demo.dto.item.QItemDto;
-import market.demo.dto.item.QItemMainEndDto;
-import org.springframework.transaction.annotation.Transactional;
-=======
 
 @Service
 @Transactional
@@ -80,8 +72,8 @@ public class ItemService {
         ItemDetailDto itemDetailDto = new ItemDetailDto();
 
         itemDetailDto.setItemId(item.getId());
-        itemDetailDto.setItemPrice(item.getPrice());
-        itemDetailDto.setSaleItemPrice((int) (item.getPrice()* (100 - item.getDiscountRate()) * 0.01));
+        itemDetailDto.setItemPrice(item.getItemPrice());
+        itemDetailDto.setSaleItemPrice((int) (item.getItemPrice()* (100 - item.getDiscountRate()) * 0.01));
         itemDetailDto.setItemName(item.getName());
         itemDetailDto.setDiscountRate(item.getDiscountRate());
         itemDetailDto.setDescription(item.getDescription());
