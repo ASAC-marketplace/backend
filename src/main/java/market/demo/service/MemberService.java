@@ -19,10 +19,13 @@ import market.demo.exception.NotFoundMemberException;
 import market.demo.repository.MemberRepository;
 import market.demo.service.jwt.SecurityUtil;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Collections;
 
@@ -69,33 +72,22 @@ public class MemberService {
         return memberRepository.existsByLoginIdAndEmail(loginId, email);
     }
 
-//    // 인증번호 발송 로직 (실제 구현 필요)
-//    public void sendVerificationCode(String phoneNumber) {
-//        // SMS 서비스를 통한 인증번호 발송 로직
-//    }
-
-    public void changePassword(PasswordChangeDto passwordChangeDto) {
     public boolean changeId(IdChangeDto idChangeDto) {
         if (!idChangeDto.getNewId().equals(idChangeDto.getConfirmId())) {
             throw new IllegalArgumentException("아이디가 일치하지 않습니다.");
         }
 
-        Member member = memberRepository.findByLoginId((idChangeDto.getLoginId()));
+        Member member = memberRepository.findByLoginId((idChangeDto.getLoginId())).get();
         if (member == null) {
             return false;
         }
         return true;
     }
 
-    public boolean changePassword(PasswordChangeDto passwordChangeDto) {
+    public void changePassword(PasswordChangeDto passwordChangeDto) {
         if (!passwordChangeDto.getNewPassword().equals(passwordChangeDto.getConfirmPassword())) {
             throw new IllegalArgumentException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
         }
-
-//        Member member = memberRepository.findByLoginId(passwordChangeDto.getLoginId());
-//        if (member == null) {
-//            return false;
-//        }
 
         Member member = memberRepository.findByLoginId(passwordChangeDto.getLoginId())
                 .orElseThrow(()-> new MemberNotFoundException("사용자를 찾을 수 없습니다"));
