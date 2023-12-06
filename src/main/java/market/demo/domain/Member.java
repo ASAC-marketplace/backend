@@ -3,6 +3,12 @@ package market.demo.domain;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import market.demo.domain.inquiry.Inquiry;
+import market.demo.domain.item.Review;
+import market.demo.domain.member.Address;
+import market.demo.domain.member.Coupon;
+import market.demo.domain.order.Cart;
+import market.demo.domain.order.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
