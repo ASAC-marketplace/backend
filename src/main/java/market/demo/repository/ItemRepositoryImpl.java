@@ -2,6 +2,7 @@ package market.demo.repository;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 import static market.demo.domain.item.QCategory.category;
 import static market.demo.domain.item.QItem.item;
+import static market.demo.domain.item.QItemDetail.itemDetail;
 import static org.springframework.util.StringUtils.hasText;
 
 public class ItemRepositoryImpl implements ItemRepositoryCustom {
@@ -33,6 +35,10 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
 
     @Override
     public ItemSearchResponse searchPageComplex(ItemSearchCondition condition, Pageable pageable) {
+        NumberExpression<Integer> discountedPrice = item.itemPrice
+                .multiply(item.discountRate.multiply(-1).add(100))
+                .divide(100);
+
         List<ItemSearchDto> content = queryFactory
                 .select(new QItemSearchDto(
                         item.id,
@@ -42,11 +48,15 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                         item.status,
                         item.promotionType,
                         item.stockQuantity,
+                        item.itemDetail.brand,
                         item.registerdDate,
                         item.discountRate,
-                        item.itemPrice))
+                        item.itemPrice,
+                        item.itemDetail.promotionImageUrl,
+                        discountedPrice))
                 .from(item)
                 .leftJoin(item.category, category)
+                .leftJoin(item.itemDetail, itemDetail)
                 .where(
                         nameEq(condition.getName()),
                         categoryIdEq(condition.getCategoryId()),
@@ -116,6 +126,10 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
             return null;
         }
     }
+
+    NumberExpression<Integer> discountRateExpression = item.discountRate.multiply(-1).add(100);
+
+    NumberExpression<Integer> discountedPrice = item.itemPrice.multiply(discountRateExpression).divide(100);
 
     private BooleanExpression itemPriceBetween(Integer minPrice, Integer maxPrice) {
         if (minPrice != null && maxPrice != null) {
