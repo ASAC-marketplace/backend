@@ -83,9 +83,9 @@ public class ItemTestDataCreator {
 
             Item item = new Item(name, "Description for " + name, category,
                     discountRate, ItemStatus.NEW,
-                    (int) (Math.random() * 100), date, promotionType, price);
+                    (int) (Math.random() * 100), date, promotionType, price, brand);
 
-            ItemDetail itemDetail = new ItemDetail(item, getRandomDeliveryMethod(), brand,
+            ItemDetail itemDetail = new ItemDetail(item, getRandomDeliveryMethod(),
                     name + "을 위한 판매자 정보", getRandomProductInfo(),
                     getRandomPackagingType(), name + "을 위한 주의 사항",
                     (int) (Math.random() * 100), getRandomAdditionalDescription(),
