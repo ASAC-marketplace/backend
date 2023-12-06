@@ -2,6 +2,7 @@ package market.demo.domain.etc;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import market.demo.domain.item.Item;
 import market.demo.domain.member.Member;
 
@@ -10,6 +11,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@Setter
 public class Wishlist {
 
     @Id

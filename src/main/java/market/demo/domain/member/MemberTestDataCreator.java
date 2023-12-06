@@ -59,7 +59,7 @@ public class MemberTestDataCreator {
             String email = name.toLowerCase().replace(" ", "") + "@example.com";
             String loginId = "user" + ThreadLocalRandom.current().nextInt(1000, 9999);
             String password = "test1234"; // 모든 테스트 사용자에게 동일한 비밀번호 사용
-            return new Member(name, email, password, loginId, getRandomPhoneNumber(), getRandomAddress());
+            return new Member(name, loginId, email, password, getRandomPhoneNumber(), getRandomAddress());
         }
 
 

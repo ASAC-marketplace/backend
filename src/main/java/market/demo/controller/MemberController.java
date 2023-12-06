@@ -5,9 +5,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.member.jwt.JwtFilter;
 import market.demo.domain.member.jwt.TokenProvider;
+import market.demo.dto.itemdetailinfo.CouponDto;
+import market.demo.dto.itemdetailinfo.WishDto;
 import market.demo.dto.jwt.LoginDto;
 import market.demo.dto.jwt.TokenDto;
 import market.demo.dto.jwt.MemberDto;
+import market.demo.dto.mypage.MyPageDto;
 import market.demo.dto.social.CustomOAuth2User;
 import market.demo.dto.MemberDeletionRequest;
 import market.demo.dto.changememberinfo.CheckMemberInfoDto;
@@ -28,6 +31,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/members")
@@ -144,6 +149,21 @@ public class MemberController {
 
         return new ResponseEntity<>(new TokenDto(jwt), httpHeaders, HttpStatus.OK);
     }
-    //
+
+    //23 마이페이지
+    @GetMapping("/mypage")
+    public ResponseEntity<MyPageDto> userPage(@RequestParam String loginId){
+        return ResponseEntity.ok(memberService.getUserPageInfo(loginId));
+    }
+
+    @GetMapping("/mypage/coupons")
+    public ResponseEntity<List<CouponDto>> userCoupon(@RequestParam String loginId){
+        return ResponseEntity.ok(memberService.getUserCoupons(loginId));
+    }
+
+    @GetMapping("/mypage/wishlist")
+    public ResponseEntity<List<WishDto>> userWishList(@RequestParam String loginId){
+        return ResponseEntity.ok(memberService.getUserWishList(loginId));
+    }
 }
 
