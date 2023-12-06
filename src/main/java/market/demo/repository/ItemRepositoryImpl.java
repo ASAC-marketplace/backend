@@ -17,9 +17,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 
 import java.time.LocalDate;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static market.demo.domain.item.QCategory.category;
 import static market.demo.domain.item.QItem.item;
@@ -39,6 +42,9 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                 .multiply(item.discountRate.multiply(-1).add(100))
                 .divide(100);
 
+        Tuple priceRangeTuple = findPriceRange(condition);
+        List<String> priceRanges = createPriceRanges(priceRangeTuple);
+
         List<ItemSearchDto> content = queryFactory
                 .select(new QItemSearchDto(
                         item.id,
@@ -48,7 +54,7 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                         item.status,
                         item.promotionType,
                         item.stockQuantity,
-                        item.itemDetail.brand,
+                        item.brand,
                         item.registerdDate,
                         item.discountRate,
                         item.itemPrice,
@@ -70,9 +76,9 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-       JPAQuery<Long> countQuery = queryFactory
+        JPAQuery<Long> countQuery = queryFactory
                 .select(item.count())
-               .from(item)
+                .from(item)
                 .leftJoin(item.category, category)
                 .where(
                         nameEq(condition.getName()),
@@ -85,10 +91,13 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                         itemPriceBetween(condition.getMinPrice(), condition.getMaxPrice())
                 );
 
-       Page<ItemSearchDto> page = PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
-       Map<String, Long> categoryCountsMap = getCategoryCounts(condition);
+        Page<ItemSearchDto> page = PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+        Map<String, Long> categoryCountsMap = getCategoryCounts(condition);
+        Map<String, Long> getBrandCountsMap = getBrandCounts(condition);
+        Map<PromotionType, Long> getPromotionCountMap = getPromotionTypeCounts(condition);
 
-       return new ItemSearchResponse(page, categoryCountsMap);
+
+        return new ItemSearchResponse(page, categoryCountsMap, getBrandCountsMap , getPromotionCountMap, priceRanges);
     }
 
     private BooleanExpression nameEq(String name) {
@@ -157,5 +166,58 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                         tuple -> tuple.get(category.name),
                         tuple -> tuple.get(item.count())
                 ));
+    }
+
+    private Map<String, Long> getBrandCounts(ItemSearchCondition condition) {
+        List<Tuple> brandCounts = queryFactory
+                .select(item.brand, item.count())
+                .from(item)
+                .groupBy(item.brand)
+                .fetch();
+
+        return brandCounts.stream()
+                .collect(Collectors.toMap(
+                        tuple -> tuple.get(item.brand),
+                        tuple -> tuple.get(item.count()),
+                        Long::sum // 중복된 키에 대해 값을 합산
+                ));
+    }
+
+    private Map<PromotionType, Long> getPromotionTypeCounts(ItemSearchCondition condition) {
+        List<Tuple> promotionTypeCounts = queryFactory
+                .select(item.promotionType, item.count())
+                .from(item)
+                .groupBy(item.promotionType)
+                .fetch();
+
+        return promotionTypeCounts.stream()
+                .collect(Collectors.toMap(
+                        tuple -> tuple.get(item.promotionType),
+                        tuple -> tuple.get(item.count())
+                ));
+    }
+
+    private Tuple findPriceRange(ItemSearchCondition condition) {
+        return queryFactory
+                .select(item.itemPrice.min(), item.itemPrice.max())
+                .from(item)
+                .where(
+                        nameEq(condition.getName())
+                )
+                .fetchOne();
+    }
+
+    private List<String> createPriceRanges(Tuple priceRange) {
+        Integer minPrice = priceRange.get(item.itemPrice.min());
+        Integer maxPrice = priceRange.get(item.itemPrice.max());
+        int rangeSize = (maxPrice - minPrice) / 5;
+
+        List<String> priceRanges = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            int start = minPrice + i * rangeSize;
+            int end = (i < 4) ? start + rangeSize - 1 : maxPrice;
+            priceRanges.add(String.format("%d ~ %d", start, end));
+        }
+        return priceRanges;
     }
 }
