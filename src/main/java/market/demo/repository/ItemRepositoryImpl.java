@@ -1,5 +1,6 @@
 package market.demo.repository;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -9,6 +10,7 @@ import market.demo.domain.search.ItemSearchCondition;
 import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
 import market.demo.dto.search.ItemSearchDto;
+import market.demo.dto.search.ItemSearchResponse;
 import market.demo.dto.search.QItemSearchDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +18,8 @@ import org.springframework.data.support.PageableExecutionUtils;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static market.demo.domain.item.QCategory.category;
 import static market.demo.domain.item.QItem.item;
@@ -30,7 +34,7 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
     }
 
     @Override
-    public Page<ItemSearchDto> searchPageComplex(ItemSearchCondition condition, Pageable pageable) {
+    public ItemSearchResponse searchPageComplex(ItemSearchCondition condition, Pageable pageable) {
         NumberExpression<Integer> discountedPrice = item.itemPrice
                 .multiply(item.discountRate.multiply(-1).add(100))
                 .divide(100);
@@ -80,7 +84,11 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                         discountRateBetween(condition.getMinDiscountRate(), condition.getMaxDiscountRate()),
                         itemPriceBetween(condition.getMinPrice(), condition.getMaxPrice())
                 );
-       return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+
+       Page<ItemSearchDto> page = PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+       Map<String, Long> categoryCountsMap = getCategoryCounts(condition);
+
+       return new ItemSearchResponse(page, categoryCountsMap);
     }
 
     private BooleanExpression nameEq(String name) {
@@ -133,5 +141,21 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
         } else {
             return null;
         }
+    }
+
+    private Map<String, Long> getCategoryCounts(ItemSearchCondition condition) {
+        List<Tuple> categoryCounts = queryFactory
+                .select(category.name, item.count())
+                .from(item)
+                .leftJoin(item.category, category)
+                .where(category.parent.isNotNull()) //소분류만
+                .groupBy(category.name)
+                .fetch();
+
+        return categoryCounts.stream()
+                .collect(Collectors.toMap(
+                        tuple -> tuple.get(category.name),
+                        tuple -> tuple.get(item.count())
+                ));
     }
 }

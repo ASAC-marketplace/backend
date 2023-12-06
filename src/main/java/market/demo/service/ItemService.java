@@ -103,7 +103,7 @@ public class ItemService {
 
         List<ReviewDto> reviewInfos = new ArrayList<>();
         List<String> images = new ArrayList<>();
-        
+
         for(Review review : reviews){
             ReviewDto reviewDto = getReviewDto(review);
             images.addAll(review.getImageUrls());
