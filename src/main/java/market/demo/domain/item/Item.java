@@ -53,6 +53,8 @@ public class Item {
 
     private Integer itemPrice;
 
+    private String brand;
+
     @Enumerated(EnumType.STRING)
     private PromotionType promotionType = PromotionType.NONE; // 기본값으로 'NONE' 설정
 
@@ -68,7 +70,7 @@ public class Item {
         this.registerdDate = registerdDate;
     }
 
-    public Item(String name, String description, Category category, Integer discountRate, ItemStatus status, Integer stockQuantity, LocalDate registerdDate, PromotionType promotionType, Integer itemPrice) {
+    public Item(String name, String description, Category category, Integer discountRate, ItemStatus status, Integer stockQuantity, LocalDate registerdDate, PromotionType promotionType, Integer itemPrice, String brand) {
         this.name = name;
         this.description = description;
         this.category = category;
@@ -78,6 +80,7 @@ public class Item {
         this.registerdDate = registerdDate;
         this.promotionType = promotionType;
         this.itemPrice = itemPrice;
+        this.brand = brand;
     }
     public Item() {
 

@@ -37,9 +37,6 @@ public class ItemDetail {
     // 좋아요 수
     private Integer likeCount;
 
-    // 브랜드
-    private String brand;
-
     // 상품 상세 이미지 URL 리스트
     @ElementCollection
     @CollectionTable(name = "item_detail_images", joinColumns = @JoinColumn(name = "item_detail_id"))
@@ -52,9 +49,8 @@ public class ItemDetail {
     private String additionalDescription;
 
     ///////////////// 테스트 데이터용
-    public ItemDetail(Item item, String brand, String deliveryMethod, String sellerInfo, String itemInfo, String packagingType, String notes, Integer likeCount, String additionalDescription, List<String> detailImages, String promotionImageUrl) {
+    public ItemDetail(Item item, String deliveryMethod, String sellerInfo, String itemInfo, String packagingType, String notes, Integer likeCount, String additionalDescription, List<String> detailImages, String promotionImageUrl) {
         this.item = item;
-        this.brand = brand;
         this.deliveryMethod = deliveryMethod;
         this.sellerInfo = sellerInfo;
         this.itemInfo = itemInfo;
