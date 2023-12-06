@@ -55,9 +55,5 @@ public class Review {
     public Review() {
 
     }
-
-    public Review() {
-
-    }
     ///////////////
 }

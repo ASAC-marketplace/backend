@@ -3,6 +3,7 @@ package market.demo.controller.Search;
 import lombok.RequiredArgsConstructor;
 import market.demo.domain.search.ItemSearchCondition;
 import market.demo.dto.search.ItemSearchDto;
+import market.demo.dto.search.ItemSearchResponse;
 import market.demo.service.SearchService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +19,7 @@ public class SearchController {
     private final SearchService searchService;
 
     @GetMapping("/complexitem")
-    public Page<ItemSearchDto> searchItemComplex(ItemSearchCondition condition, Pageable pageable) {
-        return searchService.searchPageComplex(condition, pageable);
+    public ItemSearchResponse searchItemComplex(ItemSearchCondition condition, Pageable pageable) {
+        return searchService.searchResponse(condition, pageable);
     }
 }
