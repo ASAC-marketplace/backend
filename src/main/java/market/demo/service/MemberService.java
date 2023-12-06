@@ -3,6 +3,7 @@ package market.demo.service;
 import lombok.RequiredArgsConstructor;
 import market.demo.domain.Member;
 import market.demo.dto.MemberDeletionRequest;
+import market.demo.dto.recoverypassword.IdChangeDto;
 import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.registermember.MemberRegistrationDto;
 import market.demo.exception.MemberNotFoundException;
@@ -32,7 +33,7 @@ public class MemberService {
 
     public Member registerMember(MemberRegistrationDto registrationDto) {
         if (memberRepository.existsByLoginId(registrationDto.getLoginId())
-            || memberRepository.existsByEmail(registrationDto.getEmail())) {
+                || memberRepository.existsByEmail(registrationDto.getEmail())) {
             throw new IllegalStateException("이미 사용중인 로그인 ID 또는 이메일입니다.");
         }
 
@@ -60,6 +61,18 @@ public class MemberService {
 //    public void sendVerificationCode(String phoneNumber) {
 //        // SMS 서비스를 통한 인증번호 발송 로직
 //    }
+
+    public boolean changeId(IdChangeDto idChangeDto) {
+        if (!idChangeDto.getNewId().equals(idChangeDto.getConfirmId())) {
+            throw new IllegalArgumentException("아이디가 일치하지 않습니다.");
+        }
+
+        Member member = memberRepository.findByLoginId((idChangeDto.getLoginId()));
+        if (member == null) {
+            return false;
+        }
+        return true;
+    }
 
     public boolean changePassword(PasswordChangeDto passwordChangeDto) {
         if (!passwordChangeDto.getNewPassword().equals(passwordChangeDto.getConfirmPassword())) {

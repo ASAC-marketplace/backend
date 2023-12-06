@@ -67,6 +67,12 @@ public class Member {
 
     }
 
+    public void updateId(String newId) {
+        if (newId == null || newId.trim().isEmpty()) {
+            throw new IllegalArgumentException("아이디는 비어 있을 수 없습니다.");
+        }
+    }
+
     public void updatePassword(String newPassword, PasswordEncoder passwordEncoder) {
         if (newPassword == null || newPassword.trim().isEmpty()) {
             throw new IllegalArgumentException("새 비밀번호는 비어 있을 수 없습니다.");
@@ -76,4 +82,5 @@ public class Member {
         String encodedPassword = passwordEncoder.encode(newPassword);
         this.password = encodedPassword;
     }
+
 }

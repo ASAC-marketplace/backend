@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import market.demo.domain.Member;
 import market.demo.dto.MemberDeletionRequest;
+import market.demo.dto.recoverypassword.IdChangeDto;
 import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.recoverypassword.RecoveryPasswordRequestDto;
 import market.demo.dto.registermember.EmailAvailabilityDto;
@@ -59,6 +60,16 @@ public class MemberController {
 //        memberService.sendVerificationCode(dto.getPhoneNumber());
 //        return ResponseEntity.ok().build();
 //    }
+
+    @PostMapping("/change-id")
+    public ResponseEntity<String> changeId(@RequestBody IdChangeDto idChangeDto) {
+        boolean isIdChanged = memberService.changeId(idChangeDto);
+        if (!isIdChanged) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("아이디를 성공적으로 찾았습니다.");
+        }
+
+        return ResponseEntity.ok("아이디를 잘못 입력했습니다. 입력하신 내용을 다시 확인해주세요.");
+    }
 
     @PostMapping("/change-password")
     public ResponseEntity<String> changePassword(@RequestBody PasswordChangeDto passwordChangeDto) {
