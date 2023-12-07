@@ -2,6 +2,7 @@ package market.demo.domain.order;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import market.demo.domain.etc.Delivery;
 import market.demo.domain.member.Member;
 import market.demo.domain.status.OrderStatus;
@@ -15,6 +16,7 @@ import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
+@Setter
 @Table(name = "orders")
 public class Order {
     @Id

@@ -2,6 +2,7 @@ package market.demo.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import market.demo.domain.etc.Wishlist;
 import market.demo.domain.item.Item;
 import market.demo.domain.member.Coupon;
 import market.demo.domain.member.Member;
@@ -59,6 +60,11 @@ public class MemberService {
                 .password(passwordEncoder.encode(registrationDto.getPassword()))
                 .phoneNumber(registrationDto.getPhoneNumber())
                 .build();
+
+        //찜하기 추가
+        Wishlist wishlist = new Wishlist();
+        wishlist.setMember(member);
+        member.setWishlist(wishlist);
 
         return memberRepository.save(member);
     }
@@ -242,21 +248,21 @@ public class MemberService {
         Member member = memberRepository.findByLoginId(loginId)
                 .orElseThrow(()->new MemberNotFoundException("사용자를 찾을 수 없습니다."));
 
-        List<WishDto> wishDtos = new ArrayList<>();
+        List<WishDto> WishDtos = new ArrayList<>();
         List<Item> items = member.getWishlist().getItems();
         for(Item item: items){
             WishDto wishDto = new WishDto();
 
             wishDto.setItemId(item.getId());
             wishDto.setItemName(item.getName());
-            wishDto.setItemPrice(item.getItemPrice());
+            wishDto.setItemTotalPrice(item.getItemPrice());
             wishDto.setDiscountRate(item.getDiscountRate());
             wishDto.setSaleItemPrice((int) (item.getItemPrice() * (100 - item.getDiscountRate() * 0.01)));
             wishDto.setPromotionImageUrl(item.getItemDetail().getPromotionImageUrl());
 
-            wishDtos.add(wishDto);
+            WishDtos.add(wishDto);
         }
 
-        return  wishDtos;
+        return WishDtos;
     }
 }

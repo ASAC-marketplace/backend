@@ -8,7 +8,7 @@ import lombok.Setter;
 public class WishDto {
     private Long itemId;
     private String itemName;
-    private Integer itemPrice;
+    private Integer itemTotalPrice;
     private Integer saleItemPrice;
     private Integer discountRate;
     private String promotionImageUrl;

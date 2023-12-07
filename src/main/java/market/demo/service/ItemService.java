@@ -264,10 +264,9 @@ public class ItemService {
 
     public void addWish(String loginId, Long itemId) {
         Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다. 로그인 해주세요"));
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException("아이템을 찾을 수 없습니다."));
-
 
         Wishlist wishlist = member.getWishlist();
         //이미 찜한 상품
@@ -281,7 +280,7 @@ public class ItemService {
 
     public void minusWish(String loginId, Long itemId) {
         Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다. 로그인 해주세요"));
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException("아이템을 찾을 수 없습니다."));
 
@@ -294,5 +293,6 @@ public class ItemService {
         wishlist.setItems(items);
         wishListRepository.save(wishlist);
     }
+
     //
 }

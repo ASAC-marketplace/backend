@@ -3,6 +3,7 @@ package market.demo.domain.member;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import market.demo.domain.etc.Wishlist;
 import market.demo.domain.member.jwt.Authority;
 import org.springframework.stereotype.Component;
 
@@ -50,6 +51,12 @@ public class MemberTestDataCreator {
                 if (ThreadLocalRandom.current().nextBoolean()) {
                     authorities.add(roleAdmin);
                 }
+
+                //wishlist 추가
+                Wishlist wishlist= new Wishlist();
+                wishlist.setMember(member);
+                member.setWishlist(wishlist);
+
                 member.setAuthorities(authorities);
             }
         }
