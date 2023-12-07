@@ -1,14 +1,17 @@
 package market.demo.repository;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
+import market.demo.domain.item.QItem;
 import market.demo.domain.search.ItemSearchCondition;
 import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
+import market.demo.dto.search.ItemAutoDto;
 import market.demo.dto.search.ItemSearchDto;
 import market.demo.dto.search.ItemSearchResponse;
 import market.demo.dto.search.QItemSearchDto;
@@ -98,6 +101,20 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
 
 
         return new ItemSearchResponse(page, categoryCountsMap, getBrandCountsMap , getPromotionCountMap, priceRanges);
+    }
+
+    @Override
+    public List<ItemAutoDto> findItemNamesByKeyword(String keyword, int limit) {
+        QItem item =QItem.item;
+
+        List<ItemAutoDto> result = queryFactory
+                .select(Projections.constructor(ItemAutoDto.class, item.name))
+                .from(item)
+                .where(item.name.like( keyword + "%")) //( "%" + keyword + "%")
+                .limit(limit)
+                .fetch();
+
+        return result;
     }
 
     private BooleanExpression nameEq(String name) {
