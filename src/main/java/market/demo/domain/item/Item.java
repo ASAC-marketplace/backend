@@ -2,8 +2,10 @@ package market.demo.domain.item;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
+import market.demo.exception.InvalidOrderException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,6 +17,7 @@ import static jakarta.persistence.FetchType.*;
 
 @Entity
 @Getter
+@Slf4j
 public class Item {
 
     @Id
@@ -31,7 +34,7 @@ public class Item {
 
 //    private Integer itemPrice;
 
-// 상품 상태 관리 (예: NEW, BESTSELLER 등)
+    // 상품 상태 관리 (예: NEW, BESTSELLER 등)
     @Enumerated(EnumType.STRING)
     private ItemStatus status;
 
@@ -82,6 +85,7 @@ public class Item {
         this.itemPrice = itemPrice;
         this.brand = brand;
     }
+
     public Item() {
 
     }
@@ -90,4 +94,13 @@ public class Item {
         this.itemDetail = itemDetail;
     }
     /////////////////
+
+    public void decreaseStock(int quantity) throws InvalidOrderException {
+        if (this.stockQuantity < quantity) {
+            throw new InvalidOrderException("아이템의 재고가 부족합니다. Item ID: " + this.getId());
+        }
+        log.info("stock = " + quantity);
+        this.stockQuantity -= quantity;
+    }
 }
+
