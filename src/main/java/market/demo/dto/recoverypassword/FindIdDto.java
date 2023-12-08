@@ -6,10 +6,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class RecoveryPasswordRequestDto {
+public class FindIdDto {
     @NotNull
     @NotEmpty
-    private String loginId;
+    private String memberName;
 
     @NotNull
     @NotEmpty

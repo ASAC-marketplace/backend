@@ -10,11 +10,15 @@ import java.util.Optional;
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
     boolean existsByLoginId(String loginId);
+
     boolean existsByEmail(String email);
+
     boolean existsByLoginIdAndEmail(String loginId, String email);
     //Member findByLoginId(String loginId);
 
     Optional<Member> findByLoginId(String loginId);
+
+    Optional<Member> findByEmailAndMemberName(String email, String memberName);
 
     @EntityGraph(attributePaths = "authorities")
     Optional<Member> findOneWithAuthoritiesByLoginId(String username);

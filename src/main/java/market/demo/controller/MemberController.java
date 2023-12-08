@@ -8,13 +8,13 @@ import market.demo.domain.member.jwt.TokenProvider;
 import market.demo.dto.jwt.LoginDto;
 import market.demo.dto.jwt.TokenDto;
 import market.demo.dto.jwt.MemberDto;
+import market.demo.dto.recoverypassword.FindIdDto;
 import market.demo.dto.social.CustomOAuth2User;
 import market.demo.dto.MemberDeletionRequest;
 import market.demo.dto.changememberinfo.CheckMemberInfoDto;
 import market.demo.dto.changememberinfo.MemberInfoDto;
 import market.demo.dto.changememberinfo.ModifyMemberInfoDto;
 import market.demo.dto.social.PasswordVerificationRequestDto;
-import market.demo.dto.recoverypassword.IdChangeDto;
 import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.recoverypassword.RecoveryPasswordRequestDto;
 import market.demo.dto.registermember.EmailAvailabilityDto;
@@ -61,7 +61,7 @@ public class MemberController {
 
     //28 회원 탈퇴
     @DeleteMapping("/delete")
-    public ResponseEntity<?> deleteMember(@RequestBody MemberDeletionRequest request) {
+    public ResponseEntity<?> deleteMember(@Valid @RequestBody MemberDeletionRequest request) {
         memberService.deleteMember(request);
         return ResponseEntity.ok().body("회원 탈퇴 성공");
     }
@@ -69,7 +69,7 @@ public class MemberController {
 
     //비밀번호 찾기
     @PostMapping("/verify-credentials")
-    public ResponseEntity<String> verifyCredentialsInRecoveryPassword(@RequestBody RecoveryPasswordRequestDto request) {
+    public ResponseEntity<String> verifyCredentialsInRecoveryPassword(@Valid @RequestBody RecoveryPasswordRequestDto request) {
         boolean exists = memberService.isMemberExists(request.getLoginId(), request.getEmail());
         if (exists) {
             return ResponseEntity.ok("OK");
@@ -78,40 +78,36 @@ public class MemberController {
         }
     }
 
-    @PostMapping("/change-id")
-    public ResponseEntity<String> changeId(@RequestBody IdChangeDto idChangeDto) {
-        boolean isIdChanged = memberService.changeId(idChangeDto);
-        if (!isIdChanged) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("아이디를 성공적으로 찾았습니다.");
-        }
-
-        return ResponseEntity.ok("아이디를 잘못 입력했습니다. 입력하신 내용을 다시 확인해주세요.");
+    //아이디 찾기로 수정
+    @PostMapping("/findloginid")
+    public ResponseEntity<String> findLoginId(@Valid @RequestBody FindIdDto findIdDto) {
+        String loginId = memberService.findLoginIdByEmail(findIdDto);
+        return ResponseEntity.ok(loginId);
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<String> changePassword(@RequestBody PasswordChangeDto passwordChangeDto) {
+    public ResponseEntity<String> changePassword(@Valid @RequestBody PasswordChangeDto passwordChangeDto) {
         memberService.changePassword(passwordChangeDto);
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
     }
-    //
 
     //26 api 회원 비밀번호 확인
     @PostMapping("/recheck-password")
-    public ResponseEntity<String> recheckPassword(@RequestBody CheckMemberInfoDto checkMemberInfoDto){
+    public ResponseEntity<String> recheckPassword(@Valid @RequestBody CheckMemberInfoDto checkMemberInfoDto){
         memberService.checkPassword(checkMemberInfoDto.getLoginId(), checkMemberInfoDto.getPassword());
         return ResponseEntity.ok("비밀번호 일치합니다.");
     }
 
     //26 api 개인정보 보내기
     @GetMapping("/modify-member")
-    public ResponseEntity<MemberInfoDto> sendMemberinfo(@RequestParam String loginId){
+    public ResponseEntity<MemberInfoDto> sendMemberInfo(@RequestParam String loginId){
         MemberInfoDto memberInfoDto = memberService.getMemberinfo(loginId);
         return ResponseEntity.ok(memberInfoDto);
     }
 
-    //26 api 수정하기
+    //26 api 개인정보 수정하기
     @PostMapping("/modify-member")
-    public ResponseEntity<String> modifyMemberinfo(@RequestParam String loginId, @RequestBody ModifyMemberInfoDto modifyMemberInfoDto){
+    public ResponseEntity<String> modifyMemberInfo(@RequestParam String loginId, @RequestBody ModifyMemberInfoDto modifyMemberInfoDto){
         memberService.modifymember(loginId, modifyMemberInfoDto);
         return ResponseEntity.ok("수정이 완료되었습니다.");
     }

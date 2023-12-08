@@ -9,7 +9,7 @@ import market.demo.dto.MemberDeletionRequest;
 import market.demo.dto.changememberinfo.MemberInfoDto;
 import market.demo.dto.changememberinfo.ModifyMemberInfoDto;
 import market.demo.dto.jwt.MemberDto;
-import market.demo.dto.recoverypassword.IdChangeDto;
+import market.demo.dto.recoverypassword.FindIdDto;
 import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.registermember.MemberRegistrationDto;
 import market.demo.exception.DuplicateMemberException;
@@ -19,13 +19,10 @@ import market.demo.exception.NotFoundMemberException;
 import market.demo.repository.MemberRepository;
 import market.demo.service.jwt.SecurityUtil;
 import org.springframework.beans.BeanUtils;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Collections;
 
@@ -72,17 +69,17 @@ public class MemberService {
         return memberRepository.existsByLoginIdAndEmail(loginId, email);
     }
 
-    public boolean changeId(IdChangeDto idChangeDto) {
-        if (!idChangeDto.getNewId().equals(idChangeDto.getConfirmId())) {
-            throw new IllegalArgumentException("아이디가 일치하지 않습니다.");
-        }
-
-        Member member = memberRepository.findByLoginId((idChangeDto.getLoginId())).get();
-        if (member == null) {
-            return false;
-        }
-        return true;
-    }
+//    public boolean changeId(IdChangeDto idChangeDto) {
+//        if (!idChangeDto.getNewId().equals(idChangeDto.getConfirmId())) {
+//            throw new IllegalArgumentException("아이디가 일치하지 않습니다.");
+//        }
+//
+//        Member member = memberRepository.findByLoginId((idChangeDto.getLoginId())).get();
+//        if (member == null) {
+//            return false;
+//        }
+//        return true;
+//    }
 
     public void changePassword(PasswordChangeDto passwordChangeDto) {
         if (!passwordChangeDto.getNewPassword().equals(passwordChangeDto.getConfirmPassword())) {
@@ -97,6 +94,12 @@ public class MemberService {
         memberRepository.save(member);
     }
 
+    public String findLoginIdByEmail(FindIdDto findIdDto) {
+        Member member = memberRepository.findByEmailAndMemberName(findIdDto.getEmail(),
+                        findIdDto.getMemberName())
+                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다."));
+        return member.getLoginId();
+    }
 
     public void checkPassword(String loginId, String password){
         Member member = memberRepository.findByLoginId(loginId)
@@ -156,6 +159,7 @@ public class MemberService {
 
     public void socialRegisterNewMember(market.demo.dto.social.MemberRegistrationDto registrationDto, String email, String provider, String providerId) {
         Member member = Member.createMemberWithProviderInfo(
+                registrationDto.getMemberName(),
                 email,
                 registrationDto.getLoginId(),
                 passwordEncoder.encode(registrationDto.getPassword()),
