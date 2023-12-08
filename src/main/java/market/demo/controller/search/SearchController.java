@@ -1,12 +1,10 @@
-package market.demo.controller.Search;
+package market.demo.controller.search;
 
 import lombok.RequiredArgsConstructor;
 import market.demo.domain.search.ItemSearchCondition;
 import market.demo.dto.search.ItemAutoDto;
-import market.demo.dto.search.ItemSearchDto;
 import market.demo.dto.search.ItemSearchResponse;
 import market.demo.service.SearchService;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
