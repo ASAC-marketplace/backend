@@ -27,7 +27,7 @@ public class Delivery {
 
     private String deliveryRequest; //배송 요청
 
-    @OneToOne(mappedBy = "delivery", fetch = LAZY)
+    @OneToOne(mappedBy = "delivery", fetch = LAZY, cascade = CascadeType.ALL)
     private Order order;
 
     public Delivery() {

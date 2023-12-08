@@ -30,7 +30,7 @@ public class Payment {
     @Column(name = "payment_status")
     private PaymentStatus paymentStatus;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "order_id")
     private Order order;
 

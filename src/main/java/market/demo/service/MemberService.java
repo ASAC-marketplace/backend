@@ -176,11 +176,16 @@ public class MemberService {
             throw new DuplicateMemberException("이미 가입되어 있는 유저입니다.");
         }
 
+        if (memberRepository.findByEmail(memberDto.getEmail()).isPresent()) {
+            throw new DuplicateMemberException("이미 사용중인 이메일입니다.");
+        }
+
         Authority authority = Authority.builder()
                 .authorityName("ROLE_USER")
                 .build();
 
         Member user = Member.builder()
+                .memberName(memberDto.getMemberName())
                 .loginId(memberDto.getLoginId())
                 .password(passwordEncoder.encode(memberDto.getPassword()))
                 .email(memberDto.getEmail())

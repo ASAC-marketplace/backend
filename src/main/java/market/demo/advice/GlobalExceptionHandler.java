@@ -68,5 +68,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleInvalidOrderException(InvalidOrderException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
     }
+
+    @ExceptionHandler(DuplicateMemberException.class)
+    public ResponseEntity<String> handleDuplicateMemberException(DuplicateMemberException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getMessage());
+    }
 }
 
