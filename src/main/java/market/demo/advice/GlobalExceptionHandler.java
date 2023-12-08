@@ -73,5 +73,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleDuplicateMemberException(DuplicateMemberException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getMessage());
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> handleIllegalStateException(IllegalStateException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getMessage());
+    }
 }
 
