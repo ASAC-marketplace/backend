@@ -120,12 +120,14 @@ public class CartService {
 
             CartItem cartItem = cartItemRepository.findByCartAndItem(cart, item)
                     .orElseThrow(() -> new IllegalArgumentException("cartItem을 찾을 수 없습니다."));
-            log.info(String.valueOf(cartItem.getId()));
 
             cartItem.setQuantity(cartItem.getQuantity() + i);
 
             if (item.getStockQuantity() - cartItem.getQuantity() < 0) {
                 throw new IllegalArgumentException("해당 상품 재고가 부족합니다.");
+            }
+            if(cartItem.getQuantity() < 1 ){
+                throw new IllegalArgumentException("0개 이하는 주문하실 수 없습니다.");
             }
 
             cartItem.setTotalPrice((long) cartItem.getQuantity() * item.getItemPrice());
@@ -145,40 +147,24 @@ public class CartService {
         }
     }
 
-
-    /*public void changeCartItem(String loginId, Long cartId, Long itemId, int i) {
-
-        try{
-            Cart cart = cartRepository.findById(cartId)
-                    .orElseThrow(() -> new IllegalArgumentException("장바구니를 찾을 수 없습니다."));
-            Member member = memberRepository.findByLoginId(loginId)
+    public void deleteCart(String loginId, Long itemId) {
+        Member member = memberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다. 로그인 해주세요"));
-            Item item = itemRepository.findById(itemId)
-                    .orElseThrow(()->new ItemNotFoundException("상품을 찾을 수 없습니다."));
-            CartItem cartItem = cartItemRepository.findByCartAndItem(cart, item)
-                    .orElseThrow(()-> new IllegalArgumentException("cartitem을 찾을 수 없음"));
+        Cart cart = cartRepository.findByMember(member)
+                .orElseThrow(() -> new IllegalArgumentException("장바구니를 찾을 수 없습니다."));
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ItemNotFoundException("상품을 찾을 수 없습니다."));
+        CartItem cartItem = cartItemRepository.findByCartAndItem(cart, item)
+                .orElseThrow(() -> new IllegalArgumentException("cartItem을 찾을 수 없습니다."));
 
-            cartItem.setQuantity(cartItem.getQuantity()+i);
-            if(item.getStockQuantity() - cartItem.getQuantity() < 0)
-                throw new IllegalArgumentException("해당 상품 재고가 부족합니다.");
-            cartItem.setTotalPrice((long)cartItem.getQuantity() * item.getItemPrice());
+        long discountPrice = (long) (item.getItemPrice()* item.getDiscountRate() * 0.01);
 
-            cartItemRepository.save(cartItem);
-            cart.setAmount(cart.getAmount() + (long) item.getItemPrice() * i);
-            cart.setSalesTotalAmount((long) (cart.getSalesTotalAmount() +
-                    item.getItemPrice() * (100 - item.getDiscountRate()) * 0.01 * i));
-            cart.setTotalAmount(cart.getAmount() - cart.getSalesTotalAmount());
-            cartRepository.save(cart);
-        }catch (IllegalArgumentException | ItemNotFoundException e) {
-            // 원하는 작업 수행: 로그 남기기, 사용자에게 메시지 전달 등
-            log.error("오류 발생: " + e.getMessage());
-            // e.printStackTrace(); // 스택 트레이스 출력 (선택 사항)
-            // throw e; // 원하는 경우 예외 다시 던지기 (선택 사항)
-        } catch (Exception e) {
-            log.error("서버 내부 오류: " + e.getMessage());
-            // e.printStackTrace(); // 스택 트레이스 출력 (선택 사항)
-            // throw e; // 원하는 경우 예외 다시 던지기 (선택 사항)
-        }
+        cart.setAmount(cart.getAmount() - cartItem.getTotalPrice());
+        cart.setSalesTotalAmount(cart.getSalesTotalAmount() - discountPrice * cartItem.getQuantity());
+        cart.setTotalAmount(cart.getAmount() - cart.getSalesTotalAmount());
 
-    }*/
+        cartItemRepository.deleteById(cartItem.getId());
+    }
+
+
 }

@@ -19,7 +19,14 @@ public class CartController {
     public ResponseEntity<String> insertCart (@PathVariable("loginId") String loginId,
                                               @RequestParam Long itemId){
         cartService.insertCart(loginId, itemId);
-        return ResponseEntity.ok("장바구니 추가되었습니다.");
+        return ResponseEntity.ok("장바구니 아이템 추가되었습니다.");
+    }
+
+    @PostMapping("/delete/{loginId}")
+    public ResponseEntity<String> deleteCart (@PathVariable("loginId") String loginId,
+                                              @RequestParam Long itemId){
+        cartService.deleteCart(loginId, itemId);
+        return ResponseEntity.ok("장바구니 아이템 삭제되었습니다.");
     }
 
     @GetMapping("/{loginId}")
