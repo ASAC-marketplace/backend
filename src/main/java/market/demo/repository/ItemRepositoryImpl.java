@@ -1,23 +1,24 @@
 package market.demo.repository;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import market.demo.domain.item.QItem;
 import market.demo.domain.search.ItemSearchCondition;
 import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
 import market.demo.dto.search.*;
-import market.demo.service.SearchService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.support.PageableExecutionUtils;
-import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -39,10 +40,7 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                 .multiply(item.discountRate.multiply(-1).add(100))
                 .divide(100);
 
-//        Tuple priceRangeTuple = findPriceRange(condition);
-//        List<String> priceRanges = createPriceRanges(priceRangeTuple);
-
-        List<ItemSearchDto> content = queryFactory
+        JPAQuery<ItemSearchDto> query = queryFactory
                 .select(new QItemSearchDto(
                         item.id,
                         item.name,
@@ -69,9 +67,16 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                         stockQuantityGoe(condition.getMinStockQuantity()),
                         registeredDateGoe(condition.getMinRegisteredDate()),
                         discountRateBetween(condition.getMinDiscountRate(), condition.getMaxDiscountRate()),
-                        itemPriceBetween(condition.getMinPrice(), condition.getMaxPrice()))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
+                        itemPriceBetween(condition.getMinPrice(), condition.getMaxPrice()));
+
+        // Pageable의 정렬 조건 적용
+        for (Sort.Order order : pageable.getSort()) {
+            PathBuilder pathBuilder = new PathBuilder(item.getType(), item.getMetadata());
+            query.orderBy(new OrderSpecifier(order.isAscending() ? Order.ASC : Order.DESC, pathBuilder.get(order.getProperty())));
+        }
+
+        List<ItemSearchDto> content = query.offset(pageable.getOffset())
+               .limit(pageable.getPageSize())
                 .fetch();
 
         JPAQuery<Long> countQuery = queryFactory
@@ -79,22 +84,10 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                 .from(item)
                 .leftJoin(item.category, category)
                 .where(
-                        nameEq(condition.getName()),
-                        categoryNameEq(condition.getCategoryName()),
-                        brandEq(condition.getBrand()),
-                        statusEq(condition.getStatus()),
-                        promotionTypeEq(condition.getPromotionType()),
-                        stockQuantityGoe(condition.getMinStockQuantity()),
-                        registeredDateGoe(condition.getMinRegisteredDate()),
-                        discountRateBetween(condition.getMinDiscountRate(), condition.getMaxDiscountRate()),
-                        itemPriceBetween(condition.getMinPrice(), condition.getMaxPrice())
+                        query.getMetadata().getWhere()
                 );
 
         Page<ItemSearchDto> page = PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
-//        Map<String, Long> categoryCountsMap = getCategoryCounts(condition);
-//        Map<String, Long> getBrandCountsMap = getBrandCounts(condition);
-//        Map<PromotionType, Long> getPromotionCountMap = getPromotionTypeCounts(condition);
-
         return new ItemSearchResponse(page);
     }
 

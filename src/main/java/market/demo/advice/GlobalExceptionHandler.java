@@ -56,8 +56,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(OrderNotFoundException.class)
-    public ResponseEntity<String> handelOrderNotFoundException (OrderNotFoundException exception){
+    public ResponseEntity<String> handelOrderNotFoundException (OrderNotFoundException exception) {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
+    }
 
     @ExceptionHandler(PaymentProcessingException.class)
     public ResponseEntity<String> handlePaymentProcessingException(PaymentProcessingException exception) {
@@ -89,4 +90,5 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
     }
 }
+
 
