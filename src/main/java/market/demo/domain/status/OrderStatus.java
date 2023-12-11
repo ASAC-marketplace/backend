@@ -1,5 +1,5 @@
 package market.demo.domain.status;
 
 public enum OrderStatus {
-    PENDING, PROCESSING, COMPLETED
+    PENDING, PROCESSING, COMPLETED, PAID
 }

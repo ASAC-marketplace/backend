@@ -1,5 +1,6 @@
 package market.demo.service;
 
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.micrometer.common.util.internal.logging.InternalLogger;
 import jakarta.transaction.Transactional;
@@ -9,6 +10,7 @@ import market.demo.domain.etc.Wishlist;
 import market.demo.domain.item.*;
 import market.demo.domain.member.Coupon;
 import market.demo.domain.member.Member;
+import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
 import market.demo.dto.item.ItemDto;
 import market.demo.dto.item.ItemMainEndDto;
@@ -26,6 +28,11 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.*;
+
+import market.demo.domain.item.QItem;
+import market.demo.domain.item.QItemDetail;
+import market.demo.domain.item.QReview;
 
 @Service
 @Transactional
@@ -117,7 +124,7 @@ public class ItemService {
 
         List<ReviewDto> reviewInfos = new ArrayList<>();
         List<String> images = new ArrayList<>();
-        
+
         for(Review review : reviews){
             ReviewDto reviewDto = getReviewDto(review);
             images.addAll(review.getImageUrls());
@@ -185,22 +192,48 @@ public class ItemService {
     }
 
     //배너?
-    public List<ItemDto> getRecentProducts(int page, int size) {
+    public Map<ItemStatus, List<ItemDto>> getItemsByStatus(int page, int size) {
         QItem item = QItem.item;
         QItemDetail itemDetail = QItemDetail.itemDetail;
 
-        return queryFactory
-                .select(new QItemDto(
-                        item.id,
-                        item.registerdDate,
-                        itemDetail.promotionImageUrl
-                ))
-                .from(item)
-                .leftJoin(item.itemDetail, itemDetail)
-                .orderBy(item.registerdDate.desc())
-                .offset((page - 1) * size)
-                .limit(size)
-                .fetch();
+        Map<ItemStatus, List<ItemDto>> itemsMap = new HashMap<>();
+
+        for (ItemStatus status : ItemStatus.values()) {
+            JPAQuery<ItemDto> query = queryFactory
+                    .select(new QItemDto(
+                            item.id,
+                            item.registerdDate,
+                            itemDetail.promotionImageUrl
+                    ))
+                    .from(item)
+                    .leftJoin(item.itemDetail, itemDetail)
+                    .where(item.status.eq(status));
+
+            // 상태별 정렬 기준 적용
+            switch (status) {
+                case NEW:
+                    query.orderBy(item.registerdDate.desc());
+                    break;
+                case BESTSELLER:
+                    break;
+                case DISCOUNT:
+                    query.orderBy(item.discountRate.desc(), item.registerdDate.desc());
+                    break;
+                case SPECIAL_OFFER:
+                    break;
+                case RECOMMENDATION:
+                    break;
+            }
+
+            List<ItemDto> items = query
+                    .offset((page - 1) * size)
+                    .limit(size)
+                    .fetch();
+
+            itemsMap.put(status, items);
+        }
+
+        return itemsMap;
     }
 
     //메인 마감세일, 주말특가
@@ -209,7 +242,7 @@ public class ItemService {
         QItemDetail itemDetail = QItemDetail.itemDetail;
         QReview review = QReview.review;
 
-        return queryFactory
+        JPAQuery<ItemMainEndDto> query = queryFactory
                 .select(new QItemMainEndDto(
                         item.id,
                         item.name,
@@ -224,10 +257,14 @@ public class ItemService {
                 .leftJoin(item.reviews, review)
                 .where(item.promotionType.eq(promotionType))
                 .groupBy(item.id, item.name, item.discountRate, item.itemPrice, itemDetail.promotionImageUrl)
-                .orderBy(item.registerdDate.desc())
-                .offset((page - 1) * size)
-                .limit(size)
-                .fetch();
+                .orderBy(item.registerdDate.desc());
+
+        // size가 -1이 아닌 경우에만 페이징 적용
+        if (size != -1) {
+            query.offset((page - 1) * size)
+                    .limit(size);
+        }
+        return query.fetch();
     }
     //
 

@@ -10,7 +10,8 @@ import java.util.List;
 @Getter
 public class ItemDetail {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "item_detail_id")
     private Long id;
 

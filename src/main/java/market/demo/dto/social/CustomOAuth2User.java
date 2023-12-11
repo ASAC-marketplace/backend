@@ -21,6 +21,7 @@ public class CustomOAuth2User implements OAuth2User {
     private String provider;
     private String providerId;
     private String email;
+    private String loginCode;
 
     public CustomOAuth2User(Map<String, Object> attributes, Member member) {
         this.attributes = attributes;

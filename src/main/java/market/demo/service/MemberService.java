@@ -7,6 +7,7 @@ import market.demo.domain.item.Item;
 import market.demo.domain.member.Coupon;
 import market.demo.domain.member.Member;
 import market.demo.domain.member.jwt.Authority;
+import market.demo.domain.status.OrderStatus;
 import market.demo.dto.MemberDeletionRequest;
 import market.demo.dto.changememberinfo.MemberInfoDto;
 import market.demo.dto.changememberinfo.ModifyMemberInfoDto;
@@ -14,6 +15,7 @@ import market.demo.dto.itemdetailinfo.CouponDto;
 import market.demo.dto.itemdetailinfo.WishDto;
 import market.demo.dto.jwt.MemberDto;
 import market.demo.dto.mypage.MyPageDto;
+import market.demo.dto.recoverypassword.FindIdDto;
 import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.registermember.MemberRegistrationDto;
 import market.demo.exception.DuplicateMemberException;
@@ -72,6 +74,15 @@ public class MemberService {
     public void deleteMember(MemberDeletionRequest deletionRequest) {
         Member member = memberRepository.findById(deletionRequest.getMemberId())
                 .orElseThrow(() -> new MemberNotFoundException("멤버를 찾을 수 없습니다. ID: " + deletionRequest.getMemberId()));
+
+        // 주문 상태 확인
+        boolean hasActiveOrders = member.getOrders().stream()
+                .anyMatch(order -> order.getOrderStatus() == OrderStatus.PENDING || order.getOrderStatus() == OrderStatus.PROCESSING);
+
+        if (hasActiveOrders) {
+            throw new IllegalStateException("활성 주문이 존재하여 회원 탈퇴가 불가능합니다.");
+        }
+
         memberRepository.delete(member);
     }
 
@@ -79,20 +90,22 @@ public class MemberService {
         return memberRepository.existsByLoginIdAndEmail(loginId, email);
     }
 
-//    // 인증번호 발송 로직 (실제 구현 필요)
-//    public void sendVerificationCode(String phoneNumber) {
-//        // SMS 서비스를 통한 인증번호 발송 로직
+//    public boolean changeId(IdChangeDto idChangeDto) {
+//        if (!idChangeDto.getNewId().equals(idChangeDto.getConfirmId())) {
+//            throw new IllegalArgumentException("아이디가 일치하지 않습니다.");
+//        }
+//
+//        Member member = memberRepository.findByLoginId((idChangeDto.getLoginId())).get();
+//        if (member == null) {
+//            return false;
+//        }
+//        return true;
 //    }
 
     public void changePassword(PasswordChangeDto passwordChangeDto) {
         if (!passwordChangeDto.getNewPassword().equals(passwordChangeDto.getConfirmPassword())) {
             throw new IllegalArgumentException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
         }
-
-//        Member member = memberRepository.findByLoginId(passwordChangeDto.getLoginId());
-//        if (member == null) {
-//            return false;
-//        }
 
         Member member = memberRepository.findByLoginId(passwordChangeDto.getLoginId())
                 .orElseThrow(()-> new MemberNotFoundException("사용자를 찾을 수 없습니다"));
@@ -102,6 +115,12 @@ public class MemberService {
         memberRepository.save(member);
     }
 
+    public String findLoginIdByEmail(FindIdDto findIdDto) {
+        Member member = memberRepository.findByEmailAndMemberName(findIdDto.getEmail(),
+                        findIdDto.getMemberName())
+                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다."));
+        return member.getLoginId();
+    }
 
     public void checkPassword(String loginId, String password){
         Member member = memberRepository.findByLoginId(loginId)
@@ -110,7 +129,7 @@ public class MemberService {
         if(!member.getPassword().equals(password)) throw new InvalidPasswordException("비밀번호가 맞지 않습니다.");
     }
 
-    public MemberInfoDto getMemberinfo(String loginId) {
+    public MemberInfoDto getMemberInfo(String loginId) {
         Member member = memberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다"));
 
@@ -147,7 +166,12 @@ public class MemberService {
        memberRepository.save(member);
     }
 
-    public void verifyPassword(String email, String password) {
+    public void verifyIdAndEmail(String loginId, String email) {
+        Member member = memberRepository.findByLoginIdAndEmail(loginId, email)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+    }
+
+    public void verifyPassword(String password, String email) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
         if (!passwordEncoder.matches(password, member.getPassword())) {
@@ -164,6 +188,7 @@ public class MemberService {
 
     public void socialRegisterNewMember(market.demo.dto.social.MemberRegistrationDto registrationDto, String email, String provider, String providerId) {
         Member member = Member.createMemberWithProviderInfo(
+                registrationDto.getMemberName(),
                 email,
                 registrationDto.getLoginId(),
                 passwordEncoder.encode(registrationDto.getPassword()),
@@ -180,11 +205,16 @@ public class MemberService {
             throw new DuplicateMemberException("이미 가입되어 있는 유저입니다.");
         }
 
+        if (memberRepository.findByEmail(memberDto.getEmail()).isPresent()) {
+            throw new DuplicateMemberException("이미 사용중인 이메일입니다.");
+        }
+
         Authority authority = Authority.builder()
                 .authorityName("ROLE_USER")
                 .build();
 
         Member user = Member.builder()
+                .memberName(memberDto.getMemberName())
                 .loginId(memberDto.getLoginId())
                 .password(passwordEncoder.encode(memberDto.getPassword()))
                 .email(memberDto.getEmail())
