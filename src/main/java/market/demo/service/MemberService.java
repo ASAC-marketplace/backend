@@ -1,6 +1,5 @@
 package market.demo.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.member.Member;
@@ -118,7 +117,7 @@ public class MemberService {
         if(!member.getPassword().equals(password)) throw new InvalidPasswordException("비밀번호가 맞지 않습니다.");
     }
 
-    public MemberInfoDto getMemberinfo(String loginId) {
+    public MemberInfoDto getMemberInfo(String loginId) {
         Member member = memberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다"));
 
@@ -152,7 +151,12 @@ public class MemberService {
        memberRepository.save(member);
     }
 
-    public void verifyPassword(String email, String password) {
+    public void verifyIdAndEmail(String loginId, String email) {
+        Member member = memberRepository.findByLoginIdAndEmail(loginId, email)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+    }
+
+    public void verifyPassword(String password, String email) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
         if (!passwordEncoder.matches(password, member.getPassword())) {

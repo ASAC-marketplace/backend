@@ -99,7 +99,6 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
         Map<String, Long> getBrandCountsMap = getBrandCounts(condition);
         Map<PromotionType, Long> getPromotionCountMap = getPromotionTypeCounts(condition);
 
-
         return new ItemSearchResponse(page, categoryCountsMap, getBrandCountsMap , getPromotionCountMap, priceRanges);
     }
 
@@ -174,7 +173,9 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                 .select(category.name, item.count())
                 .from(item)
                 .leftJoin(item.category, category)
-                .where(category.parent.isNotNull()) //소분류만
+                .where(
+                        category.parent.isNotNull(),
+                        nameEq(condition.getName())) //소분류만
                 .groupBy(category.name)
                 .fetch();
 
@@ -189,6 +190,9 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
         List<Tuple> brandCounts = queryFactory
                 .select(item.brand, item.count())
                 .from(item)
+                .where(
+                        nameEq(condition.getName())
+                )
                 .groupBy(item.brand)
                 .fetch();
 
@@ -204,6 +208,9 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
         List<Tuple> promotionTypeCounts = queryFactory
                 .select(item.promotionType, item.count())
                 .from(item)
+                .where(
+                        nameEq(condition.getName())
+                )
                 .groupBy(item.promotionType)
                 .fetch();
 

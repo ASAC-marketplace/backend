@@ -1,5 +1,6 @@
 package market.demo.dto.jwt;
 
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -15,7 +16,7 @@ public class LoginDto {
     @Size(min = 3, max = 50)
     private String loginId;
 
-    @NotNull
+    @NotEmpty
     @Size(min = 3, max = 100)
     private String password;
 }

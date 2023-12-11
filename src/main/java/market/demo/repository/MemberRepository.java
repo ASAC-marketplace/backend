@@ -18,6 +18,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findByLoginId(String loginId);
 
+    Optional<Member> findByLoginIdAndEmail(String loginId, String email);
+
     Optional<Member> findByEmailAndMemberName(String email, String memberName);
 
     @EntityGraph(attributePaths = "authorities")
