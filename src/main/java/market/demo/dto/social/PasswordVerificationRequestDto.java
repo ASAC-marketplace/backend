@@ -7,7 +7,9 @@ import lombok.Data;
 @Data
 public class PasswordVerificationRequestDto {
 
-    @NotNull
     @NotEmpty
     private String password;
+    private String email;
+    private String provider;
+    private String providerId;
 }

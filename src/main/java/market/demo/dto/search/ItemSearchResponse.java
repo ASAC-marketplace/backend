@@ -10,16 +10,16 @@ import java.util.Map;
 @Data
 public class ItemSearchResponse {
     private final Page<ItemSearchDto> items;
-    private final Map<String, Long> categoryCounts;
-    private final Map<String, Long> brandCounts;
-    private final Map<PromotionType, Long> promotionCounts;
-    private final List<String> priceRange;
+//    private final Map<String, Long> categoryCounts;
+//    private final Map<String, Long> brandCounts;
+//    private final Map<PromotionType, Long> promotionCounts;
+//    private final List<String> priceRange;
 
-    public ItemSearchResponse(Page<ItemSearchDto> items, Map<String, Long> categoryCounts, Map<String, Long> brandCounts,  Map<PromotionType, Long> promotionCounts, List<String> priceRange) {
+    public ItemSearchResponse(Page<ItemSearchDto> items) {
         this.items = items;
-        this.categoryCounts = categoryCounts;
-        this.brandCounts = brandCounts;
-        this.promotionCounts = promotionCounts;
-        this.priceRange = priceRange;
+//        this.categoryCounts = categoryCounts;
+//        this.brandCounts = brandCounts;
+//        this.promotionCounts = promotionCounts;
+//        this.priceRange = priceRange;
     }
 }

@@ -35,13 +35,16 @@ public class OrderTestDataCreator {
         @Transactional
         public void createTestData(int numberOfOrders) {
             for (int i = 0; i < numberOfOrders; i++) {
+                OrderStatus[] orderStatusValues = OrderStatus.values();
+                OrderStatus randomOrderStatus = orderStatusValues[ThreadLocalRandom.current().nextInt(orderStatusValues.length)];
+
                 // 임의의 멤버 조회
                 long memberId = ThreadLocalRandom.current().nextLong(1, 51);
                 Member member = em.find(Member.class, memberId);
 
                 // 주문 생성
                 LocalDateTime orderDateTime = LocalDateTime.now().minusDays(ThreadLocalRandom.current().nextLong(1, 30));
-                Order order = new Order(member, orderDateTime, OrderStatus.PAID);
+                Order order = new Order(member, orderDateTime, randomOrderStatus);
 
                 // 여러 개의 주문 항목 생성 및 주문에 추가
                 int numberOfItems = ThreadLocalRandom.current().nextInt(1, 5); // 주문 항목 개수

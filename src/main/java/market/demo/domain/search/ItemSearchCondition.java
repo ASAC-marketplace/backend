@@ -9,7 +9,8 @@ import java.time.LocalDate;
 @Data
 public class ItemSearchCondition {
     private String name;
-    private Long categoryId;
+    private String categoryName;
+    private String brand;
     private ItemStatus status;
     private PromotionType promotionType;
     private Integer minStockQuantity;

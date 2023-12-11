@@ -7,23 +7,20 @@ import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
 import market.demo.domain.item.QItem;
 import market.demo.domain.search.ItemSearchCondition;
 import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
-import market.demo.dto.search.ItemAutoDto;
-import market.demo.dto.search.ItemSearchDto;
-import market.demo.dto.search.ItemSearchResponse;
-import market.demo.dto.search.QItemSearchDto;
+import market.demo.dto.search.*;
+import market.demo.service.SearchService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -32,12 +29,9 @@ import static market.demo.domain.item.QItem.item;
 import static market.demo.domain.item.QItemDetail.itemDetail;
 import static org.springframework.util.StringUtils.hasText;
 
+@RequiredArgsConstructor
 public class ItemRepositoryImpl implements ItemRepositoryCustom {
     private final JPAQueryFactory queryFactory;
-
-    public ItemRepositoryImpl(EntityManager em) {
-        this.queryFactory = new JPAQueryFactory(em);
-    }
 
     @Override
     public ItemSearchResponse searchPageComplex(ItemSearchCondition condition, Pageable pageable) {
@@ -45,8 +39,8 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                 .multiply(item.discountRate.multiply(-1).add(100))
                 .divide(100);
 
-        Tuple priceRangeTuple = findPriceRange(condition);
-        List<String> priceRanges = createPriceRanges(priceRangeTuple);
+//        Tuple priceRangeTuple = findPriceRange(condition);
+//        List<String> priceRanges = createPriceRanges(priceRangeTuple);
 
         List<ItemSearchDto> content = queryFactory
                 .select(new QItemSearchDto(
@@ -68,7 +62,8 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                 .leftJoin(item.itemDetail, itemDetail)
                 .where(
                         nameEq(condition.getName()),
-                        categoryIdEq(condition.getCategoryId()),
+                        categoryNameEq(condition.getCategoryName()),
+                        brandEq(condition.getBrand()),
                         statusEq(condition.getStatus()),
                         promotionTypeEq(condition.getPromotionType()),
                         stockQuantityGoe(condition.getMinStockQuantity()),
@@ -85,7 +80,8 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                 .leftJoin(item.category, category)
                 .where(
                         nameEq(condition.getName()),
-                        categoryIdEq(condition.getCategoryId()),
+                        categoryNameEq(condition.getCategoryName()),
+                        brandEq(condition.getBrand()),
                         statusEq(condition.getStatus()),
                         promotionTypeEq(condition.getPromotionType()),
                         stockQuantityGoe(condition.getMinStockQuantity()),
@@ -95,12 +91,25 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                 );
 
         Page<ItemSearchDto> page = PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
-        Map<String, Long> categoryCountsMap = getCategoryCounts(condition);
-        Map<String, Long> getBrandCountsMap = getBrandCounts(condition);
-        Map<PromotionType, Long> getPromotionCountMap = getPromotionTypeCounts(condition);
+//        Map<String, Long> categoryCountsMap = getCategoryCounts(condition);
+//        Map<String, Long> getBrandCountsMap = getBrandCounts(condition);
+//        Map<PromotionType, Long> getPromotionCountMap = getPromotionTypeCounts(condition);
 
+        return new ItemSearchResponse(page);
+    }
 
-        return new ItemSearchResponse(page, categoryCountsMap, getBrandCountsMap , getPromotionCountMap, priceRanges);
+    @Override
+    public CountsAndPriceRangeDto getCounts(ItemSearchCondition condition) {
+        Tuple priceRangeTuple = findPriceRange(condition);
+        List<String> priceRanges = createPriceRanges(priceRangeTuple);
+
+        Map<String, Long> categoryCounts = getCategoryCounts(condition);
+        Map<String, Long> brandCounts = getBrandCounts(condition);
+        Map<PromotionType, Long> promotionCounts = getPromotionTypeCounts(condition);
+
+        CountsAndPriceRangeDto dto = new CountsAndPriceRangeDto(categoryCounts, brandCounts, promotionCounts, priceRanges);
+
+        return dto;
     }
 
     @Override
@@ -122,7 +131,16 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
     }
 
     private BooleanExpression categoryIdEq(Long categoryId) {
+
         return categoryId != null ? item.category.id.eq(categoryId) : null;
+    }
+
+    private BooleanExpression categoryNameEq(String categoryName) {
+        return categoryName != null ? item.category.name.eq(categoryName) : null;
+    }
+
+    private BooleanExpression brandEq(String brand) {
+        return brand != null ? item.brand.eq(brand) : null;
     }
 
     private BooleanExpression statusEq(ItemStatus status) {
@@ -174,7 +192,9 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                 .select(category.name, item.count())
                 .from(item)
                 .leftJoin(item.category, category)
-                .where(category.parent.isNotNull()) //소분류만
+                .where(
+                        category.parent.isNotNull(),
+                        nameEq(condition.getName())) //소분류만
                 .groupBy(category.name)
                 .fetch();
 
@@ -189,6 +209,9 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
         List<Tuple> brandCounts = queryFactory
                 .select(item.brand, item.count())
                 .from(item)
+                .where(
+                        nameEq(condition.getName())
+                )
                 .groupBy(item.brand)
                 .fetch();
 
@@ -204,6 +227,9 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
         List<Tuple> promotionTypeCounts = queryFactory
                 .select(item.promotionType, item.count())
                 .from(item)
+                .where(
+                        nameEq(condition.getName())
+                )
                 .groupBy(item.promotionType)
                 .fetch();
 

@@ -1,4 +1,4 @@
-package market.demo.service;
+package market.demo.service.oauth2;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

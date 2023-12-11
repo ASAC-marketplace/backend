@@ -1,10 +1,10 @@
 package market.demo.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.member.Member;
 import market.demo.domain.member.jwt.Authority;
+import market.demo.domain.status.OrderStatus;
 import market.demo.dto.MemberDeletionRequest;
 import market.demo.dto.changememberinfo.MemberInfoDto;
 import market.demo.dto.changememberinfo.ModifyMemberInfoDto;
@@ -62,6 +62,15 @@ public class MemberService {
     public void deleteMember(MemberDeletionRequest deletionRequest) {
         Member member = memberRepository.findById(deletionRequest.getMemberId())
                 .orElseThrow(() -> new MemberNotFoundException("멤버를 찾을 수 없습니다. ID: " + deletionRequest.getMemberId()));
+
+        // 주문 상태 확인
+        boolean hasActiveOrders = member.getOrders().stream()
+                .anyMatch(order -> order.getOrderStatus() == OrderStatus.PENDING || order.getOrderStatus() == OrderStatus.PROCESSING);
+
+        if (hasActiveOrders) {
+            throw new IllegalStateException("활성 주문이 존재하여 회원 탈퇴가 불가능합니다.");
+        }
+
         memberRepository.delete(member);
     }
 
@@ -108,7 +117,7 @@ public class MemberService {
         if(!member.getPassword().equals(password)) throw new InvalidPasswordException("비밀번호가 맞지 않습니다.");
     }
 
-    public MemberInfoDto getMemberinfo(String loginId) {
+    public MemberInfoDto getMemberInfo(String loginId) {
         Member member = memberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다"));
 
@@ -142,7 +151,12 @@ public class MemberService {
        memberRepository.save(member);
     }
 
-    public void verifyPassword(String email, String password) {
+    public void verifyIdAndEmail(String loginId, String email) {
+        Member member = memberRepository.findByLoginIdAndEmail(loginId, email)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+    }
+
+    public void verifyPassword(String password, String email) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
         if (!passwordEncoder.matches(password, member.getPassword())) {
