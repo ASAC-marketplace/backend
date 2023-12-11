@@ -1,5 +1,6 @@
 package market.demo.controller.item;
 
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
@@ -8,6 +9,7 @@ import market.demo.dto.item.ItemMainEndDto;
 import market.demo.dto.itemdetailinfo.ItemDetailDto;
 import market.demo.dto.itemdetailinfo.ItemReviewsDto;
 import market.demo.service.ItemService;
+import market.demo.service.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +21,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ItemController {
     private final ItemService itemService;
+    private final OrderService orderService;
 
     //배너 추가
     @GetMapping("/status")
@@ -45,8 +48,9 @@ public class ItemController {
 
     //17 api 상품 상세 정보
     @GetMapping
-    public ResponseEntity<ItemDetailDto> showItemDetail(@RequestParam Long itemId) {
-        return ResponseEntity.ok(itemService.searchItemDetail(itemId));
+    public ResponseEntity<ItemDetailDto> showItemDetail(@RequestParam Long itemId,
+                                                        @RequestBody String loginId) {
+        return ResponseEntity.ok(itemService.searchItemDetail(itemId, loginId));
     }
 
     //17 api 상품 리뷰 노출
@@ -73,4 +77,20 @@ public class ItemController {
         itemService.getCoupon(loginId,couponId);
         return ResponseEntity.ok("쿠폰 받기 성공");
     }
+
+    //23번 찜하기
+    @PostMapping("/yeswish")
+    public ResponseEntity<String> addWishList(@RequestParam String loginId, Long itemId){
+        itemService.addWish(loginId, itemId);
+        return ResponseEntity.ok("찜하기 추가되었습니다.");
+    }
+
+    @PostMapping("/nowish")
+    public ResponseEntity<String> minusWishList(@RequestParam String loginId, Long itemId){
+        itemService.minusWish(loginId, itemId);
+        return ResponseEntity.ok("찜하기 취소되었습니다.");
+    }
+
+
+
 }

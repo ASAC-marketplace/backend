@@ -2,9 +2,11 @@ package market.demo.service;
 
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import io.micrometer.common.util.internal.logging.InternalLogger;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import market.demo.domain.etc.Wishlist;
 import market.demo.domain.item.*;
 import market.demo.domain.member.Coupon;
 import market.demo.domain.member.Member;
@@ -23,6 +25,9 @@ import market.demo.repository.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.*;
 
 import market.demo.domain.item.QItem;
@@ -39,17 +44,30 @@ public class ItemService {
     private final ReviewRepository reviewRepository;
     private final CouponRepository couponRepository;
     private final MemberRepository memberRepository;
+    private final WishListRepository wishListRepository;
     private final JPAQueryFactory queryFactory;
     private static final String DISCOUNT_COUPON_NAME = "할인쿠폰";
-    public ItemDetailDto searchItemDetail(Long itemId){
+    private static final boolean WISHED_IS_EXIST = false;
+
+    public ItemDetailDto searchItemDetail(Long itemId, String loginId){
         Item item = itemRepository.findById(itemId).
                 orElseThrow(()-> new ItemNotFoundException("상품을 찾을 수 없습니다."));
         ItemDetail itemDetail = itemDetailRepository.findByItem(item)
-                .orElseThrow(() -> new ItemNotFoundException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ItemNotFoundException("상품 상세 정보를 찾을 수 없습니다."));
 
         Optional<Coupon> optionalCoupon = couponRepository.findByCouponName(DISCOUNT_COUPON_NAME);
         CouponDto couponDto = getCouponDto(optionalCoupon);
-        return getItemDetailDto(item, itemDetail, couponDto);
+
+        //로그인 된 사용자의 찜 여부
+        boolean isWished = WISHED_IS_EXIST;
+        if(memberRepository.existsByLoginId(loginId)){
+            Member member = memberRepository.findByLoginId(loginId)
+                    .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다."));
+
+            if(member.getWishlist().getItems().contains(item)) isWished = true;
+        }
+
+        return getItemDetailDto(item, itemDetail, couponDto, isWished);
     }
 
     @NotNull
@@ -69,7 +87,7 @@ public class ItemService {
     }
 
     @NotNull
-    private static ItemDetailDto getItemDetailDto(Item item, ItemDetail itemDetail, CouponDto couponDto) {
+    private static ItemDetailDto getItemDetailDto(Item item, ItemDetail itemDetail, CouponDto couponDto, boolean isWished) {
         ItemDetailDto itemDetailDto = new ItemDetailDto();
 
         itemDetailDto.setItemId(item.getId());
@@ -89,6 +107,8 @@ public class ItemService {
         itemDetailDto.setDetailImages(itemDetail.getDetailImages());
         itemDetailDto.setAdditionalDescription(itemDetail.getAdditionalDescription());
         itemDetailDto.setCoupon(couponDto);
+        itemDetailDto.setPromotionImageUrl(itemDetail.getPromotionImageUrl());
+        itemDetailDto.setWished(isWished);
 
         return itemDetailDto;
     }
@@ -278,5 +298,38 @@ public class ItemService {
                 .limit(limit)
                 .fetch();
     }
+
+    public void addWish(String loginId, Long itemId) {
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다. 로그인 해주세요"));
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ItemNotFoundException("아이템을 찾을 수 없습니다."));
+
+        Wishlist wishlist = member.getWishlist();
+        //이미 찜한 상품
+        if(wishlist.getItems().contains(item)) throw new IllegalArgumentException("이미 찜한 상품입니다");
+
+        List<Item> items = wishlist.getItems();
+        items.add(item);
+        wishlist.setItems(items);
+        wishListRepository.save(wishlist);
+    }
+
+    public void minusWish(String loginId, Long itemId) {
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다. 로그인 해주세요"));
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ItemNotFoundException("아이템을 찾을 수 없습니다."));
+
+        Wishlist wishlist = member.getWishlist();
+        //이미 찜한 상품
+        if(!wishlist.getItems().contains(item)) throw new IllegalArgumentException("찜한 목록이 아닙니다.");
+
+        List<Item> items = wishlist.getItems();
+        items.remove(item);
+        wishlist.setItems(items);
+        wishListRepository.save(wishlist);
+    }
+
     //
 }

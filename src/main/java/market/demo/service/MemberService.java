@@ -2,13 +2,19 @@ package market.demo.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import market.demo.domain.etc.Wishlist;
+import market.demo.domain.item.Item;
+import market.demo.domain.member.Coupon;
 import market.demo.domain.member.Member;
 import market.demo.domain.member.jwt.Authority;
 import market.demo.domain.status.OrderStatus;
 import market.demo.dto.MemberDeletionRequest;
 import market.demo.dto.changememberinfo.MemberInfoDto;
 import market.demo.dto.changememberinfo.ModifyMemberInfoDto;
+import market.demo.dto.itemdetailinfo.CouponDto;
+import market.demo.dto.itemdetailinfo.WishDto;
 import market.demo.dto.jwt.MemberDto;
+import market.demo.dto.mypage.MyPageDto;
 import market.demo.dto.recoverypassword.FindIdDto;
 import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.registermember.MemberRegistrationDto;
@@ -18,13 +24,14 @@ import market.demo.exception.MemberNotFoundException;
 import market.demo.exception.NotFoundMemberException;
 import market.demo.repository.MemberRepository;
 import market.demo.service.jwt.SecurityUtil;
-import org.springframework.beans.BeanUtils;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 @Service
 @Transactional
@@ -55,6 +62,11 @@ public class MemberService {
                 .password(passwordEncoder.encode(registrationDto.getPassword()))
                 .phoneNumber(registrationDto.getPhoneNumber())
                 .build();
+
+        //찜하기 추가
+        Wishlist wishlist = new Wishlist();
+        wishlist.setMember(member);
+        member.setWishlist(wishlist);
 
         return memberRepository.save(member);
     }
@@ -122,7 +134,10 @@ public class MemberService {
                 .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다"));
 
         MemberInfoDto memberInfoDto = new MemberInfoDto();
-        BeanUtils.copyProperties(member, memberInfoDto);
+        memberInfoDto.setLoginId(member.getLoginId());
+        memberInfoDto.setMemberName(member.getMemberName());
+        memberInfoDto.setEmail(member.getEmail());
+        memberInfoDto.setPhoneNumber(member.getPhoneNumber());
 
         return memberInfoDto;
     }
@@ -221,5 +236,63 @@ public class MemberService {
                         .flatMap(memberRepository::findOneWithAuthoritiesByLoginId)
                         .orElseThrow(() -> new NotFoundMemberException("Member not found"))
         );
+    }
+
+    public MyPageDto getUserPageInfo(String loginId) {
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(()->new MemberNotFoundException("사용자를 찾을 수 없습니다."));
+        MyPageDto myPageDto = new MyPageDto();
+
+        myPageDto.setLoginId(member.getLoginId());
+        myPageDto.setMemberName(member.getMemberName());
+        myPageDto.setCouponCount((long) member.getCoupons().size());
+        myPageDto.setWishListCount((long) member.getWishlist().getItems().size());
+
+        return myPageDto;
+    }
+
+    public List<CouponDto> getUserCoupons(String loginId) {
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(()->new MemberNotFoundException("사용자를 찾을 수 없습니다."));
+
+        List<CouponDto> couponDtos = new ArrayList<>();
+        List<Coupon> coupons = member.getCoupons();
+        for(Coupon coupon : coupons){
+            CouponDto couponDto = new CouponDto();
+
+            couponDto.setCouponId(coupon.getId());
+            couponDto.setCouponName(coupon.getCouponName());
+            couponDto.setDiscountType(coupon.getDiscountType());
+            couponDto.setDiscountValue(coupon.getDiscountValue());
+            couponDto.setValidTo(coupon.getValidTo());
+            couponDto.setValidFrom(coupon.getValidFrom());
+            couponDto.setMinimumOrderPrice(coupon.getMinimumOrderPrice());
+
+            couponDtos.add(couponDto);
+        }
+
+        return couponDtos;
+    }
+
+    public List<WishDto> getUserWishList(String loginId) {
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(()->new MemberNotFoundException("사용자를 찾을 수 없습니다."));
+
+        List<WishDto> WishDtos = new ArrayList<>();
+        List<Item> items = member.getWishlist().getItems();
+        for(Item item: items){
+            WishDto wishDto = new WishDto();
+
+            wishDto.setItemId(item.getId());
+            wishDto.setItemName(item.getName());
+            wishDto.setItemTotalPrice(item.getItemPrice());
+            wishDto.setDiscountRate(item.getDiscountRate());
+            wishDto.setSaleItemPrice((int) (item.getItemPrice() * (100 - item.getDiscountRate() * 0.01)));
+            wishDto.setPromotionImageUrl(item.getItemDetail().getPromotionImageUrl());
+
+            WishDtos.add(wishDto);
+        }
+
+        return WishDtos;
     }
 }

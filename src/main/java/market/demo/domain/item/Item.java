@@ -2,6 +2,7 @@ package market.demo.domain.item;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
@@ -17,6 +18,7 @@ import static jakarta.persistence.FetchType.*;
 
 @Entity
 @Getter
+@Setter
 @Slf4j
 public class Item {
 

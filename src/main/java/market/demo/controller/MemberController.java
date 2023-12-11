@@ -6,9 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.member.Member;
 import market.demo.domain.member.jwt.JwtFilter;
 import market.demo.domain.member.jwt.TokenProvider;
+import market.demo.dto.itemdetailinfo.CouponDto;
+import market.demo.dto.itemdetailinfo.WishDto;
 import market.demo.dto.jwt.LoginDto;
 import market.demo.dto.jwt.TokenDto;
 import market.demo.dto.jwt.MemberDto;
+import market.demo.dto.mypage.MyPageDto;
 import market.demo.dto.recoverypassword.FindIdDto;
 import market.demo.dto.social.CustomOAuth2User;
 import market.demo.dto.MemberDeletionRequest;
@@ -22,6 +25,7 @@ import market.demo.dto.registermember.EmailAvailabilityDto;
 import market.demo.dto.registermember.LoginIdAvailabilityDto;
 import market.demo.repository.MemberRepository;
 import market.demo.service.MemberService;
+import market.demo.service.OrderService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +36,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -42,6 +47,7 @@ public class MemberController {
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final MemberService memberService;
+    private final OrderService orderService;
 
     //5 일반 회원가입
     @PostMapping("/check-loginid")
@@ -154,6 +160,22 @@ public class MemberController {
 
         return new ResponseEntity<>(new TokenDto(jwt), httpHeaders, HttpStatus.OK);
     }
-    //
+
+    //23 마이페이지, 개인정보, 찜한것, 쿠폰 정보 노출
+    @GetMapping("/mypage/{loginId}")
+    public ResponseEntity<MyPageDto> userPage(@PathVariable("loginId") String loginId){
+        return ResponseEntity.ok(memberService.getUserPageInfo(loginId));
+    }
+
+    @GetMapping("/mypage/coupons/{loginId}")
+    public ResponseEntity<List<CouponDto>> userCoupon(@PathVariable("loginId") String loginId){
+        return ResponseEntity.ok(memberService.getUserCoupons(loginId));
+    }
+
+    @GetMapping("/mypage/wishlist/{loginId}")
+    public ResponseEntity<List<WishDto>> userWishList(@PathVariable("loginId") String loginId){
+        return ResponseEntity.ok(memberService.getUserWishList(loginId));
+    }
+
 }
 

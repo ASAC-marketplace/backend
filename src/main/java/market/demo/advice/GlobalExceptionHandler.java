@@ -55,6 +55,10 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<String> handelOrderNotFoundException (OrderNotFoundException exception){
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
+
     @ExceptionHandler(PaymentProcessingException.class)
     public ResponseEntity<String> handlePaymentProcessingException(PaymentProcessingException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
