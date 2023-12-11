@@ -7,7 +7,6 @@ import market.demo.dto.item.ItemDto;
 import market.demo.dto.item.ItemMainEndDto;
 import market.demo.dto.itemdetailinfo.ItemDetailDto;
 import market.demo.dto.itemdetailinfo.ItemReviewsDto;
-import market.demo.dto.order.OrderListDto;
 import market.demo.service.ItemService;
 import market.demo.service.OrderService;
 import org.springframework.http.ResponseEntity;
@@ -88,31 +87,6 @@ public class ItemController {
         return ResponseEntity.ok("찜하기 취소되었습니다.");
     }
 
-    //19번 장바구니
-    @PostMapping("/addorder")
-    public ResponseEntity<String> addOrder(@RequestParam String loginId, Long itemId){
-        orderService.addOrder(loginId, itemId);
-        return ResponseEntity.ok("장바구니 추가되었습니다.");
-    }
 
-    @GetMapping("/orderlist")
-    public ResponseEntity<OrderListDto> showOrderList(@RequestParam String loginId){
-        return ResponseEntity.ok(orderService.showOrderList(loginId));
-    }
 
-    //19번 아이템 개수 추가
-    @PostMapping("/orderlist/add")
-    public ResponseEntity<String> addOrderItem (@RequestParam String loginId,
-                                                @RequestBody Long orderId, Long itemId){
-        orderService.addOrderItem(loginId, orderId, itemId);
-
-        return ResponseEntity.ok("장바구니 추가되었습니다.");
-    }
-
-    //19번 아이템 개수 추가
-    @PostMapping("/orderlist/minus")
-    public ResponseEntity<String> minusOrderItem (@RequestParam String loginId){
-
-        return ResponseEntity.ok("장바구니 추가되었습니다.");
-    }
 }

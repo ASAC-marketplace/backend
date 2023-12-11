@@ -2,6 +2,7 @@ package market.demo.domain.order;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import market.demo.domain.member.Member;
 
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
+@Setter
 public class Cart {
 
     @Id @GeneratedValue
@@ -23,5 +25,16 @@ public class Cart {
     private Member member;
 
     @OneToMany(mappedBy = "cart", cascade = ALL)
-    private List<CartItem> items = new ArrayList<>();
+    private List<CartItem> cartItems = new ArrayList<>();
+
+    private Long amount;
+    private Long salesTotalAmount;
+    private Long totalAmount;
+
+    public void addCartItem(CartItem cartItem) {
+        cartItems.add(cartItem);
+        if (cartItem.getCart() != this) {
+            cartItem.setCart(this);
+        }
+    }
 }

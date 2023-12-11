@@ -11,7 +11,6 @@ import market.demo.dto.jwt.LoginDto;
 import market.demo.dto.jwt.TokenDto;
 import market.demo.dto.jwt.MemberDto;
 import market.demo.dto.mypage.MyPageDto;
-import market.demo.dto.order.OrderItemDto;
 import market.demo.dto.social.CustomOAuth2User;
 import market.demo.dto.MemberDeletionRequest;
 import market.demo.dto.changememberinfo.CheckMemberInfoDto;
@@ -22,7 +21,6 @@ import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.recoverypassword.RecoveryPasswordRequestDto;
 import market.demo.dto.registermember.EmailAvailabilityDto;
 import market.demo.dto.registermember.LoginIdAvailabilityDto;
-import market.demo.repository.OrderRepository;
 import market.demo.service.MemberService;
 import market.demo.service.OrderService;
 import org.springframework.http.HttpHeaders;
@@ -154,26 +152,21 @@ public class MemberController {
         return new ResponseEntity<>(new TokenDto(jwt), httpHeaders, HttpStatus.OK);
     }
 
-    //23 마이페이지
-    @GetMapping("/mypage")
-    public ResponseEntity<MyPageDto> userPage(@RequestParam String loginId){
+    //23 마이페이지, 개인정보, 찜한것, 쿠폰 정보 노출
+    @GetMapping("/mypage/{loginId}")
+    public ResponseEntity<MyPageDto> userPage(@PathVariable("loginId") String loginId){
         return ResponseEntity.ok(memberService.getUserPageInfo(loginId));
     }
 
-    @GetMapping("/mypage/coupons")
-    public ResponseEntity<List<CouponDto>> userCoupon(@RequestParam String loginId){
+    @GetMapping("/mypage/coupons/{loginId}")
+    public ResponseEntity<List<CouponDto>> userCoupon(@PathVariable("loginId") String loginId){
         return ResponseEntity.ok(memberService.getUserCoupons(loginId));
     }
 
-    @GetMapping("/mypage/wishlist")
-    public ResponseEntity<List<WishDto>> userWishList(@RequestParam String loginId){
+    @GetMapping("/mypage/wishlist/{loginId}")
+    public ResponseEntity<List<WishDto>> userWishList(@PathVariable("loginId") String loginId){
         return ResponseEntity.ok(memberService.getUserWishList(loginId));
     }
 
-    //결재, 주문 내역 확인, 미완료
-    @GetMapping("/mypage/orderlist")
-    public ResponseEntity<List<OrderItemDto>> userOrderList(@RequestParam String loginId){
-        return ResponseEntity.ok(orderService.getUserOrderList(loginId));
-    }
 }
 

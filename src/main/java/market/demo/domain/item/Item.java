@@ -2,6 +2,7 @@ package market.demo.domain.item;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
 
@@ -15,6 +16,7 @@ import static jakarta.persistence.FetchType.*;
 
 @Entity
 @Getter
+@Setter
 public class Item {
 
     @Id
