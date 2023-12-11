@@ -63,10 +63,10 @@ public class Member {
     @Embedded
     private Address address;
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders;
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews;
 
     @OneToMany(mappedBy = "issuedTo")
@@ -89,8 +89,9 @@ public class Member {
     }
 
     @Builder
-    public static Member createMemberWithProviderInfo(String email, String loginId, String password, String phoneNumber, String provider, String providerId) {
+    public static Member createMemberWithProviderInfo(String memberName, String email, String loginId, String password, String phoneNumber, String provider, String providerId) {
         Member member = new Member();
+        member.memberName = memberName;
         member.email = email;
         member.loginId = loginId;
         member.password = password;
@@ -141,7 +142,7 @@ public class Member {
     }
 
     // 테스트 데이터
-    public Member(String memberName, String loginId, String email, String password,String phoneNumber, Address address) {
+    public Member(String memberName, String loginId ,String email, String password,String phoneNumber, Address address) {
         this.memberName = memberName;
         this.loginId = loginId;
         this.email = email;

@@ -3,6 +3,7 @@ package market.demo.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import market.demo.domain.member.Member;
 import market.demo.domain.member.jwt.JwtFilter;
 import market.demo.domain.member.jwt.TokenProvider;
 import market.demo.dto.itemdetailinfo.CouponDto;
@@ -11,6 +12,7 @@ import market.demo.dto.jwt.LoginDto;
 import market.demo.dto.jwt.TokenDto;
 import market.demo.dto.jwt.MemberDto;
 import market.demo.dto.mypage.MyPageDto;
+import market.demo.dto.recoverypassword.FindIdDto;
 import market.demo.dto.social.CustomOAuth2User;
 import market.demo.dto.MemberDeletionRequest;
 import market.demo.dto.changememberinfo.CheckMemberInfoDto;
@@ -21,6 +23,7 @@ import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.recoverypassword.RecoveryPasswordRequestDto;
 import market.demo.dto.registermember.EmailAvailabilityDto;
 import market.demo.dto.registermember.LoginIdAvailabilityDto;
+import market.demo.repository.MemberRepository;
 import market.demo.service.MemberService;
 import market.demo.service.OrderService;
 import org.springframework.http.HttpHeaders;
@@ -34,6 +37,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/members")
@@ -51,6 +55,7 @@ public class MemberController {
         boolean isAvailable = memberService.checkLoginIdAvailability(dto.getLoginId());
         return ResponseEntity.ok(isAvailable);
     }
+
     @PostMapping("/check-email")
     public ResponseEntity<Boolean> checkEmailAvailability(@Valid @RequestBody EmailAvailabilityDto dto) {
         boolean isAvailable = memberService.checkEmailAvailability(dto.getEmail());
@@ -67,47 +72,50 @@ public class MemberController {
 
     //28 회원 탈퇴
     @DeleteMapping("/delete")
-    public ResponseEntity<?> deleteMember(@RequestBody MemberDeletionRequest request) {
+    public ResponseEntity<?> deleteMember(@Valid @RequestBody MemberDeletionRequest request) {
         memberService.deleteMember(request);
         return ResponseEntity.ok().body("회원 탈퇴 성공");
     }
     //
 
-    //비밀번호 찾기
+    //이름 이메일 검증
     @PostMapping("/verify-credentials")
-    public ResponseEntity<String> verifyCredentialsInRecoveryPassword(@RequestBody RecoveryPasswordRequestDto request) {
-        boolean exists = memberService.isMemberExists(request.getLoginId(), request.getEmail());
-        if (exists) {
-            return ResponseEntity.ok("OK");
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 실패");
-        }
+    public ResponseEntity<String> verifyCredentialsInRecoveryPassword(@Valid @RequestBody
+                                                                      RecoveryPasswordRequestDto request) {
+        memberService.verifyIdAndEmail(request.getLoginId(), request.getEmail());
+        return ResponseEntity.ok("OK");
+    }
+
+    //아이디 찾기로 수정
+    @PostMapping("/findloginid")
+    public ResponseEntity<String> findLoginId(@Valid @RequestBody FindIdDto findIdDto) {
+        String loginId = memberService.findLoginIdByEmail(findIdDto);
+        return ResponseEntity.ok(loginId);
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<String> changePassword(@RequestBody PasswordChangeDto passwordChangeDto) {
+    public ResponseEntity<String> changePassword(@Valid @RequestBody PasswordChangeDto passwordChangeDto) {
         memberService.changePassword(passwordChangeDto);
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
     }
-    //
 
     //26 api 회원 비밀번호 확인
     @PostMapping("/recheck-password")
-    public ResponseEntity<String> recheckPassword(@RequestBody CheckMemberInfoDto checkMemberInfoDto){
+    public ResponseEntity<String> recheckPassword(@Valid @RequestBody CheckMemberInfoDto checkMemberInfoDto) {
         memberService.checkPassword(checkMemberInfoDto.getLoginId(), checkMemberInfoDto.getPassword());
         return ResponseEntity.ok("비밀번호 일치합니다.");
     }
 
     //26 api 개인정보 보내기
     @GetMapping("/modify-member")
-    public ResponseEntity<MemberInfoDto> sendMemberinfo(@RequestParam String loginId){
-        MemberInfoDto memberInfoDto = memberService.getMemberinfo(loginId);
+    public ResponseEntity<MemberInfoDto> sendMemberInfo(@RequestParam String loginId) {
+        MemberInfoDto memberInfoDto = memberService.getMemberInfo(loginId);
         return ResponseEntity.ok(memberInfoDto);
     }
 
-    //26 api 수정하기
+    //26 api 개인정보 수정하기
     @PostMapping("/modify-member")
-    public ResponseEntity<String> modifyMemberinfo(@RequestParam String loginId, @RequestBody ModifyMemberInfoDto modifyMemberInfoDto){
+    public ResponseEntity<String> modifyMemberInfo(@RequestParam String loginId, @RequestBody ModifyMemberInfoDto modifyMemberInfoDto) {
         memberService.modifymember(loginId, modifyMemberInfoDto);
         return ResponseEntity.ok("수정이 완료되었습니다.");
     }
@@ -115,21 +123,22 @@ public class MemberController {
 
     //40 api소셜 로그인시 회원가입
     @PostMapping("/verify-password")
-    public ResponseEntity<?> verifyAndUpdateSocialLogin(@AuthenticationPrincipal CustomOAuth2User customUser,
-                                            @RequestBody PasswordVerificationRequestDto request) {
-        if (customUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("사용자 인증 실패");
-        }
+    public ResponseEntity<?> verifyAndUpdateSocialLogin(
+            @Valid
+            @RequestBody
+            PasswordVerificationRequestDto request) {
         // 비밀번호 검증 및 소셜 로그인 정보 업데이트
-        memberService.verifyPassword(customUser.getName(), request.getPassword());
-        memberService.updateSocialInfo(customUser.getEmail(), customUser.getProvider(), customUser.getProviderId());
+        memberService.verifyPassword(request.getPassword(), request.getEmail());
+        memberService.updateSocialInfo(request.getEmail(), request.getProvider(), request.getProviderId());
         return ResponseEntity.ok().body("비밀번호 검증 및 소셜 로그인 정보 업데이트 성공");
     }
 
     @PostMapping("/socialRegister")
-    public ResponseEntity<String> registerMember(@AuthenticationPrincipal CustomOAuth2User customUser,
-                                                 @RequestBody market.demo.dto.social.MemberRegistrationDto request) {
-        memberService.socialRegisterNewMember(request, customUser.getEmail(), customUser.getProvider(), customUser.getProviderId());
+    public ResponseEntity<String> registerMember(
+            @Valid
+            @RequestBody market.demo.dto.social.MemberRegistrationDto
+                    request) {
+        memberService.socialRegisterNewMember(request, request.getProviderEmail(), request.getProvider(), request.getProviderId());
         return ResponseEntity.ok().body("회원 등록 성공");
     }
     //
