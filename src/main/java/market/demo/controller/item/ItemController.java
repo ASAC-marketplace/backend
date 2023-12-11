@@ -1,6 +1,7 @@
 package market.demo.controller.item;
 
 import lombok.RequiredArgsConstructor;
+import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
 import market.demo.dto.item.ItemDto;
 import market.demo.dto.item.ItemMainEndDto;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/items")
@@ -19,10 +21,12 @@ public class ItemController {
     private final ItemService itemService;
 
     //배너 추가
-    @GetMapping("/recent")
-    public List<ItemDto> getRecentProducts(@RequestParam(defaultValue = "1") int page,
-                                           @RequestParam(defaultValue = "10") int size) {
-        return itemService.getRecentProducts(page, size);
+    @GetMapping("/status")
+    public ResponseEntity<Map<ItemStatus, List<ItemDto>>> getItemsByStatus(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Map<ItemStatus, List<ItemDto>> itemsByStatus = itemService.getItemsByStatus(page, size);
+        return ResponseEntity.ok(itemsByStatus);
     }
 
     //9 메인 마감세일

@@ -80,9 +80,10 @@ public class ItemTestDataCreator {
             PromotionType promotionType = getRandomPromotionType();
             LocalDate date = createRandomDate(2021, 2023);
             String brand = getRandomBrandName();
+            ItemStatus status = getRandomItemStatus();
 
             Item item = new Item(name, "Description for " + name, category,
-                    discountRate, ItemStatus.NEW,
+                    discountRate, status,
                     (int) (Math.random() * 100), date, promotionType, price, brand);
 
             ItemDetail itemDetail = new ItemDetail(item, getRandomDeliveryMethod(),
@@ -213,6 +214,11 @@ public class ItemTestDataCreator {
         private String getRandomBrandName() {
             String[] brandNames = {"삼성", "애플", "구글", "아마존", "나이키", "아디다스", "LG", "소니", "샤오미"};
             return brandNames[ThreadLocalRandom.current().nextInt(brandNames.length)];
+        }
+
+        private ItemStatus getRandomItemStatus() {
+            ItemStatus[] statuses = ItemStatus.values();
+            return statuses[ThreadLocalRandom.current().nextInt(statuses.length)];
         }
     }
 }
