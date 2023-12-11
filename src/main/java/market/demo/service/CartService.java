@@ -11,13 +11,13 @@ import market.demo.dto.cart.CartItemDto;
 import market.demo.exception.ItemNotFoundException;
 import market.demo.exception.MemberNotFoundException;
 import market.demo.repository.*;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -29,61 +29,94 @@ public class CartService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
 
-
-    public void insertCart(String loginId, Long itemId) {
-        Member member = memberRepository.findByLoginId(loginId)
+    private Member getMemberByLoginId(String loginId) {
+        return memberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다. 로그인 해주세요"));
-        Item item = itemRepository.findById(itemId)
+    }
+
+    private Item getItemById(Long itemId) {
+        return itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException("아이템을 찾을 수 없습니다."));
+    }
 
-        //해당 멤버에 장바구니 내역이 있는지 여부
-        Optional<Cart> optionalCart = cartRepository.findByMember(member);
+    private Cart getCartById(Long cartId) {
+        return cartRepository.findById(cartId)
+                .orElseThrow(() -> new IllegalArgumentException("장바구니를 찾을 수 없습니다."));
+    }
+
+    private Cart getCartByMember(Member member){
+        return cartRepository.findByMember(member)
+                .orElseThrow(() -> new IllegalArgumentException("장바구니를 찾을 수 없습니다."));
+    }
+
+    private CartItem getCartItemByCartAndItem(Cart cart, Item item){
+        return cartItemRepository.findByCartAndItem(cart, item)
+                .orElseThrow(() -> new IllegalArgumentException("cartItem을 찾을 수 없습니다."));
+    }
+
+
+    private Cart getOrCreateCart(Member member) {
+        return cartRepository.findByMember(member).orElseGet(() -> createNewCart(member));
+    }
+    @NotNull
+    private  Cart createNewCart(Member member){
         Cart cart = new Cart();
-        if(optionalCart.isEmpty()){
-            cart.setMember(member);
-            cart.setAmount(0L);
-            cart.setSalesTotalAmount(0L);
-            cart.setTotalAmount(0L);
-        }
-        else cart = optionalCart.get();
+        cart.setMember(member);
+        cart.setAmount(0L);
+        cart.setSalesTotalAmount(0L);
+        cart.setTotalAmount(0L);
 
-        List<CartItem> cartItemList = cart.getCartItems();
-        for(CartItem cartItem: cartItemList){
-            if(cartItem.getItem() == item) throw new IllegalArgumentException("이미 장바구니에 넣은 상품입니다.");
-        }
-
+        return cart;
+    }
+    @NotNull
+    private CartItem insertNewItemAndCart(Item item, Cart cart){
         CartItem cartItem = new CartItem();
         cartItem.setItem(item);
         cartItem.setQuantity((int)1);
         cartItem.setTotalPrice(item.getItemPrice() * (long) cartItem.getQuantity());
         cartItem.setCart(cart);
-        Long discountPrice = (long) (item.getItemPrice()* item.getDiscountRate() * 0.01);
 
-        //장바구니 추가
+        return cartItem;
+    }
+
+    private long calDiscountPriceByItem(@NotNull Item item){
+        return (long) (item.getItemPrice()* item.getDiscountRate() * 0.01);
+    }
+
+
+    private static long calDiscountPercentage(@NotNull Item item){
+        return (long) ((100 - item.getDiscountRate()) * 0.01);
+    }
+
+
+    private void addCartItemIntoCart(@NotNull Cart cart, CartItem cartItem, @NotNull Item item){
         cart.addCartItem(cartItem);
         cart.setAmount(cart.getAmount() + item.getItemPrice());
-        cart.setSalesTotalAmount(cart.getSalesTotalAmount() + discountPrice);
+        cart.setSalesTotalAmount(cart.getSalesTotalAmount() + calDiscountPriceByItem(item));
         cart.setTotalAmount(cart.getAmount() - cart.getSalesTotalAmount());
 
         cartRepository.save(cart);
     }
 
-    //장바구니 확인
-    public CartDto showCart(String loginId) {
-        Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다. 로그인 해주세요"));
-
-        Cart cart = cartRepository.findByMember(member)
-                .orElseThrow(() -> new IllegalArgumentException("장바구니를 찾을 수 없습니다."));
+    public void insertCart(String loginId, Long itemId) {
+        Member member = getMemberByLoginId(loginId);
+        Item item = getItemById(itemId);
+        Cart cart = getOrCreateCart(member); //해당 멤버에 장바구니 내역이 있는지 여부
 
         List<CartItem> cartItemList = cart.getCartItems();
-        List<CartItemDto> cartItemDtos = new ArrayList<>();
+        cartItemList.stream().filter(cartItem -> cartItem.getItem() == item).forEach(cartItem -> {
+            throw new IllegalArgumentException("이미 장바구니에 넣은 상품입니다.");
+        });
+        CartItem cartItem = insertNewItemAndCart(item, cart);
 
-        for(CartItem cartItem: cartItemList){
-            CartItemDto cartItemDto = getCartItemDto(cartItem);
-            cartItemDtos.add(cartItemDto);
-        }
+        addCartItemIntoCart(cart, cartItem, item);//장바구니 추가
+    }
 
+    private List<CartItemDto> createNewCartItemDtosByCartItems(@NotNull List<CartItem> cartItems){
+        return cartItems.stream().map(CartService::getCartItemDto).collect(Collectors.toList());
+    }
+
+    private @NotNull CartDto createNewCartDtoByCart(@NotNull Cart cart, List<CartItemDto> cartItemDtos){
         CartDto cartDto = new CartDto();
         cartDto.setCartId(cart.getId());
         cartDto.setCartItemDtos(cartItemDtos);
@@ -94,8 +127,15 @@ public class CartService {
         return cartDto;
     }
 
-    @NotNull
-    private static CartItemDto getCartItemDto(CartItem cartItem) {
+    //장바구니 확인
+    public CartDto showCart(String loginId) {
+        Member member = getMemberByLoginId(loginId);
+        Cart cart = getCartByMember(member);
+
+        return createNewCartDtoByCart(cart, createNewCartItemDtosByCartItems(cart.getCartItems()));
+    }
+
+    private static @NotNull CartItemDto getCartItemDto(@NotNull CartItem cartItem) {
         Item item  = cartItem.getItem();
         CartItemDto cartItemDto = new CartItemDto();
 
@@ -105,66 +145,52 @@ public class CartService {
         cartItemDto.setItemPrice(item.getItemPrice());
         cartItemDto.setItemCount(cartItem.getQuantity());
         cartItemDto.setTotalPrice(item.getItemPrice() * cartItem.getQuantity());
-        cartItemDto.setSalePrice((int) (cartItemDto.getTotalPrice()
-                * (100 - item.getDiscountRate()) * 0.01));
+        cartItemDto.setSalePrice((int) (cartItemDto.getTotalPrice() * calDiscountPercentage(item)));
         cartItemDto.setPromotionImageUrl(item.getItemDetail().getPromotionImageUrl());
         return cartItemDto;
     }
 
+    private void saveCartItemByQuantity(@NotNull CartItem cartItem, @NotNull Item item, int i){
+        cartItem.setQuantity(cartItem.getQuantity() + i);
+        cartItem.setTotalPrice((long) cartItem.getQuantity() * item.getItemPrice());
+        cartItemRepository.save(cartItem);
+    }
+
+    private void saveCartByCarItemChanges(@NotNull Cart cart, @NotNull Item item, int i ){
+        cart.setAmount(cart.getAmount() + (long) item.getItemPrice() * i);
+        cart.setSalesTotalAmount((long) (cart.getSalesTotalAmount() + item.getItemPrice() * calDiscountPercentage(item) * i));
+        cart.setTotalAmount(cart.getAmount() - cart.getSalesTotalAmount());
+        cartRepository.save(cart);
+    }
+
     public void changeCartItem(Long cartId, Long itemId, int i) {
-        try {
-            Cart cart = cartRepository.findById(cartId)
-                    .orElseThrow(() -> new IllegalArgumentException("장바구니를 찾을 수 없습니다."));
-            Item item = itemRepository.findById(itemId)
-                    .orElseThrow(() -> new ItemNotFoundException("상품을 찾을 수 없습니다."));
+        Cart cart = getCartById(cartId);
+        Item item = getItemById(itemId);
+        CartItem cartItem =getCartItemByCartAndItem(cart, item);
 
-            CartItem cartItem = cartItemRepository.findByCartAndItem(cart, item)
-                    .orElseThrow(() -> new IllegalArgumentException("cartItem을 찾을 수 없습니다."));
+        if(item.getStockQuantity() < cartItem.getQuantity() + i) throw new IllegalArgumentException("해당 상품 재고가 부족합니다.");
+        if(cartItem.getQuantity() + i < 1 ) throw new IllegalArgumentException("0개 이하는 주문하실 수 없습니다.");
 
-            cartItem.setQuantity(cartItem.getQuantity() + i);
+        saveCartItemByQuantity(cartItem, item, i); // 아이템 수량 조정
+        saveCartByCarItemChanges(cart, item, i); // 수량 반영하여 cart에 저장
+    }
 
-            if (item.getStockQuantity() - cartItem.getQuantity() < 0) {
-                throw new IllegalArgumentException("해당 상품 재고가 부족합니다.");
-            }
-            if(cartItem.getQuantity() < 1 ){
-                throw new IllegalArgumentException("0개 이하는 주문하실 수 없습니다.");
-            }
+    private void saveCartByDeleteItem(@NotNull Cart cart, @NotNull CartItem cartItem, Item item){
+        cart.setAmount(cart.getAmount() - cartItem.getTotalPrice());
+        cart.setSalesTotalAmount(cart.getSalesTotalAmount() - calDiscountPriceByItem(item) * cartItem.getQuantity());
+        cart.setTotalAmount(cart.getAmount() - cart.getSalesTotalAmount());
 
-            cartItem.setTotalPrice((long) cartItem.getQuantity() * item.getItemPrice());
-            cartItemRepository.save(cartItem);
-
-            cart.setAmount(cart.getAmount() + (long) item.getItemPrice() * i);
-            cart.setSalesTotalAmount((long) (cart.getSalesTotalAmount() +
-                    item.getItemPrice() * (100 - item.getDiscountRate()) * 0.01 * i));
-            cart.setTotalAmount(cart.getAmount() - cart.getSalesTotalAmount());
-            cartRepository.save(cart);
-        } catch (IllegalArgumentException | ItemNotFoundException e) {
-            log.error("오류 발생: " + e.getMessage());
-            throw e; // 예외를 다시 던져서 상위 수준에서 처리할 수 있도록 함
-        } catch (Exception e) {
-            log.error("서버 내부 오류: " + e.getMessage());
-            throw new RuntimeException("서버 내부 오류 발생", e); // 예외를 다시 던져서 상위 수준에서 처리할 수 있도록 함
-        }
+        cartRepository.save(cart);
     }
 
     public void deleteCart(String loginId, Long itemId) {
-        Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다. 로그인 해주세요"));
-        Cart cart = cartRepository.findByMember(member)
-                .orElseThrow(() -> new IllegalArgumentException("장바구니를 찾을 수 없습니다."));
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new ItemNotFoundException("상품을 찾을 수 없습니다."));
-        CartItem cartItem = cartItemRepository.findByCartAndItem(cart, item)
-                .orElseThrow(() -> new IllegalArgumentException("cartItem을 찾을 수 없습니다."));
+        Member member = getMemberByLoginId(loginId);
+        Cart cart = getCartByMember(member);
+        Item item = getItemById(itemId);
+        CartItem cartItem = getCartItemByCartAndItem(cart, item);
 
-        long discountPrice = (long) (item.getItemPrice()* item.getDiscountRate() * 0.01);
-
-        cart.setAmount(cart.getAmount() - cartItem.getTotalPrice());
-        cart.setSalesTotalAmount(cart.getSalesTotalAmount() - discountPrice * cartItem.getQuantity());
-        cart.setTotalAmount(cart.getAmount() - cart.getSalesTotalAmount());
-
-        cartItemRepository.deleteById(cartItem.getId());
+        saveCartByDeleteItem(cart, cartItem, item);
+        cartItemRepository.deleteById(cartItem.getId()); // 카트 아이템 삭제
     }
-
 
 }
