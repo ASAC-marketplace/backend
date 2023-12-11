@@ -2,6 +2,7 @@ package market.demo.controller.item;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
 import market.demo.dto.item.ItemDto;
@@ -19,6 +20,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/items")
 @RequiredArgsConstructor
+@Slf4j
 public class ItemController {
     private final ItemService itemService;
     private final OrderService orderService;
@@ -81,12 +83,14 @@ public class ItemController {
     //23번 찜하기
     @PostMapping("/yeswish")
     public ResponseEntity<String> addWishList(@RequestParam String loginId, Long itemId){
+        log.info("찜하기 추가");
         itemService.addWish(loginId, itemId);
         return ResponseEntity.ok("찜하기 추가되었습니다.");
     }
 
     @PostMapping("/nowish")
     public ResponseEntity<String> minusWishList(@RequestParam String loginId, Long itemId){
+        log.info("찜하기 삭제");
         itemService.minusWish(loginId, itemId);
         return ResponseEntity.ok("찜하기 취소되었습니다.");
     }

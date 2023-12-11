@@ -142,7 +142,7 @@ public class Member {
     }
 
     // 테스트 데이터
-    public Member(String memberName, String email, String password, String loginId ,String phoneNumber, Address address) {
+    public Member(String memberName, String loginId ,String email, String password,String phoneNumber, Address address) {
         this.memberName = memberName;
         this.loginId = loginId;
         this.email = email;

@@ -36,8 +36,6 @@ public class CartController {
 
     @PostMapping("/item/add")
     public ResponseEntity<String> addCartItem (@RequestParam Long cartId, Long itemId){
-        System.out.println(cartId);
-        System.out.println(itemId);
         cartService.changeCartItem(cartId, itemId, 1);
         return ResponseEntity.ok("아이템 개수 추가 성공");
     }

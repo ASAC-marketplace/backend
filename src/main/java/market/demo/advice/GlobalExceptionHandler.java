@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(PaymentProcessingException.class)
+    @ExceptionHandler(value = PaymentProcessingException.class)
     public ResponseEntity<String> handlePaymentProcessingException(PaymentProcessingException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
     }
