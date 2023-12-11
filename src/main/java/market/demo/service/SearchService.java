@@ -2,6 +2,7 @@ package market.demo.service;
 
 import lombok.RequiredArgsConstructor;
 import market.demo.domain.search.ItemSearchCondition;
+import market.demo.dto.search.CountsAndPriceRangeDto;
 import market.demo.dto.search.ItemAutoDto;
 import market.demo.dto.search.ItemSearchDto;
 import market.demo.dto.search.ItemSearchResponse;
@@ -23,5 +24,9 @@ public class SearchService {
 
    public List<ItemAutoDto> findItemNamesByKeyword(String keyword, int limit) {
        return itemRepositoryCustom.findItemNamesByKeyword(keyword, limit);
+   }
+
+   public CountsAndPriceRangeDto getCountsAndPrice(ItemSearchCondition condition) {
+       return itemRepositoryCustom.getCounts(condition);
    }
 }
