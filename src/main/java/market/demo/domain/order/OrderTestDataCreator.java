@@ -21,7 +21,7 @@ import java.util.stream.IntStream;
 @Component
 @RequiredArgsConstructor
 public class OrderTestDataCreator {
-/*
+
     private final InitService initService;
 
     public void init() {
@@ -68,5 +68,5 @@ public class OrderTestDataCreator {
                 em.persist(delivery);
             }
         }
-    }*/
+    }
 }
