@@ -1,10 +1,7 @@
 package market.demo.service;
 
-import com.querydsl.core.types.Projections;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import io.micrometer.common.util.internal.logging.InternalLogger;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +19,6 @@ import market.demo.dto.itemdetailinfo.CouponDto;
 import market.demo.dto.itemdetailinfo.ItemDetailDto;
 import market.demo.dto.itemdetailinfo.ItemReviewsDto;
 import market.demo.dto.itemdetailinfo.ReviewDto;
-import market.demo.dto.search.CategoryDto;
 import market.demo.exception.*;
 import market.demo.repository.*;
 import org.jetbrains.annotations.NotNull;

@@ -2,6 +2,7 @@ package market.demo.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import market.demo.exception.InvalidDataException;
 import market.demo.repository.ItemRepository;
 import market.demo.repository.MemberRepository;
 import market.demo.repository.OrderItemRepository;
@@ -18,7 +19,4 @@ public class OrderService {
     private final ItemRepository itemRepository;
     private final MemberRepository memberRepository;
     private final OrderItemRepository orderItemRepository;
-
-
-
 }
