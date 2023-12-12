@@ -1,4 +1,4 @@
-package market.demo.controller;
+package market.demo.controller.member;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
