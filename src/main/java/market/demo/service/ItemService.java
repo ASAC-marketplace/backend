@@ -22,7 +22,6 @@ import market.demo.dto.itemdetailinfo.CouponDto;
 import market.demo.dto.itemdetailinfo.ItemDetailDto;
 import market.demo.dto.itemdetailinfo.ItemReviewsDto;
 import market.demo.dto.itemdetailinfo.ReviewDto;
-import market.demo.dto.search.CategoryDto;
 import market.demo.exception.*;
 import market.demo.repository.*;
 import org.jetbrains.annotations.NotNull;
