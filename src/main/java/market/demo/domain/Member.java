@@ -1,3 +1,4 @@
+/**
 package market.demo.domain;
 
 import jakarta.persistence.*;
@@ -83,3 +84,4 @@ public class Member {
         this.password = encodedPassword;
     }
 }
+ **/

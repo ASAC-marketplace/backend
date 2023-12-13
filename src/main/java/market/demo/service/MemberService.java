@@ -1,33 +1,34 @@
 package market.demo.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import market.demo.domain.etc.Wishlist;
+import market.demo.domain.item.Item;
+import market.demo.domain.member.Coupon;
 import market.demo.domain.member.Member;
 import market.demo.domain.member.jwt.Authority;
+import market.demo.domain.status.OrderStatus;
 import market.demo.dto.MemberDeletionRequest;
 import market.demo.dto.changememberinfo.MemberInfoDto;
 import market.demo.dto.changememberinfo.ModifyMemberInfoDto;
+import market.demo.dto.itemdetailinfo.CouponDto;
+import market.demo.dto.itemdetailinfo.WishDto;
 import market.demo.dto.jwt.MemberDto;
-import market.demo.dto.recoverypassword.IdChangeDto;
+import market.demo.dto.mypage.MyPageDto;
+import market.demo.dto.recoverypassword.FindIdDto;
 import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.registermember.MemberRegistrationDto;
-import market.demo.exception.DuplicateMemberException;
-import market.demo.exception.InvalidPasswordException;
-import market.demo.exception.MemberNotFoundException;
-import market.demo.exception.NotFoundMemberException;
+import market.demo.exception.*;
 import market.demo.repository.MemberRepository;
 import market.demo.service.jwt.SecurityUtil;
-import org.springframework.beans.BeanUtils;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 @Service
 @Transactional
@@ -59,12 +60,26 @@ public class MemberService {
                 .phoneNumber(registrationDto.getPhoneNumber())
                 .build();
 
+        //찜하기 추가
+        Wishlist wishlist = new Wishlist();
+        wishlist.setMember(member);
+        member.setWishlist(wishlist);
+
         return memberRepository.save(member);
     }
 
     public void deleteMember(MemberDeletionRequest deletionRequest) {
         Member member = memberRepository.findById(deletionRequest.getMemberId())
                 .orElseThrow(() -> new MemberNotFoundException("멤버를 찾을 수 없습니다. ID: " + deletionRequest.getMemberId()));
+
+        // 주문 상태 확인
+        boolean hasActiveOrders = member.getOrders().stream()
+                .anyMatch(order -> order.getOrderStatus() == OrderStatus.PENDING || order.getOrderStatus() == OrderStatus.PROCESSING);
+
+        if (hasActiveOrders) {
+            throw new IllegalStateException("활성 주문이 존재하여 회원 탈퇴가 불가능합니다.");
+        }
+
         memberRepository.delete(member);
     }
 
@@ -72,17 +87,17 @@ public class MemberService {
         return memberRepository.existsByLoginIdAndEmail(loginId, email);
     }
 
-    public boolean changeId(IdChangeDto idChangeDto) {
-        if (!idChangeDto.getNewId().equals(idChangeDto.getConfirmId())) {
-            throw new IllegalArgumentException("아이디가 일치하지 않습니다.");
-        }
-
-        Member member = memberRepository.findByLoginId((idChangeDto.getLoginId())).get();
-        if (member == null) {
-            return false;
-        }
-        return true;
-    }
+//    public boolean changeId(IdChangeDto idChangeDto) {
+//        if (!idChangeDto.getNewId().equals(idChangeDto.getConfirmId())) {
+//            throw new IllegalArgumentException("아이디가 일치하지 않습니다.");
+//        }
+//
+//        Member member = memberRepository.findByLoginId((idChangeDto.getLoginId())).get();
+//        if (member == null) {
+//            return false;
+//        }
+//        return true;
+//    }
 
     public void changePassword(PasswordChangeDto passwordChangeDto) {
         if (!passwordChangeDto.getNewPassword().equals(passwordChangeDto.getConfirmPassword())) {
@@ -97,6 +112,12 @@ public class MemberService {
         memberRepository.save(member);
     }
 
+    public String findLoginIdByEmail(FindIdDto findIdDto) {
+        Member member = memberRepository.findByEmailAndMemberName(findIdDto.getEmail(),
+                        findIdDto.getMemberName())
+                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다."));
+        return member.getLoginId();
+    }
 
     public void checkPassword(String loginId, String password){
         Member member = memberRepository.findByLoginId(loginId)
@@ -105,12 +126,15 @@ public class MemberService {
         if(!member.getPassword().equals(password)) throw new InvalidPasswordException("비밀번호가 맞지 않습니다.");
     }
 
-    public MemberInfoDto getMemberinfo(String loginId) {
+    public MemberInfoDto getMemberInfo(String loginId) {
         Member member = memberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다"));
 
         MemberInfoDto memberInfoDto = new MemberInfoDto();
-        BeanUtils.copyProperties(member, memberInfoDto);
+        memberInfoDto.setLoginId(member.getLoginId());
+        memberInfoDto.setMemberName(member.getMemberName());
+        memberInfoDto.setEmail(member.getEmail());
+        memberInfoDto.setPhoneNumber(member.getPhoneNumber());
 
         return memberInfoDto;
     }
@@ -139,7 +163,12 @@ public class MemberService {
        memberRepository.save(member);
     }
 
-    public void verifyPassword(String email, String password) {
+    public void verifyIdAndEmail(String loginId, String email) {
+        Member member = memberRepository.findByLoginIdAndEmail(loginId, email)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+    }
+
+    public void verifyPassword(String password, String email) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
         if (!passwordEncoder.matches(password, member.getPassword())) {
@@ -156,6 +185,7 @@ public class MemberService {
 
     public void socialRegisterNewMember(market.demo.dto.social.MemberRegistrationDto registrationDto, String email, String provider, String providerId) {
         Member member = Member.createMemberWithProviderInfo(
+                registrationDto.getMemberName(),
                 email,
                 registrationDto.getLoginId(),
                 passwordEncoder.encode(registrationDto.getPassword()),
@@ -172,11 +202,16 @@ public class MemberService {
             throw new DuplicateMemberException("이미 가입되어 있는 유저입니다.");
         }
 
+        if (memberRepository.findByEmail(memberDto.getEmail()).isPresent()) {
+            throw new DuplicateMemberException("이미 사용중인 이메일입니다.");
+        }
+
         Authority authority = Authority.builder()
                 .authorityName("ROLE_USER")
                 .build();
 
         Member user = Member.builder()
+                .memberName(memberDto.getMemberName())
                 .loginId(memberDto.getLoginId())
                 .password(passwordEncoder.encode(memberDto.getPassword()))
                 .email(memberDto.getEmail())
@@ -198,5 +233,63 @@ public class MemberService {
                         .flatMap(memberRepository::findOneWithAuthoritiesByLoginId)
                         .orElseThrow(() -> new NotFoundMemberException("Member not found"))
         );
+    }
+
+    public MyPageDto getUserPageInfo(String loginId) {
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(()->new MemberNotFoundException("사용자를 찾을 수 없습니다."));
+        MyPageDto myPageDto = new MyPageDto();
+
+        myPageDto.setLoginId(member.getLoginId());
+        myPageDto.setMemberName(member.getMemberName());
+        myPageDto.setCouponCount((long) member.getCoupons().size());
+        myPageDto.setWishListCount((long) member.getWishlist().getItems().size());
+
+        return myPageDto;
+    }
+
+    public List<CouponDto> getUserCoupons(String loginId) {
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(()->new MemberNotFoundException("사용자를 찾을 수 없습니다."));
+
+        List<CouponDto> couponDtos = new ArrayList<>();
+        List<Coupon> coupons = member.getCoupons();
+        for(Coupon coupon : coupons){
+            CouponDto couponDto = new CouponDto();
+
+            couponDto.setCouponId(coupon.getId());
+            couponDto.setCouponName(coupon.getCouponName());
+            couponDto.setDiscountType(coupon.getDiscountType());
+            couponDto.setDiscountValue(coupon.getDiscountValue());
+            couponDto.setValidTo(coupon.getValidTo());
+            couponDto.setValidFrom(coupon.getValidFrom());
+            couponDto.setMinimumOrderPrice(coupon.getMinimumOrderPrice());
+
+            couponDtos.add(couponDto);
+        }
+
+        return couponDtos;
+    }
+
+    public List<WishDto> getUserWishList(String loginId) {
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(()->new MemberNotFoundException("사용자를 찾을 수 없습니다."));
+
+        List<WishDto> WishDtos = new ArrayList<>();
+        List<Item> items = member.getWishlist().getItems();
+        for(Item item: items){
+            WishDto wishDto = new WishDto();
+
+            wishDto.setItemId(item.getId());
+            wishDto.setItemName(item.getName());
+            wishDto.setItemTotalPrice(item.getItemPrice());
+            wishDto.setDiscountRate(item.getDiscountRate());
+            wishDto.setSaleItemPrice((int) (item.getItemPrice() * (100 - item.getDiscountRate() * 0.01)));
+            wishDto.setPromotionImageUrl(item.getItemDetail().getPromotionImageUrl());
+
+            WishDtos.add(wishDto);
+        }
+
+        return WishDtos;
     }
 }
