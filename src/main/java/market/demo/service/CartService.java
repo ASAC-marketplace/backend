@@ -193,4 +193,17 @@ public class CartService {
         cartItemRepository.deleteById(cartItem.getId()); // 카트 아이템 삭제
     }
 
+    public void clearCart(String loginId) {
+        Member member = getMemberByLoginId(loginId);
+        Cart cart = getOrCreateCart(member);
+
+        cartItemRepository.deleteAll(cart.getCartItems());
+        cart.getCartItems().clear();
+
+        cart.setAmount(0L);
+        cart.setSalesTotalAmount(0L);
+        cart.setTotalAmount(0L);
+
+        cartRepository.save(cart);
+    }
 }

@@ -11,6 +11,4 @@ public class MyPageDto {
     private String memberName;
     private Long couponCount;
     private Long WishListCount;
-
-
 }
