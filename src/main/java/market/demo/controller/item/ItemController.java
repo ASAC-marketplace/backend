@@ -94,7 +94,4 @@ public class ItemController {
         itemService.minusWish(loginId, itemId);
         return ResponseEntity.ok("찜하기 취소되었습니다.");
     }
-
-
-
 }

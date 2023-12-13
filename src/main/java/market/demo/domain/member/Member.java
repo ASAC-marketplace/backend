@@ -54,7 +54,7 @@ public class Member {
 
     //sns 연동
 
-    @OneToOne(mappedBy = "member")
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
     private Cart cart;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -150,4 +150,15 @@ public class Member {
         this.phoneNumber = phoneNumber;
         this.address = address;
     }
+
+    public void setCart(Cart cart) {
+        if (this.cart != null) {
+            this.cart.setMember(null);
+        }
+        this.cart = cart;
+        if (cart != null && cart.getMember() != this) {
+            cart.setMember(this);
+        }
+    }
+
 }

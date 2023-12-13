@@ -1,4 +1,4 @@
-package market.demo.controller;
+package market.demo.controller.order;
 
 import lombok.RequiredArgsConstructor;
 import market.demo.dto.cart.CartDto;

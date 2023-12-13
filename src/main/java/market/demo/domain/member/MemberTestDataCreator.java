@@ -5,6 +5,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import market.demo.domain.etc.Wishlist;
 import market.demo.domain.member.jwt.Authority;
+import market.demo.domain.order.Cart;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -51,6 +52,10 @@ public class MemberTestDataCreator {
                 if (ThreadLocalRandom.current().nextBoolean()) {
                     authorities.add(roleAdmin);
                 }
+
+                Cart cart = new Cart();
+                cart.setMember(member);
+                member.setCart(cart);
 
                 //wishlist 추가
                 Wishlist wishlist= new Wishlist();
