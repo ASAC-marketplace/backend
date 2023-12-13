@@ -34,7 +34,7 @@ public class SearchController {
     public ItemSearchResponse searchItemComplex(SearchKeyword id, ItemSearchCondition condition, Pageable pageable) {
 
         // condition에서 검색어 가져와서 searchKeyword의 검색 빈도수 늘리기(호출 서비스)
-        searchKeyword.frequencyPlus(id, 10);
+//        searchKeyword.frequencyPlus(id, 10);
 
         // SearchService에 구현
         // 가능하면 급상승 검색어를 뿌려주는 api까지
