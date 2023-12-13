@@ -16,7 +16,6 @@ public class LoginTestController {
     public String verify() {
         return "verifyPass";
     }
-
     @GetMapping("/add")
     public String add() {
         return "addform";
