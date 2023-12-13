@@ -3,7 +3,6 @@ package market.demo.controller.member;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import market.demo.domain.member.Member;
 import market.demo.domain.member.jwt.JwtFilter;
 import market.demo.domain.member.jwt.TokenProvider;
 import market.demo.dto.itemdetailinfo.CouponDto;
@@ -11,9 +10,10 @@ import market.demo.dto.itemdetailinfo.WishDto;
 import market.demo.dto.jwt.LoginDto;
 import market.demo.dto.jwt.TokenDto;
 import market.demo.dto.jwt.MemberDto;
+import market.demo.dto.mypage.MyOrderDetailDto;
+import market.demo.dto.mypage.MyOrderDto;
 import market.demo.dto.mypage.MyPageDto;
 import market.demo.dto.recoverypassword.FindIdDto;
-import market.demo.dto.social.CustomOAuth2User;
 import market.demo.dto.MemberDeletionRequest;
 import market.demo.dto.changememberinfo.CheckMemberInfoDto;
 import market.demo.dto.changememberinfo.MemberInfoDto;
@@ -23,7 +23,6 @@ import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.recoverypassword.RecoveryPasswordRequestDto;
 import market.demo.dto.registermember.EmailAvailabilityDto;
 import market.demo.dto.registermember.LoginIdAvailabilityDto;
-import market.demo.repository.MemberRepository;
 import market.demo.service.MemberService;
 import market.demo.service.OrderService;
 import org.springframework.http.HttpHeaders;
@@ -32,12 +31,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/members")
@@ -168,14 +165,29 @@ public class MemberController {
     }
 
     @GetMapping("/mypage/coupons/{loginId}")
-    public ResponseEntity<List<CouponDto>> userCoupon(@PathVariable("loginId") String loginId){
+    public ResponseEntity<List<CouponDto>> showUserCoupons(@PathVariable("loginId") String loginId){
         return ResponseEntity.ok(memberService.getUserCoupons(loginId));
     }
 
     @GetMapping("/mypage/wishlist/{loginId}")
-    public ResponseEntity<List<WishDto>> userWishList(@PathVariable("loginId") String loginId){
+    public ResponseEntity<List<WishDto>> showUserWishes(@PathVariable("loginId") String loginId){
         return ResponseEntity.ok(memberService.getUserWishList(loginId));
     }
+
+    //22 주문 내역 조회
+    @GetMapping("/mypage/orderlist/{loginId}")
+    public ResponseEntity<List<MyOrderDto>> showUserOrders(@PathVariable("loginId") String loginId,
+                                                           @RequestParam int month){
+        log.info(String.valueOf(month));
+        return ResponseEntity.ok(orderService.showUserOrders(loginId, month));
+    }
+
+    //상세 조회
+    @GetMapping("/mypage/orderlist/detail/{orderId}")
+    public ResponseEntity<MyOrderDetailDto> showUserOrderDetail(@PathVariable("orderId") Long orderId){
+        return ResponseEntity.ok(orderService.showUserOrderDetail(orderId));
+    }
+
 
 }
 
