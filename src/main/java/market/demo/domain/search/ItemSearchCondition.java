@@ -5,6 +5,7 @@ import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class ItemSearchCondition {
@@ -21,4 +22,5 @@ public class ItemSearchCondition {
     private Integer maxDiscountRate;
     private Integer minPrice;
     private Integer maxPrice;
+
 }
