@@ -27,7 +27,7 @@ public class OrderTestDataCreator {
     private final InitService initService;
 
     public void init() {
-        initService.createTestData(100);
+        initService.createTestData(200);
     }
 
     @Component
@@ -46,7 +46,7 @@ public class OrderTestDataCreator {
                 OrderStatus randomOrderStatus = orderStatusValues[ThreadLocalRandom.current().nextInt(orderStatusValues.length)];
 
                 // 임의의 멤버 조회
-                long memberId = ThreadLocalRandom.current().nextLong(1, 51);
+                long memberId = i + 1;
                 Member member = em.find(Member.class, memberId);
 
                 // 주문 생성
