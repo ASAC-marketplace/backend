@@ -16,6 +16,7 @@ import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,30 +33,33 @@ public class SearchService {
        return itemRepositoryCustom.searchPageComplex(condition, pageable);
    }
 
-
    public void RecodeSearchKeyword(String keyword) {
-       // 검색 기록 저장
+       // 검색 기록 저장, frequency도 같이 더해서 저장(searchKeyword)
        SearchHistory searchHistory = new SearchHistory();
        searchHistory.setKeyword(keyword);
+       searchHistory.setSearchedAt(LocalDateTime.now());
        searchReposirory.save(searchHistory);
    }
 
-   public SearchReposirory frequencyPlus(Long id, int topN) {
-       // 1. SearchKeyword에서 검색어 찾기
-       Optional<SearchHistory> searchReposirories = searchReposirory.findById(id);
+    public List<Object[]> getTopSearchKeywordsFromNow() {
+        LocalDateTime startTime = LocalDateTime.now().minusDays(1); // 현재로부터 24시간 이전
+        return searchReposirory.findTopKeywords();
+    }
 
-       // 2. 검색 횟수 카운트
-       if(searchReposirories.isEmpty()) throw new RuntimeException("검색어가 없습니다.");
-
-       // 3. 상위 N(10)개의 검색어를 결과 객체에 넣어줌
-       SearchReposirory searchReposirory1 = searchReposirory;
-       searchReposirory1.findTopKeywordsOrderBySearchCountDesc(topN);
-
-       //return frequencyPlus(id, 10);
-       return searchReposirory1;
-
-   }
-
+//   public SearchReposirory frequencyPlus(Long id, int topN) {
+//       // 1. SearchKeyword에서 검색어 찾기 ->
+//       Optional<SearchHistory> searchReposirories = searchReposirory.findById(id);
+//
+//       // 2. 검색 횟수 카운트
+//       if(searchReposirories.isEmpty()) throw new RuntimeException("검색어가 없습니다.");
+//
+//       // 3. 상위 N(10)개의 검색어를 결과 객체에 넣어줌
+//       SearchReposirory searchReposirory1 = searchReposirory;
+//       searchReposirory1.findTopKeywordsOrderBySearchCountDesc(topN);
+//
+//       //return frequencyPlus(id, 10);
+//       return searchReposirory1;
+//   }
 
 /**
     public ItemSearchResponse searchAaron(Integer age) {
