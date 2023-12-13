@@ -18,6 +18,11 @@ import market.demo.exception.MemberNotFoundException;
 import market.demo.exception.OrderNotFoundException;
 import market.demo.repository.*;
 import org.jetbrains.annotations.NotNull;
+import market.demo.exception.InvalidDataException;
+import market.demo.repository.ItemRepository;
+import market.demo.repository.MemberRepository;
+import market.demo.repository.OrderItemRepository;
+import market.demo.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

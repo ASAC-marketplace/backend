@@ -5,6 +5,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import market.demo.domain.etc.Wishlist;
 import market.demo.domain.member.jwt.Authority;
+import market.demo.domain.order.Cart;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -21,7 +22,7 @@ public class MemberTestDataCreator {
 
     public void init() {
         initMemberService.createMembersAndAuthorities();
-        initMemberService.createTestMembers(50);
+        initMemberService.createTestMembers(200);
     }
 
     @Component
@@ -43,7 +44,7 @@ public class MemberTestDataCreator {
         @Transactional
         public void createTestMembers(int numberOfMembers) {
             for (int i = 0; i < numberOfMembers; i++) {
-                Member member = createTestMember();
+                Member member = createTestMember(i);
                 em.persist(member);
 
                 Set<Authority> authorities = new HashSet<>();
@@ -51,6 +52,10 @@ public class MemberTestDataCreator {
                 if (ThreadLocalRandom.current().nextBoolean()) {
                     authorities.add(roleAdmin);
                 }
+
+                Cart cart = new Cart();
+                cart.setMember(member);
+                member.setCart(cart);
 
                 //wishlist 추가
                 Wishlist wishlist= new Wishlist();
@@ -61,10 +66,10 @@ public class MemberTestDataCreator {
             }
         }
 
-        private Member createTestMember() {
+        private Member createTestMember(int i) {
             String name = getRandomName();
             String email = "user" + ThreadLocalRandom.current().nextInt(1000, 9999) + "@example.com";
-            String loginId = "user" + ThreadLocalRandom.current().nextInt(1000, 9999);
+            String loginId = "user" + i;
             String password = "test1234"; // 모든 테스트 사용자에게 동일한 비밀번호 사용
             return new Member(name, loginId, email, password, getRandomPhoneNumber(), getRandomAddress());
         }
