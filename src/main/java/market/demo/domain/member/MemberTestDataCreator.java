@@ -3,7 +3,9 @@ package market.demo.domain.member;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import market.demo.domain.etc.Wishlist;
 import market.demo.domain.member.jwt.Authority;
+import market.demo.domain.order.Cart;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -50,16 +52,26 @@ public class MemberTestDataCreator {
                 if (ThreadLocalRandom.current().nextBoolean()) {
                     authorities.add(roleAdmin);
                 }
+
+                Cart cart = new Cart();
+                cart.setMember(member);
+                member.setCart(cart);
+
+                //wishlist 추가
+                Wishlist wishlist= new Wishlist();
+                wishlist.setMember(member);
+                member.setWishlist(wishlist);
+
                 member.setAuthorities(authorities);
             }
         }
 
         private Member createTestMember() {
             String name = getRandomName();
-            String email = name.toLowerCase().replace(" ", "") + "@example.com";
+            String email = "user" + ThreadLocalRandom.current().nextInt(1000, 9999) + "@example.com";
             String loginId = "user" + ThreadLocalRandom.current().nextInt(1000, 9999);
             String password = "test1234"; // 모든 테스트 사용자에게 동일한 비밀번호 사용
-            return new Member(name, email, password, loginId, getRandomPhoneNumber(), getRandomAddress());
+            return new Member(name, loginId, email, password, getRandomPhoneNumber(), getRandomAddress());
         }
 
 

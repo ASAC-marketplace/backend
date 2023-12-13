@@ -26,7 +26,7 @@ public class Review {
     @JoinColumn(name = "item_id")
     private Item item;
 
-    @ManyToOne (fetch = LAZY)
+    @ManyToOne (fetch = LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "member_id")
     private Member member;
 

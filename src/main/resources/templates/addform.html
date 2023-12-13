@@ -13,16 +13,17 @@
         });
 
         function registerMember() {
+            var memberName = $("#memberName").val();
             var loginId = $("#loginId").val();
             var password = $("#password").val();
             var phoneNumber = $("#phoneNumber").val();
-
 
             $.ajax({
                 url: '/api/members/socialRegister',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
+                    "memberName": memberName,
                     "loginId": loginId,
                     "password": password,
                     "phoneNumber": phoneNumber,
@@ -40,6 +41,10 @@
 <body>
 <h2>회원 등록</h2>
 <form id="registrationForm">
+    <div>
+        <label for="memberName">회원 이름:</label>
+        <input type="text" id="memberName" required>
+    </div>
     <div>
         <label for="loginId">로그인 아이디:</label>
         <input type="text" id="loginId" required>

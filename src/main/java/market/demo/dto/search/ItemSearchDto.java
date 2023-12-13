@@ -16,12 +16,15 @@ public class ItemSearchDto {
     private ItemStatus status;
     private PromotionType promotionType;
     private Integer stockQuantity;
+    private String brand;
     private LocalDate registeredDate;
     private Integer discountRate;
     private Integer itemPrice;
+    private String promotionUrl;
+    private Integer discountedPrice;
 
     @QueryProjection
-    public ItemSearchDto(Long id, String name, Long categoryId, String categoryName, ItemStatus status, PromotionType promotionType, Integer stockQuantity, LocalDate registeredDate, Integer discountRate, Integer itemPrice) {
+    public ItemSearchDto(Long id, String name, Long categoryId, String categoryName, ItemStatus status, PromotionType promotionType, Integer stockQuantity, String brand, LocalDate registeredDate, Integer discountRate, Integer itemPrice, String promotionUrl, Integer discountedPrice) {
         this.id = id;
         this.name = name;
         this.categoryId = categoryId;
@@ -29,8 +32,11 @@ public class ItemSearchDto {
         this.status = status;
         this.promotionType = promotionType;
         this.stockQuantity = stockQuantity;
+        this.brand = brand;
         this.registeredDate = registeredDate;
         this.discountRate = discountRate;
         this.itemPrice = itemPrice;
+        this.promotionUrl = promotionUrl;
+        this.discountedPrice = discountedPrice;
     }
 }

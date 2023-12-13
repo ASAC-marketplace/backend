@@ -2,8 +2,11 @@ package market.demo.domain.item;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
+import market.demo.exception.InvalidOrderException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,6 +18,8 @@ import static jakarta.persistence.FetchType.*;
 
 @Entity
 @Getter
+@Setter
+@Slf4j
 public class Item {
 
     @Id
@@ -31,7 +36,7 @@ public class Item {
 
 //    private Integer itemPrice;
 
-// 상품 상태 관리 (예: NEW, BESTSELLER 등)
+    // 상품 상태 관리 (예: NEW, BESTSELLER 등)
     @Enumerated(EnumType.STRING)
     private ItemStatus status;
 
@@ -53,6 +58,8 @@ public class Item {
 
     private Integer itemPrice;
 
+    private String brand;
+
     @Enumerated(EnumType.STRING)
     private PromotionType promotionType = PromotionType.NONE; // 기본값으로 'NONE' 설정
 
@@ -68,7 +75,7 @@ public class Item {
         this.registerdDate = registerdDate;
     }
 
-    public Item(String name, String description, Category category, Integer discountRate, ItemStatus status, Integer stockQuantity, LocalDate registerdDate, PromotionType promotionType, Integer itemPrice) {
+    public Item(String name, String description, Category category, Integer discountRate, ItemStatus status, Integer stockQuantity, LocalDate registerdDate, PromotionType promotionType, Integer itemPrice, String brand) {
         this.name = name;
         this.description = description;
         this.category = category;
@@ -78,7 +85,9 @@ public class Item {
         this.registerdDate = registerdDate;
         this.promotionType = promotionType;
         this.itemPrice = itemPrice;
+        this.brand = brand;
     }
+
     public Item() {
 
     }
@@ -87,4 +96,13 @@ public class Item {
         this.itemDetail = itemDetail;
     }
     /////////////////
+
+    public void decreaseStock(int quantity) throws InvalidOrderException {
+        if (this.stockQuantity < quantity) {
+            throw new InvalidOrderException("아이템의 재고가 부족합니다. Item ID: " + this.getId());
+        }
+        log.info("stock = " + quantity);
+        this.stockQuantity -= quantity;
+    }
 }
+

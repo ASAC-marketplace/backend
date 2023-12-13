@@ -2,12 +2,14 @@ package market.demo.domain.order;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import market.demo.domain.item.Item;
 
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
+@Setter
 public class OrderItem {
 
     @Id
@@ -28,10 +30,23 @@ public class OrderItem {
     private Order order;
 
     // 연관관계 편의 메서드
+
+    // 생성자 추가
+    public OrderItem(Item item, int orderCount, int orderPrice) {
+        this.item = item;
+        this.orderCount = orderCount;
+        this.orderPrice = orderPrice;
+    }
+
+    public OrderItem() {
+        
+    }
+
+    // 연관관계 편의 메서드 수정
     public void setOrder(Order order) {
-        this.order = order;
-        if (order != null && !order.getOrderItems().contains(this)) {
-            order.getOrderItems().add(this);
+        if (this.order != order) {
+            this.order = order;
+            order.addOrderItem(this);
         }
     }
 }

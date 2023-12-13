@@ -1,28 +1,37 @@
 package market.demo.controller.item;
 
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
 import market.demo.dto.item.ItemDto;
 import market.demo.dto.item.ItemMainEndDto;
 import market.demo.dto.itemdetailinfo.ItemDetailDto;
 import market.demo.dto.itemdetailinfo.ItemReviewsDto;
 import market.demo.service.ItemService;
+import market.demo.service.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/items")
 @RequiredArgsConstructor
+@Slf4j
 public class ItemController {
     private final ItemService itemService;
+    private final OrderService orderService;
 
     //배너 추가
-    @GetMapping("/recent")
-    public List<ItemDto> getRecentProducts(@RequestParam(defaultValue = "1") int page,
-                                           @RequestParam(defaultValue = "10") int size) {
-        return itemService.getRecentProducts(page, size);
+    @GetMapping("/status")
+    public ResponseEntity<Map<ItemStatus, List<ItemDto>>> getItemsByStatus(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Map<ItemStatus, List<ItemDto>> itemsByStatus = itemService.getItemsByStatus(page, size);
+        return ResponseEntity.ok(itemsByStatus);
     }
 
     //9 메인 마감세일
@@ -41,8 +50,9 @@ public class ItemController {
 
     //17 api 상품 상세 정보
     @GetMapping
-    public ResponseEntity<ItemDetailDto> showItemDetail(@RequestParam Long itemId) {
-        return ResponseEntity.ok(itemService.searchItemDetail(itemId));
+    public ResponseEntity<ItemDetailDto> showItemDetail(@RequestParam Long itemId,
+                                                        @RequestBody String loginId) {
+        return ResponseEntity.ok(itemService.searchItemDetail(itemId, loginId));
     }
 
     //17 api 상품 리뷰 노출
@@ -68,5 +78,20 @@ public class ItemController {
     public ResponseEntity<String> getCouponMember(@RequestParam String loginId, Long couponId){
         itemService.getCoupon(loginId,couponId);
         return ResponseEntity.ok("쿠폰 받기 성공");
+    }
+
+    //23번 찜하기
+    @PostMapping("/yeswish")
+    public ResponseEntity<String> addWishList(@RequestParam String loginId, Long itemId){
+        log.info("찜하기 추가");
+        itemService.addWish(loginId, itemId);
+        return ResponseEntity.ok("찜하기 추가되었습니다.");
+    }
+
+    @PostMapping("/nowish")
+    public ResponseEntity<String> minusWishList(@RequestParam String loginId, Long itemId){
+        log.info("찜하기 삭제");
+        itemService.minusWish(loginId, itemId);
+        return ResponseEntity.ok("찜하기 취소되었습니다.");
     }
 }
