@@ -40,54 +40,58 @@ public class PaymentService {
     private final CartService cartService;
     private final StockService stockService;
 
-    public PaymentResponseDto initiatePayment(PaymentRequestDto request) throws PaymentProcessingException {
-        Order order = getOrder(request.getOrderId());
-        Payment payment = createPayment(order, request);
+    public PaymentResponseDto initiatePayment(PaymentRequestDto request) throws PaymentGatewayException, PaymentProcessingException {
+        // 주문 검증
+        Order order = validateOrderDetails(request.getOrderId(), request.getTotalPrice());
 
-        if (order.getOrderStatus() != OrderStatus.PENDING) {
-            throw new InvalidOrderException("결제가 불가능한 주문 상태입니다.");
-        }
+        // 결제 객체 생성 및 저장
+        Payment payment = createAndSavePayment(order, request);
 
-        PaymentResponseDto response = processExternalPayment(request, payment);
-        if (!response.isSuccess() || !Objects.equals(request.getTotalPrice(), order.getTotalAmount())) {
-            throw new PaymentProcessingException("결제 처리 중 오류 발생");
-        }
-        handlePostPaymentProcessing(payment, response);
-        return response;
-    }
+        // 외부 결제 게이트웨이를 통한 결제 요청
+        PaymentResponseDto gatewayResponse = externalPaymentGateway.processPayment(payment);
 
-    private Order getOrder(Long orderId) {
-        log.info("Fetching order with ID: {}", orderId);
-        return orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("주문을 찾을 수 없습니다."));
-    }
-
-    private Payment createPayment(Order order, PaymentRequestDto request) {
-        Payment payment = new Payment(order, request.getTotalPrice(), PaymentStatus.PENDING, request.getPaymentMethod());
-        paymentRepository.save(payment);
-        return payment;
-    }
-
-    private PaymentResponseDto processExternalPayment(PaymentRequestDto request, Payment payment) {
-        PaymentResponseDto gatewayResponse = externalPaymentGateway.processPayment(request);
         if (gatewayResponse.isSuccess()) {
-            payment.completePayment(gatewayResponse.getTransactionId());
-            payment.getOrder().markAsPaid();
-            return PaymentResponseDto.success(payment.getTransactionId(), PaymentStatus.COMPLETED);
+            completePayment(payment, order);
+
+            // 결제 성공에 대한 응답 생성
+            return PaymentResponseDto.success(gatewayResponse.getTransactionId(), PaymentStatus.COMPLETED);
         } else {
-            payment.updatePaymentStatus(PaymentStatus.CANCEL);
+            cancelPayment(payment);
+
+            // 결제 실패에 대한 응답 생성
             return PaymentResponseDto.failure(gatewayResponse.getErrorCode(), gatewayResponse.getErrorMessage());
         }
     }
 
-    private void handlePostPaymentProcessing(Payment payment, PaymentResponseDto response) {
-        if (response.isSuccess()) {
-            updateDeliveryStatus(payment.getOrder());
-            clearMemberCart(payment.getOrder());
-            stockService.reduceStock(payment.getOrder().getId());
-        }
+    private void completePayment(Payment payment, Order order) {
+        // 결제 완료 처리
+        payment.completePayment(payment.getTransactionId());
+
+        // 주문 상태를 '지불됨'으로 변경
+        order.markAsPaid();
+
+        // 결제 정보와 주문 정보 저장
         paymentRepository.save(payment);
-        orderRepository.save(payment.getOrder());
+        orderRepository.save(order);
+
+        // 재고 감소 처리
+        stockService.reduceStock(order.getId());
+
+        // 배송 상태 업데이트
+        updateDeliveryStatus(order);
+
+        // 멤버의 장바구니 비우기
+        clearMemberCart(order);
+    }
+
+    private Payment createAndSavePayment(Order order, PaymentRequestDto request) {
+        Payment payment = new Payment(
+                order,
+                request.getTotalPrice(),
+                request.getPaymentMethod()
+        );
+        paymentRepository.save(payment);
+        return payment;
     }
 
     private void updateDeliveryStatus(Order order) {
@@ -98,8 +102,36 @@ public class PaymentService {
         }
     }
 
+    private void cancelPayment(Payment payment) {
+        // 결제 상태를 '취소됨'으로 변경
+        payment.updatePaymentStatus(PaymentStatus.CANCEL);
+
+        // 결제 정보 저장
+        paymentRepository.save(payment);
+    }
+
     private void clearMemberCart(Order order) {
         Member member = order.getMember();
         cartService.clearCart(member.getLoginId());
+    }
+
+    private Order validateOrderDetails(Long orderId, double paymentAmount)
+            throws OrderNotFoundException, InvalidOrderException, PaymentProcessingException {
+
+        // 주문 ID 검증
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("유효하지 않은 주문 ID: " + orderId));
+
+        // 주문 상태 검증
+        if (order.getOrderStatus() != OrderStatus.PENDING) {
+            throw new InvalidOrderException("결제가 불가능한 주문 상태입니다.");
+        }
+
+        // 결제 금액 검증
+        if (order.getTotalAmount() != paymentAmount) {
+            throw new PaymentProcessingException("주문 금액과 결제 금액이 일치하지 않습니다.");
+        }
+
+        return order;
     }
 }
