@@ -2,6 +2,7 @@ package market.demo.domain.item;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import market.demo.domain.item.Item;
 import market.demo.domain.member.Member;
@@ -15,6 +16,7 @@ import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
+@NoArgsConstructor
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,10 +55,6 @@ public class Review {
 
     public void setHelpful(int i){
         this.helpful += i;
-    }
-
-    public Review() {
-
     }
     ///////////////
 }

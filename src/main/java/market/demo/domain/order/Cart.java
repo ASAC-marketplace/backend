@@ -2,6 +2,7 @@ package market.demo.domain.order;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import market.demo.domain.item.Item;
 import market.demo.domain.member.Member;
@@ -17,6 +18,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 public class Cart {
 
     @Id @GeneratedValue
@@ -41,10 +43,6 @@ public class Cart {
         if (cartItem.getCart() != this) {cartItem.setCart(this);}
 
         recalculateCartAmounts();
-    }
-
-    public Cart(){
-
     }
 
     public Cart(Member member){

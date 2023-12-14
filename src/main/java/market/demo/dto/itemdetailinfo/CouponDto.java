@@ -1,6 +1,7 @@
 package market.demo.dto.itemdetailinfo;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import market.demo.domain.member.Coupon;
 import market.demo.domain.type.DiscountType;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class CouponDto {
     private Long couponId;
     private String couponName;
@@ -27,10 +29,4 @@ public class CouponDto {
         this.validTo = coupon.getValidTo();
         this.minimumOrderPrice = coupon.getMinimumOrderPrice();
     }
-
-    public CouponDto(){
-
-    }
-
-
 }
