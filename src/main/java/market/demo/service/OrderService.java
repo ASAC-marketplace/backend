@@ -3,7 +3,6 @@ package market.demo.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.etc.Delivery;
-import market.demo.domain.item.Item;
 import market.demo.domain.member.Member;
 import market.demo.domain.order.Cart;
 import market.demo.domain.order.CartItem;
@@ -39,7 +38,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class OrderService {
     private final OrderRepository orderRepository;
-    private final ItemRepository itemRepository;
     private final MemberRepository memberRepository;
     private final OrderItemRepository orderItemRepository;
     private final CartRepository cartRepository;
@@ -66,6 +64,7 @@ public class OrderService {
         orderItemRepository.deleteAll(order.getOrderItems());
 
         order.setOrderItems(cart, order);
+
         orderRepository.save(order);
 
         return new OrderDto(order, member, cart);
@@ -80,6 +79,7 @@ public class OrderService {
         LocalDateTime lastTime = LocalDateTime.now().minusMonths(month);
         return orderRepository.findAllByMemberAndOrderStatusAndOrderDateTimeAfter(member, OrderStatus.COMPLETED, lastTime)
                 .orElseThrow(() -> new OrderNotFoundException("최근 " + month + "이내의 주문내역이 없습니다."));
+
     }
 
     public List<MyOrderDto> showUserOrders(String loginId, int month) {
@@ -98,5 +98,49 @@ public class OrderService {
     public MyOrderDetailDto showUserOrderDetail(Long orderId) {
         Order order = getOrderById(orderId);
         return new MyOrderDetailDto(order);
+    }
+
+    public List<MyOrderDto> showUserOrders(String loginId, int month) {
+        Member member = getMemberByLoginId(loginId);
+        List<Order> orders = getUserOrderListByMonthAfter(member, month);
+
+        return createMyOrderDtos(orders);
+    }
+
+    private @NotNull List<MyOrderDto> createMyOrderDtos(@NotNull List<Order> orders) {
+        List<MyOrderDto> myOrderDtos = new ArrayList<>();
+
+        for(Order order: orders){
+            MyOrderDto myOrderDto = new MyOrderDto();
+
+            myOrderDto.setOrderDateTime(order.getOrderDateTime());
+            myOrderDto.setTotalAmount(order.getTotalAmount());
+            myOrderDto.setOrderId(order.getId());
+            myOrderDto.setPaymentMethod(order.getPayment().getPaymentMethod());
+            myOrderDto.setDeliveryStatus(order.getDelivery().getDeliveryStatus());
+            myOrderDto.setItemName(order.getOrderItems().get(0).getItem().getName());
+
+            myOrderDtos.add(myOrderDto);
+        }
+
+        return myOrderDtos;
+    }
+
+    private @NotNull MyOrderDetailDto createOrderDetail(@NotNull Order order){
+        MyOrderDetailDto myOrderDetailDto = new MyOrderDetailDto();
+        myOrderDetailDto.setTotalAmount(order.getTotalAmount());
+        myOrderDetailDto.setOrderId(order.getId());
+        myOrderDetailDto.setPaymentMethod(order.getPayment().getPaymentMethod());
+        myOrderDetailDto.setDeliveryStatus(order.getDelivery().getDeliveryStatus());
+        myOrderDetailDto.setItemName(order.getOrderItems().get(0).getItem().getName());
+        myOrderDetailDto.setOrderDateTime(order.getOrderDateTime());
+        myOrderDetailDto.setOrderItemDtos(createOrderItemDto(order));
+
+        return myOrderDetailDto;
+    }
+
+    public MyOrderDetailDto showUserOrderDetail(Long orderId) {
+        Order order = getOrderById(orderId);
+        return createOrderDetail(order);
     }
 }

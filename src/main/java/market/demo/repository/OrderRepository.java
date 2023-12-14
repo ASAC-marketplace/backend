@@ -20,7 +20,7 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByMemberAndOrderStatus(Member member, OrderStatus orderStatus);
 
-    Optional<List<Order>> findAllByMemberAndOrderStatus(Member member, OrderStatus orderStatus );
+    Optional<List<Order>> findAllByMemberAndOrderStatusAndOrderDateTimeAfter(Member member, OrderStatus orderStatus, LocalDateTime orderDateTime);
     @Query("SELECT o FROM Order o JOIN FETCH o.orderItems oi JOIN FETCH oi.item WHERE o.id = :orderId")
     Optional<Order> findByIdWithItems(@Param("orderId") Long orderId);
 

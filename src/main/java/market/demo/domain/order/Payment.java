@@ -28,7 +28,7 @@ public class Payment {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status")
-    private PaymentStatus paymentStatus;
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "order_id")
@@ -41,10 +41,9 @@ public class Payment {
     @Column(name = "total_price")
     private Long totalPrice;
 
-    public Payment(Order order, Long totalPrice, PaymentStatus paymentStatus, PaymentMethod paymentMethod) {
+    public Payment(Order order, Long totalPrice, PaymentMethod paymentMethod) {
         this.order = order;
         this.totalPrice = totalPrice;
-        this.paymentStatus = paymentStatus;
         this.paymentMethod = paymentMethod;
     }
 

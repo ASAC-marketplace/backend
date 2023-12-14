@@ -14,12 +14,15 @@ import market.demo.repository.ItemRepositoryCustom;
 import market.demo.repository.SearchReposirory;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -27,56 +30,41 @@ import java.util.List;
 public class SearchService {
     private final ItemRepositoryCustom itemRepositoryCustom;
     private final SearchReposirory searchReposirory;
+    private final StringRedisTemplate redisTemplate;
 
    public ItemSearchResponse searchResponse(ItemSearchCondition condition, Pageable pageable) {
        return itemRepositoryCustom.searchPageComplex(condition, pageable);
    }
 
-
-   public void RecodeSearchKeyword(String keyword) {
-       // 검색 기록 저장
+   public void recodeSearchKeyword(String keyword) {
+       // 검색 기록 저장, frequency도 같이 더해서 저장(searchKeyword)
        SearchHistory searchHistory = new SearchHistory();
        searchHistory.setKeyword(keyword);
+       searchHistory.setSearchedAt(LocalDateTime.now());
        searchReposirory.save(searchHistory);
+
+       // Redis에 검색 키워드 캐시 (증가 연산 사용)
+       redisTemplate.opsForValue().increment("search:keyword:" + keyword);
+       redisTemplate.expire("search:keyword:" + keyword, Duration.ofHours(1)); // TTL 1시간 설정
    }
 
-   public SearchReposirory frequencyPlus(Long id, int topN) {
-       // 1. SearchKeyword에서 검색어 찾기
-       Optional<SearchHistory> searchReposirories = searchReposirory.findById(id);
+    public List<String> getTopSearchKeywordsFromNow() {
+        // Redis에서 캐시된 키워드 조회
+        Set<String> keys = redisTemplate.keys("search:keyword:*");
+        Map<String, Integer> keywordCounts = new HashMap<>();
 
-       // 2. 검색 횟수 카운트
-       if(searchReposirories.isEmpty()) throw new RuntimeException("검색어가 없습니다.");
-
-       // 3. 상위 N(10)개의 검색어를 결과 객체에 넣어줌
-       SearchReposirory searchReposirory1 = searchReposirory;
-       searchReposirory1.findTopKeywordsOrderBySearchCountDesc(topN);
-
-       //return frequencyPlus(id, 10);
-       return searchReposirory1;
-
-   }
-
-
-/**
-    public ItemSearchResponse searchAaron(Integer age) {
-
-        // 1. 해당 나이의 사진첩이 있는지 확인(DB 호출)
-        // 2. 해당 나이의 사진첩 조회
-        Photo photo = searchReposirory.findPhotoByAge(age);
-        // 1.1 사진첩 유무 확인
-        if(photo == null) {
-            return new ItemSearchResponse(null, null);
+        for (String key : keys) {
+            String keyword = key.substring("search:keyword:".length());
+            Integer count = Integer.parseInt(redisTemplate.opsForValue().get(key));
+            keywordCounts.put(keyword, count);
         }
 
-
-        // 3. 사진첩 데이터에서 결과 객체 생성
-        ItemSearchResponse itemSearchResponse = makeResultFromPhoto(photo);
-        return itemSearchResponse;
-
-
+        // 가장 많이 검색된 키워드 순으로 정렬
+        return keywordCounts.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
     }
- **/
-
    public List<ItemAutoDto> findItemNamesByKeyword(String keyword, int limit) {
        return itemRepositoryCustom.findItemNamesByKeyword(keyword, limit);
    }

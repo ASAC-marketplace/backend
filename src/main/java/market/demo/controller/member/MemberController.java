@@ -3,7 +3,6 @@ package market.demo.controller.member;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import market.demo.domain.member.Member;
 import market.demo.domain.member.jwt.JwtFilter;
 import market.demo.domain.member.jwt.TokenProvider;
 import market.demo.dto.itemdetailinfo.CouponDto;
@@ -15,7 +14,6 @@ import market.demo.dto.mypage.MyOrderDetailDto;
 import market.demo.dto.mypage.MyOrderDto;
 import market.demo.dto.mypage.MyPageDto;
 import market.demo.dto.recoverypassword.FindIdDto;
-import market.demo.dto.social.CustomOAuth2User;
 import market.demo.dto.MemberDeletionRequest;
 import market.demo.dto.changememberinfo.CheckMemberInfoDto;
 import market.demo.dto.changememberinfo.MemberInfoDto;
@@ -25,7 +23,6 @@ import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.recoverypassword.RecoveryPasswordRequestDto;
 import market.demo.dto.registermember.EmailAvailabilityDto;
 import market.demo.dto.registermember.LoginIdAvailabilityDto;
-import market.demo.repository.MemberRepository;
 import market.demo.service.MemberService;
 import market.demo.service.OrderService;
 import org.springframework.http.HttpHeaders;
@@ -34,12 +31,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/members")
