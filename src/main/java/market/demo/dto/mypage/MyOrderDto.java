@@ -2,6 +2,7 @@ package market.demo.dto.mypage;
 
 import lombok.Getter;
 import lombok.Setter;
+import market.demo.domain.order.Order;
 import market.demo.domain.status.DeliveryStatus;
 import market.demo.domain.status.PaymentMethod;
 
@@ -17,5 +18,13 @@ public class MyOrderDto {
     private DeliveryStatus deliveryStatus;
     private PaymentMethod paymentMethod;
 
+    public MyOrderDto(Order order){
+        this.orderDateTime = order.getOrderDateTime();
+        this.totalAmount = order.getTotalAmount();
+        this.orderId = order.getId();
+        this.paymentMethod = order.getPayment().getPaymentMethod();
+        this.deliveryStatus = order.getDelivery().getDeliveryStatus();
+        this.itemName = order.getOrderItems().get(0).getItem().getName();
+    }
 
 }

@@ -26,4 +26,8 @@ public class ModifyMemberInfoDto {
             this.newPasswordCheck = "";
         }else this.newPasswordCheck = newPasswordCheck;
     }
+
+    public void checkNewPassword(){
+        if(!this.newPassword.equals(this.newPasswordCheck)) throw new IllegalArgumentException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
+    }
 }

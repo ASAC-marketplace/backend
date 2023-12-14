@@ -27,4 +27,19 @@ public class CartItem {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "item_id")
     private Item item;
+
+    public CartItem(Item item){
+        this.quantity = 1;
+        this.item = item;
+        this.totalPrice = item.getItemPrice() * (long) this.quantity;
+    }
+
+    public void changeCartItemByQuantity(Item item, int i){
+        this.quantity = this.getQuantity() + i;
+        this.totalPrice = item.getItemPrice() * (long) this.quantity;
+    }
+
+    public CartItem() {
+
+    }
 }

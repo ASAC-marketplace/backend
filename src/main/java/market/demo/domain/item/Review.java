@@ -15,7 +15,6 @@ import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
-@Setter
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,6 +49,10 @@ public class Review {
         this.helpful = helpful;
         this.imageUrls.addAll(imageUrls);
         this.reviewWriteDate = reviewWriteDate;
+    }
+
+    public void setHelpful(int i){
+        this.helpful += i;
     }
 
     public Review() {
