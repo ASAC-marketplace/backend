@@ -19,6 +19,6 @@ public class ApplicationTestDataInitializer {
     public void init() {
         memberTestDataCreator.init();
         itemTestDataCreator.init();
-        orderTestDataCreator.init();
+        //orderTestDataCreator.init();
     }
 }

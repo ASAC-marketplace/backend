@@ -11,6 +11,8 @@ import market.demo.dto.itemdetailinfo.WishDto;
 import market.demo.dto.jwt.LoginDto;
 import market.demo.dto.jwt.TokenDto;
 import market.demo.dto.jwt.MemberDto;
+import market.demo.dto.mypage.MyOrderDetailDto;
+import market.demo.dto.mypage.MyOrderDto;
 import market.demo.dto.mypage.MyPageDto;
 import market.demo.dto.recoverypassword.FindIdDto;
 import market.demo.dto.social.CustomOAuth2User;
@@ -168,15 +170,28 @@ public class MemberController {
     }
 
     @GetMapping("/mypage/coupons/{loginId}")
-    public ResponseEntity<List<CouponDto>> userCoupon(@PathVariable("loginId") String loginId){
+    public ResponseEntity<List<CouponDto>> showUserCoupons(@PathVariable("loginId") String loginId){
         return ResponseEntity.ok(memberService.getUserCoupons(loginId));
     }
 
     @GetMapping("/mypage/wishlist/{loginId}")
-    public ResponseEntity<List<WishDto>> userWishList(@PathVariable("loginId") String loginId){
+    public ResponseEntity<List<WishDto>> showUserWishes(@PathVariable("loginId") String loginId){
         return ResponseEntity.ok(memberService.getUserWishList(loginId));
     }
 
+    //22 주문 내역 조회
+    @GetMapping("/mypage/orderlist/{loginId}")
+    public ResponseEntity<List<MyOrderDto>> showUserOrders(@PathVariable("loginId") String loginId,
+                                                           @RequestParam int month){
+        log.info(String.valueOf(month));
+        return ResponseEntity.ok(orderService.showUserOrders(loginId, month));
+    }
+
+    //상세 조회
+    @GetMapping("/mypage/orderlist/detail/{orderId}")
+    public ResponseEntity<MyOrderDetailDto> showUserOrderDetail(@PathVariable("orderId") Long orderId){
+        return ResponseEntity.ok(orderService.showUserOrderDetail(orderId));
+    }
 
 
 }
