@@ -59,7 +59,7 @@ public class PaymentService {
     private Order getOrder(Long orderId) {
         log.info("Fetching order with ID: {}", orderId);
         return orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("주문을 찾을 수 없습니다."));
+                .orElseThrow(() -> new OrderNotFoundException());
     }
 
     private Payment createPayment(Order order, PaymentRequestDto request) {

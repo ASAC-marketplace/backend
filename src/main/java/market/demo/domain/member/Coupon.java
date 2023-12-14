@@ -38,4 +38,15 @@ public class Coupon {
     @ManyToOne(fetch = FetchType.LAZY)
     private Member issuedTo; // 발급 대상 사용자 null 가능
 
+
+    public Coupon(Coupon coupon, Member member) {
+        this.couponName = coupon.getCouponName();
+        this.discountType = coupon.getDiscountType();
+        this.discountValue = coupon.getDiscountValue();
+        this.validFrom = coupon.getValidFrom();
+        this.validTo = coupon.getValidTo();
+        this.minimumOrderPrice = coupon.getMinimumOrderPrice();
+        this.isUsed = false;
+        this.issuedTo = member;
+    }
 }

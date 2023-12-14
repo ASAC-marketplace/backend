@@ -81,4 +81,19 @@ public class Order {
                 .mapToLong(OrderItem::getOrderPrice)
                 .sum();
     }
+
+    //cart -> order 생성
+    public Order(Member member, Cart cart){
+        this.member = member;
+        this.totalAmount = cart.getTotalAmount();
+        this.orderDateTime = LocalDateTime.now();
+        this.orderStatus = OrderStatus.PENDING;
+        this.delivery = new Delivery(member);
+    }
+
+    public void setOrderItems(Cart cart, Order order){
+        cart.getCartItems().forEach(cartItem -> {
+            this.orderItems.add(new OrderItem(cartItem, order));
+        });
+    }
 }

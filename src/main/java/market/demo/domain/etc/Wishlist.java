@@ -30,4 +30,26 @@ public class Wishlist {
             inverseJoinColumns = @JoinColumn(name = "item_id")
     )
     private List<Item> items = new ArrayList<>();
+
+    public Wishlist(Member member){
+        this.member = member;
+    }
+
+    public Wishlist() {
+
+    }
+
+    public boolean containsItem(Item item){
+        return this.items.contains(item);
+    }
+
+    public void addItem(Item item) {
+        if (!this.containsItem(item)) this.items.add(item);
+        else throw new IllegalArgumentException("이미 찜한 상품입니다");
+    }
+
+    public void removeItem(Item item){
+        if (this.containsItem(item)) this.items.remove(item);
+        else throw new IllegalArgumentException("찜한 목록이 아닙니다.");
+    }
 }

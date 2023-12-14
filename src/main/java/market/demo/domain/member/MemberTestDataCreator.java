@@ -58,9 +58,7 @@ public class MemberTestDataCreator {
                 member.setCart(cart);
 
                 //wishlist 추가
-                Wishlist wishlist= new Wishlist();
-                wishlist.setMember(member);
-                member.setWishlist(wishlist);
+                member.setWishlist(new Wishlist(member));
 
                 member.setAuthorities(authorities);
             }

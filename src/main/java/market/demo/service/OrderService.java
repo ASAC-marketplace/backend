@@ -51,86 +51,19 @@ public class OrderService {
     }
 
     private Order getOrCreateOrder(Member member, Cart cart) {
-        return orderRepository.findByMemberAndOrderStatus(member, OrderStatus.PENDING).orElseGet(() -> createNewOrder(member, cart));
-    }
-
-    private @NotNull Delivery createNewDelivery(@NotNull Member member){
-        Delivery delivery = new Delivery();
-        delivery.setAddress(member.getAddress());
-        delivery.setDeliveryStatus(DeliveryStatus.PENDING);
-        return delivery;
-    }
-    @NotNull
-    private Order createNewOrder(Member member, @NotNull Cart cart){
-        Order order = new Order();
-        order.setMember(member);
-        order.setTotalAmount(cart.getTotalAmount());
-        order.setOrderDateTime(LocalDateTime.now());
-        order.setOrderStatus(OrderStatus.PENDING);
-        order.setDelivery(createNewDelivery(member));
-        orderRepository.save(order);
-        return order;
-    }
-
-    private @NotNull List<OrderItem> createOrderItemList(@NotNull Cart cart, Order order){
-        List<CartItem> cartItems = cart.getCartItems();
-        List<OrderItem> orderItems = new ArrayList<>();
-
-        cartItems.forEach(cartItem -> {
-            OrderItem orderItem = new OrderItem();
-            orderItem.setItem(cartItem.getItem());
-            orderItem.setOrderPrice(Math.toIntExact(cartItem.getTotalPrice()));
-            orderItem.setOrderCount(cartItem.getQuantity());
-            orderItem.setOrder(order);
-            orderItems.add(orderItem);
-        });
-        return orderItems;
-    }
-
-    private @NotNull OrderDto createOrderDto(@NotNull Order order, @NotNull Member member, @NotNull Cart cart){
-        OrderDto orderDto = new OrderDto();
-        orderDto.setOrderId(order.getId());
-        orderDto.setMemberName(member.getMemberName());
-        orderDto.setAmount(cart.getAmount());
-        orderDto.setAddress(order.getDelivery().getAddress());
-        orderDto.setPhoneNumber(member.getPhoneNumber());
-        orderDto.setSalesTotalAmount(cart.getSalesTotalAmount());
-        orderDto.setTotalAmount(cart.getTotalAmount());
-        List<OrderItemDto> orderItemDtos = new ArrayList<>();
-
-        order.getOrderItems().forEach(orderItem -> {
-            OrderItemDto orderItemDto = new OrderItemDto();
-            orderItemDto.setItemCount(orderItem.getOrderCount());
-            orderItemDto.setItemId(orderItem.getItem().getId());
-            orderItemDto.setItemName(orderItem.getItem().getName());
-            orderItemDto.setItemPrice(orderItem.getItem().getItemPrice());
-            orderItemDto.setDiscountRate(orderItem.getItem().getDiscountRate());
-            orderItemDtos.add(orderItemDto);
-        });
-
-        orderDto.setOrderItemDtos(orderItemDtos);
-        return orderDto;
-    }
-
-    private void checkOrderAndCart(Order order, @NotNull Cart cart){
-        for(CartItem cartItem : cart.getCartItems()){
-            for(OrderItem orderItem : order.getOrderItems()){
-                if (Objects.equals(cartItem.getItem(), orderItem.getItem())) {
-                    orderItem.setOrderCount(cartItem.getQuantity());
-                    orderItem.setOrderPrice(Math.toIntExact(cartItem.getTotalPrice()));
-                    break;
-                }
-            }
-        }
+        return orderRepository.findByMemberAndOrderStatus(member, OrderStatus.PENDING).orElseGet(() -> new Order(member, cart));
     }
 
     public OrderDto showOrCreateOrder(String loginId) {
         Member member = getMemberByLoginId(loginId);
         Cart cart = getCartByMember(member);
         Order order = getOrCreateOrder(member, cart);
+
         orderItemRepository.deleteAll(order.getOrderItems());
-        order.setOrderItems(createOrderItemList(cart, order));
+
+        order.setOrderItems(cart, order);
         orderRepository.save(order);
-        return createOrderDto(order, member, cart);
+
+        return new OrderDto(order, member, cart);
     }
 }

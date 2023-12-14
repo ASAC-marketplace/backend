@@ -63,13 +63,13 @@ public class ItemController {
 
     //17 api 도움돼요
     @PostMapping("/reviews/helpful")
-    public ResponseEntity<String> helpfulReviews(@RequestParam Long itemId, Long reviewId){
-        itemService.helpfulItemReview(itemId, reviewId);
+    public ResponseEntity<String> helpfulReviews(@RequestParam Long reviewId){
+        itemService.changeReviewCount(reviewId, 1);
         return ResponseEntity.ok("도움돼요 추가 성공");
     }
     @PostMapping("/reviews/helpless")
-    public ResponseEntity<String> helplessReviews(@RequestParam Long itemId, Long reviewId){
-        itemService.helplessItemReview(itemId, reviewId);
+    public ResponseEntity<String> helplessReviews(@RequestParam Long reviewId){
+        itemService.changeReviewCount(reviewId, -1);
         return ResponseEntity.ok("도움돼요 취소 성공");
     }
 
