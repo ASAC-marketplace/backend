@@ -15,10 +15,10 @@ public class ApplicationTestDataInitializer {
     private final ItemTestDataCreator itemTestDataCreator;
     private final OrderTestDataCreator orderTestDataCreator;
 
-    @PostConstruct
-    public void init() {
-        memberTestDataCreator.init();
-        itemTestDataCreator.init();
-        orderTestDataCreator.init();
-    }
+//    @PostConstruct
+//    public void init() {
+//        memberTestDataCreator.init();
+//        itemTestDataCreator.init();
+//        orderTestDataCreator.init();
+//    }
 }
