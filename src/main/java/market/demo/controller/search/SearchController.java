@@ -2,6 +2,7 @@ package market.demo.controller.search;
 
 import lombok.RequiredArgsConstructor;
 import market.demo.domain.search.ItemSearchCondition;
+import market.demo.dto.inquiry.InquiryListResponse;
 import market.demo.dto.search.CountsAndPriceRangeDto;
 import market.demo.dto.search.ItemAutoDto;
 import market.demo.dto.search.ItemSearchResponse;
@@ -9,6 +10,7 @@ import market.demo.service.SearchService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
