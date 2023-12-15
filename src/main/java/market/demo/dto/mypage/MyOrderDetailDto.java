@@ -1,23 +1,18 @@
 package market.demo.dto.mypage;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import market.demo.domain.order.Order;
 import market.demo.domain.status.DeliveryStatus;
 import market.demo.domain.status.PaymentMethod;
 import market.demo.dto.order.OrderItemDto;
 import org.jetbrains.annotations.NotNull;
-import market.demo.domain.status.DeliveryStatus;
-import market.demo.domain.status.PaymentMethod;
-import market.demo.dto.order.OrderItemDto;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Getter
-@Setter
+@Data
 public class MyOrderDetailDto {
     private LocalDateTime orderDateTime;
     private String itemName;

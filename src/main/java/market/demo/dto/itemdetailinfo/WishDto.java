@@ -1,11 +1,11 @@
 package market.demo.dto.itemdetailinfo;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import market.demo.domain.item.Item;
 
-@Getter
-@Setter
+@Data
 public class WishDto {
     private Long itemId;
     private String itemName;

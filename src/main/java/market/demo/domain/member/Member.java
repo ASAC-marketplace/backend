@@ -9,6 +9,8 @@ import market.demo.domain.item.Review;
 import market.demo.domain.member.jwt.Authority;
 import market.demo.domain.order.Cart;
 import market.demo.domain.order.Order;
+import market.demo.domain.status.AgeStatus;
+import market.demo.domain.status.GenderStatus;
 import market.demo.dto.changememberinfo.ModifyMemberInfoDto;
 import market.demo.exception.InvalidPasswordException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,7 +22,6 @@ import java.util.Set;
 
 @Entity
 @Getter
-@Setter
 @Slf4j
 @Builder
 @AllArgsConstructor
@@ -39,8 +40,8 @@ public class Member {
 
     private String password;
 
-    private String gender;
-    private String ageRange;
+    private GenderStatus gender;
+    private AgeStatus ageRange;
     private String phoneNumber;
     private LocalDate birthday;
     private String provider;

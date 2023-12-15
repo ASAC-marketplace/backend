@@ -1,5 +1,6 @@
 package market.demo.dto.itemdetailinfo;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import market.demo.domain.item.Item;
@@ -7,8 +8,7 @@ import market.demo.domain.item.ItemDetail;
 
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 public class ItemDetailDto {
     private Long itemId;
     private Integer itemPrice;

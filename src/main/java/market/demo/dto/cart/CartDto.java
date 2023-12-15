@@ -1,5 +1,6 @@
 package market.demo.dto.cart;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import market.demo.domain.order.Cart;
@@ -8,8 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Getter
-@Setter
+@Data
 public class CartDto {
     private Long cartId;
     private Long amount; // 전체 금액

@@ -3,14 +3,17 @@ package market.demo.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import market.demo.domain.item.Review;
+import market.demo.domain.member.Member;
 import market.demo.domain.search.ItemSearchCondition;
-import market.demo.dto.search.CountsAndPriceRangeDto;
-import market.demo.dto.search.ItemAutoDto;
-import market.demo.dto.search.ItemSearchDto;
+import market.demo.domain.status.AgeStatus;
+import market.demo.domain.status.GenderStatus;
+import market.demo.dto.search.*;
 import market.demo.domain.search.SearchHistory;
 import market.demo.domain.search.SearchKeyword;
-import market.demo.dto.search.ItemSearchResponse;
+import market.demo.exception.MemberNotFoundException;
 import market.demo.repository.ItemRepositoryCustom;
+import market.demo.repository.MemberRepository;
+import market.demo.repository.SearchKeywordRepository;
 import market.demo.repository.SearchReposirory;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +34,8 @@ public class SearchService {
     private final ItemRepositoryCustom itemRepositoryCustom;
     private final SearchReposirory searchReposirory;
     private final StringRedisTemplate redisTemplate;
+    private final MemberRepository memberRepository;
+    private final SearchKeywordRepository searchKeywordRepository;
 
    public ItemSearchResponse searchResponse(ItemSearchCondition condition, Pageable pageable) {
        return itemRepositoryCustom.searchPageComplex(condition, pageable);
@@ -72,4 +77,28 @@ public class SearchService {
    public CountsAndPriceRangeDto getCountsAndPrice(ItemSearchCondition condition) {
        return itemRepositoryCustom.getCounts(condition);
    }
+
+    private Member getMemberByLoginId(String loginId) {
+        return memberRepository.findByLoginId(loginId).orElseGet(Member::new);
+    }
+
+    private List<Object[]> getKeywordByMember(Member member){
+        if (member == null)
+            return searchKeywordRepository.findTop8KeywordsByFrequency();
+        return searchKeywordRepository.findTop8KeywordsByFrequencyAndAgeAndGender(member.getAgeRange(), member.getGender());
+    }
+
+    public List<ItemRecomendDto> getRecommendKeyword(String loginId) {
+        Member member = getMemberByLoginId(loginId);
+        List<Object[]> keywordsByFrequency = getKeywordByMember(member);
+
+        return mapToItemRecommendDtoList(keywordsByFrequency);
+    }
+
+    private List<ItemRecomendDto> mapToItemRecommendDtoList(List<Object[]> keywords) {
+        return keywords.stream()
+                .map(ItemRecomendDto::new)
+                .collect(Collectors.toList());
+    }
+
 }

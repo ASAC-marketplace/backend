@@ -17,7 +17,6 @@ import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 public class Cart {
 
@@ -46,10 +45,10 @@ public class Cart {
     }
 
     public Cart(Member member){
-        this.setMember(member);
-        this.setAmount(0L);
-        this.setSalesTotalAmount(0L);
-        this.setTotalAmount(0L);
+        this.member = member;
+        this.amount =0L;
+        this.salesTotalAmount = 0L;
+        this.totalAmount = 0L;
     }
 
     public void setMember(Member member) {
