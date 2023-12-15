@@ -79,18 +79,17 @@ public class Member {
     private Wishlist wishlist;
 
 
-    @Builder
-    public static Member createMemberWithLoginId(String loginId, String memberName, String email, String password, String phoneNumber) {
-        Member member = new Member();
-        member.loginId = loginId;
-        member.memberName = memberName;
-        member.email = email;
-        member.password = password;
-        member.phoneNumber = phoneNumber;
-        return member;
-    }
+//    @Builder
+//    public static Member createMemberWithLoginId(String loginId, String memberName, String email, String password, String phoneNumber) {
+//        Member member = new Member();
+//        member.loginId = loginId;
+//        member.memberName = memberName;
+//        member.email = email;
+//        member.password = password;
+//        member.phoneNumber = phoneNumber;
+//        return member;
+//    }
 
-    @Builder
     public static Member createMemberWithProviderInfo(String memberName, String email, String loginId, String password, String phoneNumber, String provider, String providerId) {
         Member member = new Member();
         member.memberName = memberName;
