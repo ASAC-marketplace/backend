@@ -2,20 +2,14 @@ package market.demo.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import market.demo.domain.item.Review;
 import market.demo.domain.member.Member;
+import market.demo.domain.search.AgeGenderFrequency;
 import market.demo.domain.search.ItemSearchCondition;
-import market.demo.domain.status.AgeStatus;
-import market.demo.domain.status.GenderStatus;
+import market.demo.domain.search.SearchKeyword;
 import market.demo.dto.search.*;
 import market.demo.domain.search.SearchHistory;
-import market.demo.domain.search.SearchKeyword;
-import market.demo.exception.MemberNotFoundException;
-import market.demo.repository.ItemRepositoryCustom;
-import market.demo.repository.MemberRepository;
-import market.demo.repository.SearchKeywordRepository;
-import market.demo.repository.SearchReposirory;
-import org.springframework.core.annotation.MergedAnnotations;
+import market.demo.repository.*;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -36,6 +30,7 @@ public class SearchService {
     private final StringRedisTemplate redisTemplate;
     private final MemberRepository memberRepository;
     private final SearchKeywordRepository searchKeywordRepository;
+    private final AgeGenderFrequencyRepository ageGenderFrequencyRepository;
 
    public ItemSearchResponse searchResponse(ItemSearchCondition condition, Pageable pageable) {
        return itemRepositoryCustom.searchPageComplex(condition, pageable);
@@ -85,20 +80,40 @@ public class SearchService {
     private List<Object[]> getKeywordByMember(Member member){
         if (member == null)
             return searchKeywordRepository.findTop8KeywordsByFrequency();
-        return searchKeywordRepository.findTop8KeywordsByFrequencyAndAgeAndGender(member.getAgeRange(), member.getGender());
+        else{
+            return ageGenderFrequencyRepository.findTop8KeywordsByFrequency(member.getAgeRange(), member.getGender(),
+                    (java.awt.print.Pageable) PageRequest.of(0, 8));
+        }
+        //고쳐야함
     }
 
-    public List<ItemRecomendDto> getRecommendKeyword(String loginId) {
+    public List<ItemRecommendDto> getRecommendKeyword(String loginId) {
         Member member = getMemberByLoginId(loginId);
         List<Object[]> keywordsByFrequency = getKeywordByMember(member);
 
         return mapToItemRecommendDtoList(keywordsByFrequency);
     }
 
-    private List<ItemRecomendDto> mapToItemRecommendDtoList(List<Object[]> keywords) {
+    private List<ItemRecommendDto> mapToItemRecommendDtoList(List<Object[]> keywords) {
         return keywords.stream()
-                .map(ItemRecomendDto::new)
+                .map(ItemRecommendDto::new)
                 .collect(Collectors.toList());
+    }
+
+    // 검색 시 searchkeyword 추가
+    public void insertSearchKeywordByMember(String keyword, Member member){
+       SearchKeyword searchKeyword = searchKeywordRepository.findByKeyword(keyword)
+               .orElseGet(() -> new SearchKeyword(keyword));
+
+        searchKeyword.addFrequency();
+       if(member != null){
+           searchKeyword.addFrequency();
+           AgeGenderFrequency ageGenderFrequency = ageGenderFrequencyRepository
+                   .findBySearchKeywordAndAgeRangeAndGender(searchKeyword, member.getAgeRange(), member.getGender())
+                   .orElseGet(() -> new AgeGenderFrequency(searchKeyword, member.getAgeRange(), member.getGender()));
+
+           ageGenderFrequency.addAgeGenderFrequency();
+       }
     }
 
 }

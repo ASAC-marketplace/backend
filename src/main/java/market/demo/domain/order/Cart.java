@@ -3,7 +3,6 @@ package market.demo.domain.order;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import market.demo.domain.item.Item;
 import market.demo.domain.member.Member;
 import market.demo.exception.InvalidEntitySetException;
@@ -39,7 +38,7 @@ public class Cart {
         CartItem cartItem = new CartItem(item);
 
         cartItems.add(cartItem);
-        if (cartItem.getCart() != this) {cartItem.setCart(this);}
+        if (cartItem.getCart() != this) cartItem.setCart(this);
 
         recalculateCartAmounts();
     }

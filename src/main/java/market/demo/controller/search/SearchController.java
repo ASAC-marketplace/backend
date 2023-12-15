@@ -2,10 +2,9 @@ package market.demo.controller.search;
 
 import lombok.RequiredArgsConstructor;
 import market.demo.domain.search.ItemSearchCondition;
-import market.demo.dto.inquiry.InquiryListResponse;
 import market.demo.dto.search.CountsAndPriceRangeDto;
 import market.demo.dto.search.ItemAutoDto;
-import market.demo.dto.search.ItemRecomendDto;
+import market.demo.dto.search.ItemRecommendDto;
 import market.demo.dto.search.ItemSearchResponse;
 import market.demo.service.SearchService;
 import org.springframework.data.domain.Pageable;
@@ -45,7 +44,7 @@ public class SearchController {
 
     //13번 추천 검색어
     @GetMapping("/recommend-keyword")
-    public ResponseEntity<List<ItemRecomendDto>> getRecommendKeyowrd(@RequestParam String loginId){
+    public ResponseEntity<List<ItemRecommendDto>> getRecommendKeyowrd(@RequestParam String loginId){
         return ResponseEntity.ok(searchService.getRecommendKeyword(loginId));
     }
 }

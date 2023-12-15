@@ -22,6 +22,7 @@ import java.util.Set;
 
 @Entity
 @Getter
+@Setter
 @Slf4j
 @Builder
 @AllArgsConstructor
