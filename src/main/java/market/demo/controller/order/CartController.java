@@ -16,14 +16,14 @@ public class CartController {
 
     //23번 장바구니
     @PostMapping("/insert/{loginId}")
-    public ResponseEntity<String> insertCart (@PathVariable("loginId") String loginId,
+    public ResponseEntity<String> insertItemIntoCart (@PathVariable("loginId") String loginId,
                                               @RequestParam Long itemId){
         cartService.insertCart(loginId, itemId);
         return ResponseEntity.ok("장바구니 아이템 추가되었습니다.");
     }
 
     @PostMapping("/delete/{loginId}")
-    public ResponseEntity<String> deleteCart (@PathVariable("loginId") String loginId,
+    public ResponseEntity<String> deleteItemFromCart (@PathVariable("loginId") String loginId,
                                               @RequestParam Long itemId){
         cartService.deleteCart(loginId, itemId);
         return ResponseEntity.ok("장바구니 아이템 삭제되었습니다.");

@@ -18,13 +18,10 @@ import market.demo.dto.item.QItemMainEndDto;
 import market.demo.dto.itemdetailinfo.CouponDto;
 import market.demo.dto.itemdetailinfo.ItemDetailDto;
 import market.demo.dto.itemdetailinfo.ItemReviewsDto;
-import market.demo.dto.itemdetailinfo.ReviewDto;
 import market.demo.exception.*;
 import market.demo.repository.*;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.*;
@@ -48,146 +45,85 @@ public class ItemService {
     private static final String DISCOUNT_COUPON_NAME = "할인쿠폰";
     private static final boolean WISHED_IS_EXIST = false;
 
-    public ItemDetailDto searchItemDetail(Long itemId, String loginId){
-        Item item = itemRepository.findById(itemId).
-                orElseThrow(()-> new ItemNotFoundException("상품을 찾을 수 없습니다."));
-        ItemDetail itemDetail = itemDetailRepository.findByItem(item)
-                .orElseThrow(() -> new ItemNotFoundException("상품 상세 정보를 찾을 수 없습니다."));
+    private Member getMemberByLoginId(String loginId) {
+        return memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다. 로그인 해주세요"));
+    }
 
+    private Item getItemById(Long itemId) {
+        return itemRepository.findById(itemId)
+                .orElseThrow(() -> new ItemNotFoundException("아이템을 찾을 수 없습니다."));
+    }
+
+    private ItemDetail getItemDetailByItem(Item item){
+        return itemDetailRepository.findByItem(item)
+                .orElseThrow(() -> new ItemNotFoundException("상품 상세 정보를 찾을 수 없습니다."));
+    }
+
+    private Coupon getCouponById(Long couponId){
+        return couponRepository.findById(couponId)
+                .orElseThrow(() -> new CouponNotFoundException("쿠폰을 찾을 수 없습니다."));
+    }
+
+    private CouponDto getCouponDto() {
         Optional<Coupon> optionalCoupon = couponRepository.findByCouponName(DISCOUNT_COUPON_NAME);
-        CouponDto couponDto = getCouponDto(optionalCoupon);
+        return optionalCoupon.map(CouponDto::new).orElseGet(CouponDto::new);
+    }
+
+    private boolean checkIfItemIsWished(String loginId, Item item) {
+        if(memberRepository.existsByLoginId(loginId)){
+            Member member = getMemberByLoginId(loginId);
+            return member.getWishlist().getItems().contains(item);
+        }
+        return false;
+    }
+
+    public ItemDetailDto searchItemDetail(Long itemId, String loginId){
+        Item item = getItemById(itemId);
+        ItemDetail itemDetail = getItemDetailByItem(item);
 
         //로그인 된 사용자의 찜 여부
-        boolean isWished = WISHED_IS_EXIST;
-        if(memberRepository.existsByLoginId(loginId)){
-            Member member = memberRepository.findByLoginId(loginId)
-                    .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다."));
+        boolean isWished = checkIfItemIsWished(loginId, item);
 
-            if(member.getWishlist().getItems().contains(item)) isWished = true;
-        }
-
-        return getItemDetailDto(item, itemDetail, couponDto, isWished);
+        return new ItemDetailDto(item, itemDetail, getCouponDto(), isWished);
     }
 
-    @NotNull
-    private static CouponDto getCouponDto(Optional<Coupon> optionalCoupon) {
-        CouponDto couponDto = new CouponDto();
-        if (optionalCoupon.isPresent()) {
-            Coupon coupon = optionalCoupon.get();
-            couponDto.setCouponId(coupon.getId());
-            couponDto.setCouponName(coupon.getCouponName());
-            couponDto.setDiscountType(coupon.getDiscountType());
-            couponDto.setDiscountValue(coupon.getDiscountValue());
-            couponDto.setValidTo(coupon.getValidTo());
-            couponDto.setValidFrom(coupon.getValidFrom());
-            couponDto.setMinimumOrderPrice(coupon.getMinimumOrderPrice());
-        }
-        return couponDto;
-    }
-
-    @NotNull
-    private static ItemDetailDto getItemDetailDto(Item item, ItemDetail itemDetail, CouponDto couponDto, boolean isWished) {
-        ItemDetailDto itemDetailDto = new ItemDetailDto();
-
-        itemDetailDto.setItemId(item.getId());
-        itemDetailDto.setItemPrice(item.getItemPrice());
-        itemDetailDto.setSaleItemPrice((int) (item.getItemPrice()* (100 - item.getDiscountRate()) * 0.01));
-        itemDetailDto.setItemName(item.getName());
-        itemDetailDto.setDiscountRate(item.getDiscountRate());
-        itemDetailDto.setDescription(item.getDescription());
-        itemDetailDto.setReviewCount((long) item.getReviews().size());
-        itemDetailDto.setStockQuantity(item.getStockQuantity());
-        itemDetailDto.setDeliveryMethod(itemDetail.getDeliveryMethod());
-        itemDetailDto.setSellerInfo(itemDetail.getSellerInfo());
-        itemDetailDto.setItemInfo(itemDetail.getItemInfo());
-        itemDetailDto.setPackagingType(itemDetail.getPackagingType());
-        itemDetailDto.setNotes(itemDetail.getNotes());
-        itemDetailDto.setLikeCount(itemDetail.getLikeCount());
-        itemDetailDto.setDetailImages(itemDetail.getDetailImages());
-        itemDetailDto.setAdditionalDescription(itemDetail.getAdditionalDescription());
-        itemDetailDto.setCoupon(couponDto);
-        itemDetailDto.setPromotionImageUrl(itemDetail.getPromotionImageUrl());
-        itemDetailDto.setWished(isWished);
-
-        return itemDetailDto;
+    private List<Review> getReviews(Item item){
+        return reviewRepository.findAllByItem(item)
+                .orElseThrow(() -> new IllegalArgumentException("리뷰 정보가 없습니다."));
     }
 
     public ItemReviewsDto searchItemReview(Long itemId) {
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new ItemNotFoundException("아이템을 찾을 수 없습니다."));
+        Item item = getItemById(itemId);
+        List<Review> reviews = getReviews(item);
 
-        ItemReviewsDto itemReviewsDto = new ItemReviewsDto();
         //멤버별 리뷰 정보 저장
-        List<Review> reviews = reviewRepository.findAllByItem(item);
-        if(reviews.isEmpty()) throw new RuntimeException("리뷰 정보가 없습니다.");
-
-        List<ReviewDto> reviewInfos = new ArrayList<>();
-        List<String> images = new ArrayList<>();
-
-        for(Review review : reviews){
-            ReviewDto reviewDto = getReviewDto(review);
-            images.addAll(review.getImageUrls());
-            reviewInfos.add(reviewDto);
-        }
-
-        itemReviewsDto.setItemId(item.getId());
-        itemReviewsDto.setReviewCount((long) item.getReviews().size());
-        itemReviewsDto.setReviews(reviewInfos);
-        itemReviewsDto.setImageUrls(images);
-
-        return itemReviewsDto;
+        return new ItemReviewsDto(item, reviews);
     }
 
-    private static ReviewDto getReviewDto(Review review) {
-        ReviewDto reviewDto = new ReviewDto();
+    public void changeReviewCount(Long reviewId, int i) {
+        Review review = getReviewById(reviewId);
 
-        reviewDto.setReviewId(review.getId());
-        reviewDto.setMemberId(review.getMember().getId());
-        reviewDto.setMemberName(review.getMember().getMemberName());
-        reviewDto.setRating(review.getRating());
-        reviewDto.setComment(review.getComment());
-        reviewDto.setHelpful(review.getHelpful());
-        reviewDto.setReviewWriteDate(review.getReviewWriteDate());
-        reviewDto.setImageUrls(review.getImageUrls());
-        return reviewDto;
-    }
-
-    public void helpfulItemReview(Long itemId, Long reviewId) {
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
-
-        review.setHelpful(review.getHelpful() + 1);
+        review.setHelpful(i);
         reviewRepository.save(review);
     }
 
-    public void helplessItemReview(Long itemId, Long reviewId) {
-        Review review = reviewRepository.findById(reviewId)
+    private Review getReviewById(Long reviewId){
+        return reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
-
-        review.setHelpful(review.getHelpful() - 1 );
-        reviewRepository.save(review);
+    }
+    private void validateCouponNotIssued(Coupon coupon, Member member) {
+        Optional<Coupon> hasCoupon = couponRepository.findByCouponNameAndIssuedTo(coupon.getCouponName(), member);
+        if (hasCoupon.isPresent()) throw new CouponFoundException("해당 쿠폰은 이미 발급 되었습니다.");
     }
 
     public void getCoupon(String loginId ,Long couponId) {
-        Coupon coupon = couponRepository.findById(couponId)
-                .orElseThrow(() -> new CouponNotFoundException("쿠폰을 찾을 수 없습니다."));
-        Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new MemberNotFoundException("해당 사용자를 찾을 수 없습니다."));
+        Coupon coupon = getCouponById(couponId);
+        Member member = getMemberByLoginId(loginId);
 
-        Optional<Coupon> hasCoupon =  couponRepository.findByCouponNameAndIssuedTo(coupon.getCouponName(), member);
-        if(hasCoupon.isPresent()) throw new CouponFoundException("해당 쿠폰은 이미 발급 되었습니다.");
+        validateCouponNotIssued(coupon, member);
 
-        Coupon newCoupon = new Coupon();
-        newCoupon.setCouponName(coupon.getCouponName());
-        newCoupon.setDiscountType(coupon.getDiscountType());
-        newCoupon.setDiscountValue(coupon.getDiscountValue());
-        newCoupon.setValidFrom(coupon.getValidFrom());
-        newCoupon.setValidTo(coupon.getValidTo());
-        newCoupon.setMinimumOrderPrice(coupon.getMinimumOrderPrice());
-        newCoupon.setUsed(false);
-        newCoupon.setIssuedTo(member);
-
-        couponRepository.save(newCoupon);
+        couponRepository.save(new Coupon(coupon, member));
     }
 
     //배너?
@@ -295,34 +231,21 @@ public class ItemService {
     }
 
     public void addWish(String loginId, Long itemId) {
-        Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다. 로그인 해주세요"));
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new ItemNotFoundException("아이템을 찾을 수 없습니다."));
-
+        Member member = getMemberByLoginId(loginId);
+        Item item = getItemById(itemId);
         Wishlist wishlist = member.getWishlist();
-        //이미 찜한 상품
-        if(wishlist.getItems().contains(item)) throw new IllegalArgumentException("이미 찜한 상품입니다");
 
-        List<Item> items = wishlist.getItems();
-        items.add(item);
-        wishlist.setItems(items);
+        //이미 찜한 상품
+        wishlist.addItem(item);
         wishListRepository.save(wishlist);
     }
 
     public void minusWish(String loginId, Long itemId) {
-        Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다. 로그인 해주세요"));
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new ItemNotFoundException("아이템을 찾을 수 없습니다."));
-
+        Member member = getMemberByLoginId(loginId);
+        Item item = getItemById(itemId);
         Wishlist wishlist = member.getWishlist();
-        //이미 찜한 상품
-        if(!wishlist.getItems().contains(item)) throw new IllegalArgumentException("찜한 목록이 아닙니다.");
 
-        List<Item> items = wishlist.getItems();
-        items.remove(item);
-        wishlist.setItems(items);
+        wishlist.removeItem(item);
         wishListRepository.save(wishlist);
     }
 

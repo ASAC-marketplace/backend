@@ -58,4 +58,10 @@ public class Inquiry {
         this.registerDate = registerDate;
         this.status = status;
     }
+
+    public Inquiry(String title, LocalDate registerDate, InquiryStatus status) {
+        this.title = title;
+        this.registerDate = registerDate;
+        this.status = status;
+    }
 }

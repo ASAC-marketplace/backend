@@ -42,40 +42,36 @@ public class OrderTestDataCreator {
         @Transactional
         public void createTestData(int numberOfOrders) {
             for (int i = 0; i < numberOfOrders; i++) {
-                OrderStatus[] orderStatusValues = OrderStatus.values();
-                OrderStatus randomOrderStatus = orderStatusValues[ThreadLocalRandom.current().nextInt(orderStatusValues.length)];
-
                 // 임의의 멤버 조회
                 long memberId = i + 1;
                 Member member = em.find(Member.class, memberId);
 
+                // 장바구니에 아이템 추가
+                Cart cart = member.getCart();
+                int numberOfItems = ThreadLocalRandom.current().nextInt(1, 5); // 장바구니 아이템 개수
+                for (int j = 0; j < numberOfItems; j++) {
+                    long itemId = ThreadLocalRandom.current().nextLong(1, 51);
+                    Item item = em.find(Item.class, itemId);
+                    if (!isItemInCart(cart, item)) {
+                        cartService.insertCart(member.getLoginId(), item.getId());
+                    }
+                }
+                cart.recalculateCartAmounts();
+
                 // 주문 생성
+                OrderStatus[] orderStatusValues = OrderStatus.values();
+                OrderStatus randomOrderStatus = orderStatusValues[ThreadLocalRandom.current().nextInt(orderStatusValues.length)];
                 LocalDateTime orderDateTime = LocalDateTime.now().minusDays(ThreadLocalRandom.current().nextLong(1, 30));
                 Order order = new Order(member, orderDateTime, randomOrderStatus);
 
-                // 여러 개의 주문 항목 생성 및 주문에 추가
-                int numberOfItems = ThreadLocalRandom.current().nextInt(1, 5); // 주문 항목 개수
-                List<OrderItem> orderItems = IntStream.range(0, numberOfItems).mapToObj(index -> {
-                    long itemId = ThreadLocalRandom.current().nextLong(1, 51);
-                    Item item = em.find(Item.class, itemId);
-                    int orderCount = ThreadLocalRandom.current().nextInt(1, 5);
-                    int orderPrice = item.getItemPrice() * orderCount;
-                    return new OrderItem(item, orderCount, orderPrice);
-                }).toList();
-
-                orderItems.forEach(orderItem -> {
+                // 장바구니 아이템을 주문 아이템으로 전환
+                cart.getCartItems().forEach(cartItem -> {
+                    OrderItem orderItem = new OrderItem(cartItem.getItem(), cartItem.getQuantity(), cartItem.getItem().getItemPrice() * cartItem.getQuantity());
                     order.addOrderItem(orderItem);
-
-                    if (!isItemInCart(member.getCart(), orderItem.getItem())) {
-                        try {
-                            cartService.insertCart(member.getLoginId(), orderItem.getItem().getId());
-                        } catch (IllegalArgumentException e) {
-                            log.info("이미 장바구니에 있는 아이템: " + e.getMessage());
-                        }
-                    }
                 });
 
-                order.calculateTotalAmount(); // 총 금액 계산
+                // 주문에 총 금액 설정 및 저장
+                order.setTotalAmount(cart.getTotalAmount());
                 em.persist(order);
 
                 // 배송 객체 생성 및 저장
@@ -85,9 +81,9 @@ public class OrderTestDataCreator {
                 em.persist(delivery);
             }
         }
-
-        private boolean isItemInCart(Cart cart, Item item) {
-            return cart.getCartItems().stream().anyMatch(cartItem -> cartItem.getItem().equals(item));
-        }
+    }
+    private static boolean isItemInCart(Cart cart, Item item) {
+        return cart.getCartItems().stream()
+                .anyMatch(cartItem -> cartItem.getItem().equals(item));
     }
 }

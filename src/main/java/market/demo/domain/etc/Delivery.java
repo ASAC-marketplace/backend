@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import market.demo.domain.member.Address;
+import market.demo.domain.member.Member;
 import market.demo.domain.order.Order;
 import market.demo.domain.status.DeliveryStatus;
 
@@ -42,5 +43,10 @@ public class Delivery {
         this.order = order;
         this.address = address;
         this.deliveryStatus = deliveryStatus;
+    }
+
+    public Delivery(Member member){
+        this.address = member.getAddress();
+        this.deliveryStatus = DeliveryStatus.PENDING;
     }
 }

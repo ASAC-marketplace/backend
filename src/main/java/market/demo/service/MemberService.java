@@ -3,8 +3,6 @@ package market.demo.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.etc.Wishlist;
-import market.demo.domain.item.Item;
-import market.demo.domain.member.Coupon;
 import market.demo.domain.member.Member;
 import market.demo.domain.member.jwt.Authority;
 import market.demo.domain.status.OrderStatus;
@@ -26,9 +24,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -61,10 +59,7 @@ public class MemberService {
                 .build();
 
         //찜하기 추가
-        Wishlist wishlist = new Wishlist();
-        wishlist.setMember(member);
-        member.setWishlist(wishlist);
-
+        member.setWishlist(new Wishlist(member));
         return memberRepository.save(member);
     }
 
@@ -120,47 +115,32 @@ public class MemberService {
     }
 
     public void checkPassword(String loginId, String password){
-        Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다"));
+        Member member = getMemberByLoginId(loginId);
+        member.checkInvalidPassword(password);
+    }
 
-        if(!member.getPassword().equals(password)) throw new InvalidPasswordException("비밀번호가 맞지 않습니다.");
+    private Member getMemberByLoginId(String loginId) {
+        return memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다. 로그인 해주세요"));
     }
 
     public MemberInfoDto getMemberInfo(String loginId) {
-        Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다"));
-
-        MemberInfoDto memberInfoDto = new MemberInfoDto();
-        memberInfoDto.setLoginId(member.getLoginId());
-        memberInfoDto.setMemberName(member.getMemberName());
-        memberInfoDto.setEmail(member.getEmail());
-        memberInfoDto.setPhoneNumber(member.getPhoneNumber());
-
-        return memberInfoDto;
+        Member member = getMemberByLoginId(loginId);
+        return new MemberInfoDto(member);
     }
 
     public void modifymember(String loginId, ModifyMemberInfoDto modifyMemberInfoDto) {
-        Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다"));
+        Member member = getMemberByLoginId(loginId);
 
         // 비밀번호 확인 로직
-        if (!member.getPassword().equals(modifyMemberInfoDto.getPassword())) throw new InvalidPasswordException("비밀번호가 맞지 않습니다.");
+        member.checkInvalidPassword(modifyMemberInfoDto.getPassword());
 
         //새 비밀번호 확인
-        if(!modifyMemberInfoDto.getNewPassword().equals(modifyMemberInfoDto.getNewPasswordCheck())){
-            throw  new IllegalArgumentException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
-        }
+        modifyMemberInfoDto.checkNewPassword();
 
         //회원 정보 수정
-        if(modifyMemberInfoDto.getNewPassword().isEmpty()) member.setPassword(modifyMemberInfoDto.getPassword());
-        else member.setPassword(modifyMemberInfoDto.getNewPassword());
-
-        member.setLoginId(modifyMemberInfoDto.getLoginId());
-        member.setEmail(modifyMemberInfoDto.getEmail());
-        member.setPhoneNumber(modifyMemberInfoDto.getPhoneNumber());
-        member.setMemberName(modifyMemberInfoDto.getMemberName());
-
-       memberRepository.save(member);
+        member.changeMemberInfo(modifyMemberInfoDto);
+        memberRepository.save(member);
     }
 
     public void verifyIdAndEmail(String loginId, String email) {
@@ -236,60 +216,17 @@ public class MemberService {
     }
 
     public MyPageDto getUserPageInfo(String loginId) {
-        Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(()->new MemberNotFoundException("사용자를 찾을 수 없습니다."));
-        MyPageDto myPageDto = new MyPageDto();
-
-        myPageDto.setLoginId(member.getLoginId());
-        myPageDto.setMemberName(member.getMemberName());
-        myPageDto.setCouponCount((long) member.getCoupons().size());
-        myPageDto.setWishListCount((long) member.getWishlist().getItems().size());
-
-        return myPageDto;
+        Member member = getMemberByLoginId(loginId);
+        return new MyPageDto(member);
     }
 
     public List<CouponDto> getUserCoupons(String loginId) {
-        Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(()->new MemberNotFoundException("사용자를 찾을 수 없습니다."));
-
-        List<CouponDto> couponDtos = new ArrayList<>();
-        List<Coupon> coupons = member.getCoupons();
-        for(Coupon coupon : coupons){
-            CouponDto couponDto = new CouponDto();
-
-            couponDto.setCouponId(coupon.getId());
-            couponDto.setCouponName(coupon.getCouponName());
-            couponDto.setDiscountType(coupon.getDiscountType());
-            couponDto.setDiscountValue(coupon.getDiscountValue());
-            couponDto.setValidTo(coupon.getValidTo());
-            couponDto.setValidFrom(coupon.getValidFrom());
-            couponDto.setMinimumOrderPrice(coupon.getMinimumOrderPrice());
-
-            couponDtos.add(couponDto);
-        }
-
-        return couponDtos;
+        Member member = getMemberByLoginId(loginId);
+        return member.getCoupons().stream().map(CouponDto::new).collect(Collectors.toList());
     }
 
     public List<WishDto> getUserWishList(String loginId) {
-        Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(()->new MemberNotFoundException("사용자를 찾을 수 없습니다."));
-
-        List<WishDto> WishDtos = new ArrayList<>();
-        List<Item> items = member.getWishlist().getItems();
-        for(Item item: items){
-            WishDto wishDto = new WishDto();
-
-            wishDto.setItemId(item.getId());
-            wishDto.setItemName(item.getName());
-            wishDto.setItemTotalPrice(item.getItemPrice());
-            wishDto.setDiscountRate(item.getDiscountRate());
-            wishDto.setSaleItemPrice((int) (item.getItemPrice() * (100 - item.getDiscountRate() * 0.01)));
-            wishDto.setPromotionImageUrl(item.getItemDetail().getPromotionImageUrl());
-
-            WishDtos.add(wishDto);
-        }
-
-        return WishDtos;
+        Member member = getMemberByLoginId(loginId);
+        return member.getWishlist().getItems().stream().map(WishDto::new).collect(Collectors.toList());
     }
 }

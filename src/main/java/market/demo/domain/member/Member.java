@@ -9,6 +9,8 @@ import market.demo.domain.item.Review;
 import market.demo.domain.member.jwt.Authority;
 import market.demo.domain.order.Cart;
 import market.demo.domain.order.Order;
+import market.demo.dto.changememberinfo.ModifyMemberInfoDto;
+import market.demo.exception.InvalidPasswordException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
@@ -159,6 +161,22 @@ public class Member {
         if (cart != null && cart.getMember() != this) {
             cart.setMember(this);
         }
+    }
+
+    public void checkInvalidPassword(String password){
+        if(!this.password.equals(password))
+            throw new InvalidPasswordException("비밀번호가 맞지 않습니다.");
+    }
+
+    public void changeMemberInfo(ModifyMemberInfoDto modifyMemberInfoDto){
+        if(modifyMemberInfoDto.getNewPassword().isEmpty()) this.password = modifyMemberInfoDto.getPassword();
+        else this.password =modifyMemberInfoDto.getNewPassword();
+
+        this.loginId = modifyMemberInfoDto.getLoginId();
+        this.email = modifyMemberInfoDto.getEmail();
+        this.phoneNumber = modifyMemberInfoDto.getPhoneNumber();
+        this.memberName = modifyMemberInfoDto.getMemberName();
+
     }
 
 }

@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import market.demo.domain.order.CartItem;
 import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
 import market.demo.exception.InvalidOrderException;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -103,6 +105,13 @@ public class Item {
         }
         log.info("stock = " + quantity);
         this.stockQuantity -= quantity;
+    }
+
+    public void validItemStockQuantityByCartItem(@NotNull CartItem cartItem, int i){
+        if(this.stockQuantity < cartItem.getQuantity() + i)
+            throw new IllegalArgumentException("해당 상품 재고가 부족합니다.");
+        if(cartItem.getQuantity() + i < 1)
+            throw new IllegalArgumentException("0개 이하는 주문하실 수 없습니다.");
     }
 }
 

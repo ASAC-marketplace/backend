@@ -5,8 +5,10 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import market.demo.domain.member.Member;
+import market.demo.domain.status.InquiryStatus;
 import market.demo.domain.type.InquiryType;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter

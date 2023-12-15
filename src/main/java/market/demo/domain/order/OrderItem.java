@@ -49,4 +49,11 @@ public class OrderItem {
             order.addOrderItem(this);
         }
     }
+
+    public OrderItem(CartItem cartItem, Order order){
+        this.order = order;
+        this.item = cartItem.getItem();
+        this.orderPrice = Math.toIntExact(cartItem.getTotalPrice());
+        this.orderCount = cartItem.getQuantity();
+    }
 }
