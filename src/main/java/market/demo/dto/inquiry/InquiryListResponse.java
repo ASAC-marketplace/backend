@@ -25,15 +25,4 @@ public class InquiryListResponse {
         response.status = inquiry.getStatus();
         return response;
     }
-<<<<<<< HEAD
-=======
-
-//    // 매개변수를 받는 생성자
-//    public InquiryListResponse(Inquiry inquiry) {
-//        this.id = inquiry.getId();
-//        this.title = inquiry.getTitle();
-//        this.registerDate = inquiry.getRegisterDate();
-//        this.status = inquiry.getStatus();
-//    }
->>>>>>> origin/main
 }
