@@ -4,6 +4,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import market.demo.dto.social.CustomOAuth2User;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -50,6 +51,11 @@ public class TokenProvider implements InitializingBean {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
+        CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
+        Long memberId = customOAuth2User.getMemberId();
+
+        log.info("memberId = ", memberId);
+
         long now = (new Date()).getTime();
         Date validity = new Date(now + this.tokenValidityInMilliseconds);
 
@@ -57,6 +63,7 @@ public class TokenProvider implements InitializingBean {
         // JWT 토큰 생성 및 반환
         return Jwts.builder()
                 .setSubject(authentication.getName())
+                .claim("memberId", memberId)
                 .claim(AUTHORITIES_KEY, authorities)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(validity)
