@@ -129,20 +129,20 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
         return categoryId != null ? item.category.id.eq(categoryId) : null;
     }
 
-    private BooleanExpression categoryNameEq(String categoryName) {
-        return categoryName != null ? item.category.name.eq(categoryName) : null;
+    private BooleanExpression categoryNameEq(List<String> categoryName) {
+        return categoryName != null && !categoryName.isEmpty() ? item.category.name.in(categoryName) : null;
     }
 
-    private BooleanExpression brandEq(String brand) {
-        return brand != null ? item.brand.eq(brand) : null;
+    private BooleanExpression brandEq(List<String> brand) {
+        return brand != null && !brand.isEmpty() ? item.brand.in(brand) : null;
     }
 
-    private BooleanExpression statusEq(ItemStatus status) {
-        return status != null ? item.status.eq(status) : null;
+    private BooleanExpression statusEq(List<ItemStatus> status) {
+        return status != null && !status.isEmpty() ? item.status.in(status) : null;
     }
 
-    private BooleanExpression promotionTypeEq(PromotionType promotionType) {
-        return promotionType != null ? item.promotionType.eq(promotionType) : null;
+    private BooleanExpression promotionTypeEq(List<PromotionType> promotionType) {
+        return promotionType != null && !promotionType.isEmpty() ? item.promotionType.in(promotionType) : null;
     }
 
     private BooleanExpression stockQuantityGoe(Integer minStockQuantity) {
