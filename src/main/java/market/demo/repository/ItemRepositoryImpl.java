@@ -68,7 +68,9 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                         stockQuantityGoe(condition.getMinStockQuantity()),
                         registeredDateGoe(condition.getMinRegisteredDate()),
                         discountRateBetween(condition.getMinDiscountRate(), condition.getMaxDiscountRate()),
+                        priceRangeEq(condition.getPriceRange()),
                         itemPriceBetween(condition.getMinPrice(), condition.getMaxPrice()));
+
 
         // Pageable의 정렬 조건 적용
         for (Sort.Order order : pageable.getSort()) {
@@ -77,7 +79,7 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
         }
 
         List<ItemSearchDto> content = query.offset(pageable.getOffset())
-               .limit(pageable.getPageSize())
+                .limit(pageable.getPageSize())
                 .fetch();
 
         JPAQuery<Long> countQuery = queryFactory
@@ -108,12 +110,12 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
 
     @Override
     public List<ItemAutoDto> findItemNamesByKeyword(String keyword, int limit) {
-        QItem item =QItem.item;
+        QItem item = QItem.item;
 
         List<ItemAutoDto> result = queryFactory
                 .select(Projections.constructor(ItemAutoDto.class, item.name))
                 .from(item)
-                .where(item.name.like( keyword + "%")) //( "%" + keyword + "%")
+                .where(item.name.like(keyword + "%")) //( "%" + keyword + "%")
                 .limit(limit)
                 .fetch();
 
@@ -256,5 +258,17 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
             priceRanges.add(String.format("%d ~ %d", start, end));
         }
         return priceRanges;
+    }
+
+    private BooleanExpression priceRangeEq(String priceRange) {
+        if (priceRange != null && !priceRange.isEmpty()) {
+            String[] ranges = priceRange.split("~");
+            if (ranges.length == 2) {
+                int minRange = Integer.parseInt(ranges[0].trim());
+                int maxRange = Integer.parseInt(ranges[1].trim());
+                return discountedPrice.between(minRange, maxRange); // discountedPrice를 사용
+            }
+        }
+        return null;
     }
 }

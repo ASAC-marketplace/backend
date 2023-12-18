@@ -21,4 +21,5 @@ public class ItemSearchCondition {
     private Integer maxDiscountRate;
     private Integer minPrice;
     private Integer maxPrice;
+    private String priceRange; // 가격 구간을 나타내는 필드 추가
 }
