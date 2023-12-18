@@ -39,13 +39,4 @@ public class InquiryController {
         InquiryDetailResponse inquiryDetail = inquiryService.getInquiryDetails(inquiryId);
         return ResponseEntity.ok(inquiryDetail);
     }
-
-//    @GetMapping()
-//    public ResponseEntity<> 리스트 조회 () {
-//
-//    }
-//    @GetMapping()
-//    public ResponseEntity<> 디테일 조회 () {
-//
-//    }
 }
