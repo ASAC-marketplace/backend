@@ -17,8 +17,8 @@ public class ApplicationTestDataInitializer {
 
     @PostConstruct
     public void init() {
-        memberTestDataCreator.init();
+        /*memberTestDataCreator.init();
         itemTestDataCreator.init();
-        //orderTestDataCreator.init();
+        orderTestDataCreator.init();*/
     }
 }

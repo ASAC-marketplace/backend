@@ -20,7 +20,7 @@ public class SearchKeyword {
     private String keyword; // 검색 키워드
     private Integer frequency; // 주어진 기간 동안의 검색 빈도수
 
-    @OneToMany(mappedBy = "search_keyword", cascade = ALL)
+    @OneToMany(mappedBy = "searchKeyword", cascade = ALL)
     private List<AgeGenderFrequency> ageGenderFrequencies;
 
     public SearchKeyword(String keyword){

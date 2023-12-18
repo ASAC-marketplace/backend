@@ -146,13 +146,15 @@ public class Member {
     }
 
     // 테스트 데이터
-    public Member(String memberName, String loginId ,String email, String password,String phoneNumber, Address address) {
+    public Member(String memberName, String loginId ,String email, String password,String phoneNumber, Address address, AgeStatus age, GenderStatus gender) {
         this.memberName = memberName;
         this.loginId = loginId;
         this.email = email;
         this.password = password;
         this.phoneNumber = phoneNumber;
         this.address = address;
+        this.ageRange = age;
+        this.gender = gender;
     }
 
     public void setCart(Cart cart) {
