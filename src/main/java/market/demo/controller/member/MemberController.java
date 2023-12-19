@@ -115,7 +115,7 @@ public class MemberController {
     @PostMapping("/modify-member")
     public ResponseEntity<String> modifyMemberInfo(@RequestBody ModifyMemberInfoDto modifyMemberInfoDto) {
         String loginId = tokenProvider.getLoginIdFromCurrentRequest(); // JWT에서 loginId 추출
-        memberService.modifymember(loginId, modifyMemberInfoDto);
+        memberService.modifyMember(loginId, modifyMemberInfoDto);
         return ResponseEntity.ok("수정이 완료되었습니다.");
     }
 

@@ -116,7 +116,9 @@ public class MemberService {
 
     public void checkPassword(String loginId, String password){
         Member member = getMemberByLoginId(loginId);
-        member.checkInvalidPassword(password);
+        if (!passwordEncoder.matches(password, member.getPassword())) {
+            throw new InvalidPasswordException("비밀번호가 일치하지 않습니다.");
+        }
     }
 
     private Member getMemberByLoginId(String loginId) {
@@ -129,14 +131,20 @@ public class MemberService {
         return new MemberInfoDto(member);
     }
 
-    public void modifymember(String loginId, ModifyMemberInfoDto modifyMemberInfoDto) {
+    public void modifyMember(String loginId, ModifyMemberInfoDto modifyMemberInfoDto) {
         Member member = getMemberByLoginId(loginId);
 
         // 비밀번호 확인 로직
-        member.checkInvalidPassword(modifyMemberInfoDto.getPassword());
+        if (!passwordEncoder.matches(modifyMemberInfoDto.getPassword(), member.getPassword())) {
+            throw new InvalidPasswordException("비밀번호가 일치하지 않습니다.");
+        }
 
-        //새 비밀번호 확인
-        modifyMemberInfoDto.checkNewPassword();
+        //새 비밀번호 변경
+        if(!modifyMemberInfoDto.getNewPassword().isEmpty()) {
+            modifyMemberInfoDto.checkNewPassword();
+            String encodedPassword = passwordEncoder.encode(modifyMemberInfoDto.getNewPassword());
+            member.updatePassword(encodedPassword, passwordEncoder);
+        }
 
         //회원 정보 수정
         member.changeMemberInfo(modifyMemberInfoDto);
@@ -155,6 +163,7 @@ public class MemberService {
             throw new InvalidPasswordException("비밀번호가 일치하지 않습니다.");
         }
     }
+
 
     public void updateSocialInfo(String email, String provider, String providerId) {
         Member member = memberRepository.findByEmail(email)
