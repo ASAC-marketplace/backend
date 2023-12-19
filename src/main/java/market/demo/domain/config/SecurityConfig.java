@@ -101,8 +101,8 @@ public class SecurityConfig {
             memberInfoSocialDto1.setProvider(provider);
             memberInfoSocialDto1.setProviderId(providerId);
 
-//            String jwt = tokenProvider.createToken(authentication);
-//            response.addHeader("Authorization", "Bearer " + jwt);
+            String jwt = tokenProvider.createToken(authentication);
+            response.addHeader("Authorization", "Bearer " + jwt);
 
             // 데이터베이스에서 사용자 조회
             Optional<Member> memberOptional = memberRepository.findByEmail(email);
