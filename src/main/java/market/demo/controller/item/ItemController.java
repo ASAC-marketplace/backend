@@ -3,6 +3,7 @@ package market.demo.controller.item;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import market.demo.domain.member.jwt.TokenProvider;
 import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
 import market.demo.dto.item.ItemDto;
@@ -24,6 +25,7 @@ import java.util.Map;
 public class ItemController {
     private final ItemService itemService;
     private final OrderService orderService;
+    private final TokenProvider tokenProvider;
 
     //배너 추가
     @GetMapping("/status")
@@ -50,8 +52,9 @@ public class ItemController {
 
     //17 api 상품 상세 정보
     @GetMapping
-    public ResponseEntity<ItemDetailDto> showItemDetail(@RequestParam Long itemId,
-                                                        @RequestParam String loginId) {
+    public ResponseEntity<ItemDetailDto> showItemDetail(@RequestParam Long itemId) {
+        String loginId = tokenProvider.getLoginIdFromCurrentRequest(); // JWT에서 loginId 추출
+        log.info(loginId);
         return ResponseEntity.ok(itemService.searchItemDetail(itemId, loginId));
     }
 
@@ -82,14 +85,16 @@ public class ItemController {
 
     //23번 찜하기
     @PostMapping("/yeswish")
-    public ResponseEntity<String> addWishList(@RequestParam String loginId, Long itemId){
+    public ResponseEntity<String> addWishList(@RequestParam Long itemId){
+        String loginId = tokenProvider.getLoginIdFromCurrentRequest();
         log.info("찜하기 추가");
         itemService.addWish(loginId, itemId);
         return ResponseEntity.ok("찜하기 추가되었습니다.");
     }
 
     @PostMapping("/nowish")
-    public ResponseEntity<String> minusWishList(@RequestParam String loginId, Long itemId){
+    public ResponseEntity<String> minusWishList(@RequestParam Long itemId){
+        String loginId = tokenProvider.getLoginIdFromCurrentRequest();
         log.info("찜하기 삭제");
         itemService.minusWish(loginId, itemId);
         return ResponseEntity.ok("찜하기 취소되었습니다.");

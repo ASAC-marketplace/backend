@@ -53,6 +53,18 @@ public class Review {
         this.reviewWriteDate = reviewWriteDate;
     }
 
+    //Review 등록
+
+
+    public Review(Item item, Member member, int rating, String comment, LocalDateTime reviewWriteDate, List<String> imageUrls) {
+        this.item = item;
+        this.member = member;
+        this.rating = rating;
+        this.comment = comment;
+        this.reviewWriteDate = reviewWriteDate;
+        this.imageUrls = imageUrls;
+    }
+
     public void setHelpful(int i){
         this.helpful += i;
     }

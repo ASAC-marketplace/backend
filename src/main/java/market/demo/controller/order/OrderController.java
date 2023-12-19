@@ -1,6 +1,7 @@
 package market.demo.controller.order;
 
 import lombok.RequiredArgsConstructor;
+import market.demo.domain.member.jwt.TokenProvider;
 import market.demo.dto.order.OrderDto;
 import market.demo.dto.payment.PaymentRequestDto;
 import market.demo.dto.payment.PaymentResponseDto;
@@ -16,6 +17,7 @@ public class OrderController {
 
     private final PaymentService paymentService;
     private final OrderService orderService;
+    private final TokenProvider tokenProvider;
 
     //결제 api
     @PostMapping("/payment")
@@ -25,8 +27,9 @@ public class OrderController {
     }
 
     //19 주문 api
-    @GetMapping("/{loginId}")
-    public ResponseEntity<OrderDto> showOrder(@PathVariable("loginId") String loginId){
+    @GetMapping()
+    public ResponseEntity<OrderDto> showOrder(){
+        String loginId = tokenProvider.getLoginIdFromCurrentRequest(); // JWT에서 loginId 추출
         return ResponseEntity.ok(orderService.showOrCreateOrder(loginId));
     }
 }

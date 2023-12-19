@@ -85,7 +85,7 @@ public class ItemService {
 
         //로그인 된 사용자의 찜 여부
         boolean isWished = checkIfItemIsWished(loginId, item);
-
+        log.info(String.valueOf(isWished));
         return new ItemDetailDto(item, itemDetail, getCouponDto(), isWished);
     }
 

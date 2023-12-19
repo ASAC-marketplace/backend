@@ -84,8 +84,8 @@ public class SearchService {
        return itemRepositoryCustom.getCounts(condition);
    }
 
-    private @Nullable Member getMemberByLoginId(@NotNull String loginId) {
-       if(loginId.isBlank()) return null;
+    private @Nullable Member getMemberByLoginId(String loginId) {
+       if(loginId == null) return null;
        return memberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다."));
     }
@@ -147,5 +147,4 @@ public class SearchService {
     public List<ItemAutoDto> findItemNamesByKeyword(String keyword, int limit) {
         return itemRepositoryCustom.findItemNamesByKeyword(keyword, limit);
     }
-
 }

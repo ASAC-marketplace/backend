@@ -105,14 +105,16 @@ public class MemberController {
 
     //26 api 개인정보 보내기
     @GetMapping("/modify-member")
-    public ResponseEntity<MemberInfoDto> sendMemberInfo(@RequestParam String loginId) {
+    public ResponseEntity<MemberInfoDto> sendMemberInfo() {
+        String loginId = tokenProvider.getLoginIdFromCurrentRequest(); // JWT에서 loginId 추출
         MemberInfoDto memberInfoDto = memberService.getMemberInfo(loginId);
         return ResponseEntity.ok(memberInfoDto);
     }
 
     //26 api 개인정보 수정하기
     @PostMapping("/modify-member")
-    public ResponseEntity<String> modifyMemberInfo(@RequestParam String loginId, @RequestBody ModifyMemberInfoDto modifyMemberInfoDto) {
+    public ResponseEntity<String> modifyMemberInfo(@RequestBody ModifyMemberInfoDto modifyMemberInfoDto) {
+        String loginId = tokenProvider.getLoginIdFromCurrentRequest(); // JWT에서 loginId 추출
         memberService.modifymember(loginId, modifyMemberInfoDto);
         return ResponseEntity.ok("수정이 완료되었습니다.");
     }
@@ -143,6 +145,7 @@ public class MemberController {
     //48 일반 로그인
     @PostMapping("/authenticate")
     public ResponseEntity<TokenDto> authorize(@Valid @RequestBody LoginDto loginDto) {
+        log.info(loginDto.getLoginId());
 
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginDto.getLoginId(), loginDto.getPassword());
@@ -159,25 +162,28 @@ public class MemberController {
     }
 
     //23 마이페이지, 개인정보, 찜한것, 쿠폰 정보 노출
-    @GetMapping("/mypage/{loginId}")
-    public ResponseEntity<MyPageDto> userPage(@PathVariable("loginId") String loginId) {
+    @GetMapping("/mypage")
+    public ResponseEntity<MyPageDto> userPage() {
+        String loginId = tokenProvider.getLoginIdFromCurrentRequest();
         return ResponseEntity.ok(memberService.getUserPageInfo(loginId));
     }
 
-    @GetMapping("/mypage/coupons/{loginId}")
-    public ResponseEntity<List<CouponDto>> showUserCoupons(@PathVariable("loginId") String loginId) {
+    @GetMapping("/mypage/coupons")
+    public ResponseEntity<List<CouponDto>> showUserCoupons() {
+        String loginId = tokenProvider.getLoginIdFromCurrentRequest();
         return ResponseEntity.ok(memberService.getUserCoupons(loginId));
     }
 
-    @GetMapping("/mypage/wishlist/{loginId}")
-    public ResponseEntity<List<WishDto>> showUserWishes(@PathVariable("loginId") String loginId) {
+    @GetMapping("/mypage/wishlist")
+    public ResponseEntity<List<WishDto>> showUserWishes() {
+        String loginId = tokenProvider.getLoginIdFromCurrentRequest();
         return ResponseEntity.ok(memberService.getUserWishList(loginId));
     }
 
     //22 주문 내역 조회
-    @GetMapping("/mypage/orderlist/{loginId}")
-    public ResponseEntity<List<MyOrderDto>> showUserOrders(@PathVariable("loginId") String loginId,
-                                                           @RequestParam int month) {
+    @GetMapping("/mypage/orderlist")
+    public ResponseEntity<List<MyOrderDto>> showUserOrders(@RequestParam int month) {
+        String loginId = tokenProvider.getLoginIdFromCurrentRequest();
         log.info(String.valueOf(month));
         return ResponseEntity.ok(orderService.showUserOrders(loginId, month));
     }
