@@ -147,8 +147,4 @@ public class SearchService {
     public List<ItemAutoDto> findItemNamesByKeyword(String keyword, int limit) {
         return itemRepositoryCustom.findItemNamesByKeyword(keyword, limit);
     }
-
-    public CountsAndPriceRangeDto getCountsAndPrice(ItemSearchCondition condition) {
-        return itemRepositoryCustom.getCounts(condition);
-    }
 }

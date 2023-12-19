@@ -150,7 +150,7 @@ public class MemberController {
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String jwt = tokenProvider.createToken(authentication);
+        String jwt = tokenProvider.createTokenNormal(authentication);
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
@@ -187,6 +187,4 @@ public class MemberController {
     public ResponseEntity<MyOrderDetailDto> showUserOrderDetail(@PathVariable("orderId") Long orderId) {
         return ResponseEntity.ok(orderService.showUserOrderDetail(orderId));
     }
-
-
 }
