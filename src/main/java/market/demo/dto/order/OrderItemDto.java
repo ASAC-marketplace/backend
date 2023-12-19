@@ -1,12 +1,12 @@
 package market.demo.dto.order;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import market.demo.domain.order.Order;
 import market.demo.domain.order.OrderItem;
 
-@Getter
-@Setter
+@Data
 public class OrderItemDto {
     private Long itemId;
     private String itemName;

@@ -1,5 +1,6 @@
 package market.demo.dto.itemdetailinfo;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import market.demo.domain.item.Item;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Getter
+@Data
 public class ItemReviewsDto {
     private Long itemId;
     private Long reviewCount;

@@ -1,5 +1,6 @@
 package market.demo.dto.itemdetailinfo;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import market.demo.domain.item.Review;
@@ -9,8 +10,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 public class ReviewDto {
     private Long reviewId;
     private Long memberId;

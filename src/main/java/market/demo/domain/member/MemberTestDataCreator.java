@@ -6,6 +6,9 @@ import jakarta.transaction.Transactional;
 import market.demo.domain.etc.Wishlist;
 import market.demo.domain.member.jwt.Authority;
 import market.demo.domain.order.Cart;
+import market.demo.domain.status.AgeStatus;
+import market.demo.domain.status.GenderStatus;
+import market.demo.domain.type.PromotionType;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -69,7 +72,8 @@ public class MemberTestDataCreator {
             String email = "user" + ThreadLocalRandom.current().nextInt(1000, 9999) + "@example.com";
             String loginId = "user" + i;
             String password = "test1234"; // 모든 테스트 사용자에게 동일한 비밀번호 사용
-            return new Member(name, loginId, email, password, getRandomPhoneNumber(), getRandomAddress());
+            return new Member(name, loginId, email, password,
+                    getRandomPhoneNumber(), getRandomAddress(), getRandomAge(), getRandomGender());
         }
 
 
@@ -94,6 +98,18 @@ public class MemberTestDataCreator {
             return new Address(cities[ThreadLocalRandom.current().nextInt(cities.length)],
                     streets[ThreadLocalRandom.current().nextInt(streets.length)],
                     zipcode);
+        }
+
+        private AgeStatus getRandomAge(){
+            AgeStatus[] ageStatuses = AgeStatus.values();
+            int randomIndex = ThreadLocalRandom.current().nextInt(ageStatuses.length);
+            return ageStatuses[randomIndex];
+        }
+
+        private GenderStatus getRandomGender(){
+            GenderStatus[] genderStatuses = GenderStatus.values();
+            int randomIndex = ThreadLocalRandom.current().nextInt(genderStatuses.length);
+            return genderStatuses[randomIndex];
         }
     }
 }

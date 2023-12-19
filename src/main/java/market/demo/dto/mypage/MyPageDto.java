@@ -1,11 +1,11 @@
 package market.demo.dto.mypage;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import market.demo.domain.member.Member;
 
-@Getter
-@Setter
+@Data
 public class MyPageDto {
     //이름, 쿠폰 개수, 찜한 상품
     private String loginId;

@@ -1,5 +1,6 @@
 package market.demo.dto.mypage;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import market.demo.domain.order.Order;
@@ -8,8 +9,7 @@ import market.demo.domain.status.PaymentMethod;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
+@Data
 public class MyOrderDto {
     private LocalDateTime orderDateTime;
     private String itemName;

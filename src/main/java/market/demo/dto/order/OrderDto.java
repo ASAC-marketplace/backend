@@ -1,5 +1,6 @@
 package market.demo.dto.order;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import market.demo.domain.member.Address;
@@ -12,8 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 public class OrderDto {
     private Long orderId;
     private Long amount; // 전체 금액
