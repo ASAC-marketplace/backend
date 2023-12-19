@@ -173,6 +173,18 @@ public class TokenProvider implements InitializingBean {
         return null;
     }
 
+    public Long getMemberIdFromCurrentRequest() {
+        HttpServletRequest request = getCurrentRequest();
+        if (request != null) {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                return getMemberIdFromToken(token);
+            }
+        }
+        return null;
+    }
+
     private HttpServletRequest getCurrentRequest() {
         ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         return attrs != null ? attrs.getRequest() : null;

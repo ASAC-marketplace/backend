@@ -115,7 +115,7 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
         List<ItemAutoDto> result = queryFactory
                 .select(Projections.constructor(ItemAutoDto.class, item.name))
                 .from(item)
-                .where(item.name.like(keyword + "%")) //( "%" + keyword + "%")
+                .where(item.name.like("%" + keyword + "%")) //( "%" + keyword + "%")
                 .limit(limit)
                 .fetch();
 
@@ -247,16 +247,25 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
     }
 
     private List<String> createPriceRanges(Tuple priceRange) {
+        if (priceRange == null) {
+            return Collections.emptyList();
+        }
+
         Integer minPrice = priceRange.get(item.itemPrice.min());
         Integer maxPrice = priceRange.get(item.itemPrice.max());
-        int rangeSize = (maxPrice - minPrice) / 5;
 
+        if (minPrice == null || maxPrice == null) {
+            return Collections.emptyList();
+        }
+
+        int rangeSize = (maxPrice - minPrice) / 5;
         List<String> priceRanges = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             int start = minPrice + i * rangeSize;
             int end = (i < 4) ? start + rangeSize - 1 : maxPrice;
             priceRanges.add(String.format("%d ~ %d", start, end));
         }
+
         return priceRanges;
     }
 
