@@ -51,7 +51,7 @@ public class ItemController {
     //17 api 상품 상세 정보
     @GetMapping
     public ResponseEntity<ItemDetailDto> showItemDetail(@RequestParam Long itemId,
-                                                        @RequestBody String loginId) {
+                                                        @RequestParam String loginId) {
         return ResponseEntity.ok(itemService.searchItemDetail(itemId, loginId));
     }
 

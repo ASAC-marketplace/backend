@@ -71,6 +71,7 @@ public class ItemService {
     }
 
     private boolean checkIfItemIsWished(String loginId, Item item) {
+        log.info("ID: " + loginId);
         if(memberRepository.existsByLoginId(loginId)){
             Member member = getMemberByLoginId(loginId);
             return member.getWishlist().getItems().contains(item);

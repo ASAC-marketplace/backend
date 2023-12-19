@@ -44,7 +44,7 @@ public class SearchController {
 
     //13번 추천 검색어
     @GetMapping("/recommend-keyword")
-    public ResponseEntity<List<ItemRecommendDto>> getRecommendKeyowrd(@RequestParam String loginId){
+    public ResponseEntity<List<ItemRecommendDto>> getRecommendKeyword(@RequestParam String loginId){
         return ResponseEntity.ok(searchService.getRecommendKeyword(loginId));
     }
 }
