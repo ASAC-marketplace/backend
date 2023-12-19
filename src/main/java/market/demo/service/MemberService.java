@@ -190,13 +190,13 @@ public class MemberService {
                 .authorityName("ROLE_USER")
                 .build();
 
-        Member user = Member.builder()
-                .memberName(memberDto.getMemberName())
-                .loginId(memberDto.getLoginId())
-                .password(passwordEncoder.encode(memberDto.getPassword()))
-                .email(memberDto.getEmail())
-                .authorities(Collections.singleton(authority))
-                .build();
+        Member user = Member.createMember(
+                memberDto.getLoginId(),
+                memberDto.getMemberName(),
+                memberDto.getEmail(),
+                passwordEncoder.encode(memberDto.getPassword()),
+                Collections.singleton(authority)
+        );
 
         return MemberDto.from(memberRepository.save(user));
     }

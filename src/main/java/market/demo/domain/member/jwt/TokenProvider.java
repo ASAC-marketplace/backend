@@ -6,6 +6,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import market.demo.dto.social.CustomOAuth2User;
+import market.demo.service.jwt.CustomUserDetail;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -65,6 +66,33 @@ public class TokenProvider implements InitializingBean {
         // JWT 토큰 생성 및 반환
         return Jwts.builder()
                 .setSubject(authentication.getName())
+                .claim("memberId", memberId)
+                .claim("loginId", loginId)
+                .claim(AUTHORITIES_KEY, authorities)
+                .signWith(key, SignatureAlgorithm.HS512)
+                .setExpiration(validity)
+                .compact();
+    }
+
+    // 인증 정보를 기반으로 JWT 생성
+    public String createTokenNormal(Authentication authentication) {
+        String authorities = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+        CustomUserDetail customUserDetail = (CustomUserDetail)  authentication.getPrincipal();
+        String email = customUserDetail.getEmail(); // 이메일 가져오기
+
+
+        Long memberId = customUserDetail.getMemberId();
+        String loginId = customUserDetail.getLoginId(); // loginId 추가
+
+        long now = (new Date()).getTime();
+        Date validity = new Date(now + this.tokenValidityInMilliseconds);
+
+
+        // JWT 토큰 생성 및 반환
+        return Jwts.builder()
+                .setSubject(email)
                 .claim("memberId", memberId)
                 .claim("loginId", loginId)
                 .claim(AUTHORITIES_KEY, authorities)

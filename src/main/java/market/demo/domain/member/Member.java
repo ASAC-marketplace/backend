@@ -77,7 +77,7 @@ public class Member {
     private List<Coupon> coupons = new ArrayList<>();
 
     //찜목
-    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private Wishlist wishlist;
 
 
@@ -89,6 +89,19 @@ public class Member {
         member.email = email;
         member.password = password;
         member.phoneNumber = phoneNumber;
+        member.wishlist = new Wishlist(member);
+        return member;
+    }
+
+    @Builder
+    public static Member createMember(String loginId, String memberName, String email, String password, Set<Authority> authorities) {
+        Member member = new Member();
+        member.loginId = loginId;
+        member.memberName = memberName;
+        member.email = email;
+        member.password = password;
+        member.authorities = authorities;
+        member.wishlist = new Wishlist(member); // Wishlist 초기화
         return member;
     }
 
@@ -102,6 +115,7 @@ public class Member {
         member.phoneNumber = phoneNumber;
         member.provider = provider;
         member.providerId = providerId;
+        member.wishlist = new Wishlist(member);
         return member;
     }
 
@@ -180,7 +194,5 @@ public class Member {
         this.email = modifyMemberInfoDto.getEmail();
         this.phoneNumber = modifyMemberInfoDto.getPhoneNumber();
         this.memberName = modifyMemberInfoDto.getMemberName();
-
     }
-
 }
