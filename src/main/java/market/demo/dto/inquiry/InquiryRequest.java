@@ -3,12 +3,13 @@ package market.demo.dto.inquiry;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import market.demo.advice.MemberIdAwardDto;
 import market.demo.domain.type.InquiryType;
 
 import java.util.List;
 
 @Data
-public class InquiryRequest {
+public class InquiryRequest implements MemberIdAwardDto {
     @NotNull
     private Long memberId;
 

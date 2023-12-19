@@ -102,8 +102,7 @@ public class MemberService {
         Member member = memberRepository.findByLoginId(passwordChangeDto.getLoginId())
                 .orElseThrow(()-> new MemberNotFoundException("사용자를 찾을 수 없습니다"));
 
-        String encodedPassword = passwordEncoder.encode(passwordChangeDto.getNewPassword());
-        member.updatePassword(encodedPassword, passwordEncoder);
+        member.updatePassword(passwordChangeDto.getNewPassword(), passwordEncoder);
         memberRepository.save(member);
     }
 

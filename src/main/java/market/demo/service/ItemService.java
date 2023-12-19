@@ -181,6 +181,7 @@ public class ItemService {
                 .select(new QItemMainEndDto(
                         item.id,
                         item.name,
+                        item.brand,
                         item.discountRate,
                         item.itemPrice.subtract(item.itemPrice.multiply(item.discountRate).divide(100)),
                         item.itemPrice,

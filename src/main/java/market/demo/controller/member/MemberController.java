@@ -127,6 +127,7 @@ public class MemberController {
         // 비밀번호 검증 및 소셜 로그인 정보 업데이트
         memberService.verifyPassword(request.getPassword(), request.getEmail());
         memberService.updateSocialInfo(request.getEmail(), request.getProvider(), request.getProviderId());
+
         return ResponseEntity.ok().body("비밀번호 검증 및 소셜 로그인 정보 업데이트 성공");
     }
 
