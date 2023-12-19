@@ -1,5 +1,6 @@
 package market.demo.dto.itemdetailinfo;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,8 +9,7 @@ import market.demo.domain.type.DiscountType;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 public class CouponDto {
     private Long couponId;

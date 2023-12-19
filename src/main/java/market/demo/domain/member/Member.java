@@ -9,6 +9,8 @@ import market.demo.domain.item.Review;
 import market.demo.domain.member.jwt.Authority;
 import market.demo.domain.order.Cart;
 import market.demo.domain.order.Order;
+import market.demo.domain.status.AgeStatus;
+import market.demo.domain.status.GenderStatus;
 import market.demo.dto.changememberinfo.ModifyMemberInfoDto;
 import market.demo.exception.InvalidPasswordException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -39,8 +41,8 @@ public class Member {
 
     private String password;
 
-    private String gender;
-    private String ageRange;
+    private GenderStatus gender;
+    private AgeStatus ageRange;
     private String phoneNumber;
     private LocalDate birthday;
     private String provider;
@@ -144,13 +146,15 @@ public class Member {
     }
 
     // 테스트 데이터
-    public Member(String memberName, String loginId ,String email, String password,String phoneNumber, Address address) {
+    public Member(String memberName, String loginId ,String email, String password,String phoneNumber, Address address, AgeStatus age, GenderStatus gender) {
         this.memberName = memberName;
         this.loginId = loginId;
         this.email = email;
         this.password = password;
         this.phoneNumber = phoneNumber;
         this.address = address;
+        this.ageRange = age;
+        this.gender = gender;
     }
 
     public void setCart(Cart cart) {

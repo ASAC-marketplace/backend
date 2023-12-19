@@ -1,5 +1,6 @@
 package market.demo.dto.cart;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import market.demo.domain.item.Item;
@@ -7,8 +8,7 @@ import market.demo.domain.order.CartItem;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-@Getter
-@Setter
+@Data
 public class CartItemDto {
     private Long itemId;
     private String itemName;

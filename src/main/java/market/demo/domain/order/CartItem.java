@@ -3,14 +3,12 @@ package market.demo.domain.order;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import market.demo.domain.item.Item;
 
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 public class CartItem {
 
@@ -39,5 +37,9 @@ public class CartItem {
     public void changeCartItemByQuantity(Item item, int i){
         this.quantity = this.getQuantity() + i;
         this.totalPrice = item.getItemPrice() * (long) this.quantity;
+    }
+
+    public void setCart(Cart cart){
+        this.cart = cart;
     }
 }

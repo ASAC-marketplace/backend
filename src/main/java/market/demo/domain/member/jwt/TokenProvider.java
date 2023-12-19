@@ -14,8 +14,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.security.Key;
 import java.util.Arrays;
@@ -54,12 +52,6 @@ public class TokenProvider implements InitializingBean {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
-        CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
-        Long memberId = customOAuth2User.getMemberId();
-        String loginId = customOAuth2User.getLoginId(); // loginId 추가
-
-        log.info("memberId = ", memberId);
-
         long now = (new Date()).getTime();
         Date validity = new Date(now + this.tokenValidityInMilliseconds);
 
@@ -67,8 +59,6 @@ public class TokenProvider implements InitializingBean {
         // JWT 토큰 생성 및 반환
         return Jwts.builder()
                 .setSubject(authentication.getName())
-                .claim("memberId", memberId)
-                .claim("loginId", loginId)
                 .claim(AUTHORITIES_KEY, authorities)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(validity)
@@ -113,43 +103,4 @@ public class TokenProvider implements InitializingBean {
         }
         return false;
     }
-
-    public Long getMemberIdFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        Long memberId = claims.get("memberId", Long.class);
-        log.info("Extracted 선림 from token: {}", memberId);
-
-        return claims.get("memberId", Long.class);
-    }
-
-    public String getLoginIdFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        return claims.get("loginId", String.class); // loginId 반환
-    }
-
-    public String getLoginIdFromCurrentRequest() {
-        HttpServletRequest request = getCurrentRequest();
-        if (request != null) {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring(7);
-                return getLoginIdFromToken(token);
-            }
-        }
-        return null;
-    }
-
-    private HttpServletRequest getCurrentRequest() {
-        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        return attrs != null ? attrs.getRequest() : null;
-    }
-
 }

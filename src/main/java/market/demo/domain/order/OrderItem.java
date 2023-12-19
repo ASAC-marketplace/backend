@@ -9,7 +9,6 @@ import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
-@Setter
 public class OrderItem {
 
     @Id
