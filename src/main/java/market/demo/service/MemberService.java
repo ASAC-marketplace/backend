@@ -141,8 +141,7 @@ public class MemberService {
         //새 비밀번호 변경
         if(!modifyMemberInfoDto.getNewPassword().isEmpty()) {
             modifyMemberInfoDto.checkNewPassword();
-            String encodedPassword = passwordEncoder.encode(modifyMemberInfoDto.getNewPassword());
-            member.updatePassword(encodedPassword, passwordEncoder);
+            member.updatePassword(modifyMemberInfoDto.getNewPassword(), passwordEncoder);
         }
 
         //회원 정보 수정
