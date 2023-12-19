@@ -22,6 +22,7 @@ public class ReviewController {
     @PostMapping("/create")
     public ResponseEntity<?> createReview(@Valid @RequestBody ReviewRequestDto reviewRequestDto) {
         reviewService.createReview(reviewRequestDto);
+        log.info("memberId ={}", reviewRequestDto.getMemberId());
         return ResponseEntity.ok().body("후기가 성공적으로 등록되었습니다.");
     }
 }

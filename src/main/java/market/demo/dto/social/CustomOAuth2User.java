@@ -23,6 +23,7 @@ public class CustomOAuth2User implements OAuth2User {
     private String email;
     private String loginCode;
     private Long memberId;
+    private String loginId;
 
     public CustomOAuth2User(Map<String, Object> attributes, Member member) {
         this.attributes = attributes;
@@ -31,6 +32,7 @@ public class CustomOAuth2User implements OAuth2User {
         this.providerId = member.getProviderId(); // providerId 추가
         this.email = member.getEmail(); // email 추
         this.memberId = member.getId();
+        this.loginId = member.getLoginId();
     }
 
     @Override
