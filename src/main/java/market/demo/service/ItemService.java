@@ -50,6 +50,12 @@ public class ItemService {
                 .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다. 로그인 해주세요"));
     }
 
+    private Member getMemberByLoginIdOrReturnNull(String loginId) {
+        if(loginId == null) return null;
+        return memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다. 로그인 해주세요"));
+    }
+
     private Item getItemById(Long itemId) {
         return itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException("아이템을 찾을 수 없습니다."));
@@ -94,18 +100,22 @@ public class ItemService {
                 .orElseThrow(() -> new IllegalArgumentException("리뷰 정보가 없습니다."));
     }
 
-    public ItemReviewsDto searchItemReview(Long itemId) {
+    public ItemReviewsDto searchItemReview(Long itemId, String loginId) {
+        Member member = getMemberByLoginIdOrReturnNull(loginId);
         Item item = getItemById(itemId);
         List<Review> reviews = getReviews(item);
 
         //멤버별 리뷰 정보 저장
-        return new ItemReviewsDto(item, reviews);
+        return new ItemReviewsDto(item, reviews, member);
     }
 
-    public void changeReviewCount(Long reviewId, int i) {
+    public void changeReviewCount(Long reviewId, int i, String loginId) {
+        Member member = getMemberByLoginId(loginId);
         Review review = getReviewById(reviewId);
 
-        review.setHelpful(i);
+        review.setHelpful(i, member);
+        member.setLikedReview(i, review);
+        memberRepository.save(member);
         reviewRepository.save(review);
     }
 

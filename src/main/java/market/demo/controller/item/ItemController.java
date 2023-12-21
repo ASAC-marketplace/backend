@@ -24,7 +24,6 @@ import java.util.Map;
 @Slf4j
 public class ItemController {
     private final ItemService itemService;
-    private final OrderService orderService;
     private final TokenProvider tokenProvider;
 
     //배너 추가
@@ -56,24 +55,6 @@ public class ItemController {
         String loginId = tokenProvider.getLoginIdFromCurrentRequest(); // JWT에서 loginId 추출
         log.info(loginId);
         return ResponseEntity.ok(itemService.searchItemDetail(itemId, loginId));
-    }
-
-    //17 api 상품 리뷰 노출
-    @GetMapping("/reviews")
-    public ResponseEntity<ItemReviewsDto> showItemReviews(@RequestParam Long itemId){
-        return ResponseEntity.ok(itemService.searchItemReview(itemId));
-    }
-
-    //17 api 도움돼요
-    @PostMapping("/reviews/helpful")
-    public ResponseEntity<String> helpfulReviews(@RequestParam Long reviewId){
-        itemService.changeReviewCount(reviewId, 1);
-        return ResponseEntity.ok("도움돼요 추가 성공");
-    }
-    @PostMapping("/reviews/helpless")
-    public ResponseEntity<String> helplessReviews(@RequestParam Long reviewId){
-        itemService.changeReviewCount(reviewId, -1);
-        return ResponseEntity.ok("도움돼요 취소 성공");
     }
 
     //17 쿠폰 받기
