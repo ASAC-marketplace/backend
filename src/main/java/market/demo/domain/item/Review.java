@@ -3,11 +3,8 @@ package market.demo.domain.item;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import market.demo.domain.item.Item;
 import market.demo.domain.member.Member;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +27,9 @@ public class Review {
     @ManyToOne (fetch = LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "member_id")
     private Member member;
+
+    @ManyToMany(mappedBy = "likedReviews")
+    private List<Member> likedByMembers = new ArrayList<>();
 
     private int rating; // 추천 rating
     private String comment;
@@ -65,7 +65,11 @@ public class Review {
         this.imageUrls = imageUrls;
     }
 
-    public void setHelpful(int i){
+    public void setHelpful(int i, Member member){
+        if(i == 1) {
+            this.likedByMembers.add(member);
+        }
+        else this.likedByMembers.remove(member);
         this.helpful += i;
     }
     ///////////////
