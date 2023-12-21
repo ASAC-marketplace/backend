@@ -35,11 +35,6 @@ public class CartService {
                 .orElseThrow(() -> new ItemNotFoundException("아이템을 찾을 수 없습니다."));
     }
 
-    private Cart getCartById(Long cartId) {
-        return cartRepository.findById(cartId)
-                .orElseThrow(() -> new CartNotFoundException("장바구니를 찾을 수 없습니다."));
-    }
-
     private Cart getCartByMember(Member member){
         return cartRepository.findByMember(member)
                 .orElseThrow(() -> new CartNotFoundException("장바구니를 찾을 수 없습니다."));
@@ -75,8 +70,9 @@ public class CartService {
         return new CartDto(cart);
     }
 
-    public void changeCartItem(Long cartId, Long itemId, int i) {
-        Cart cart = getCartById(cartId);
+    public void changeCartItem(String loginId, Long itemId, int i) {
+        Member member =getMemberByLoginId(loginId);
+        Cart cart = getCartByMember(member);
         Item item = getItemById(itemId);
         CartItem cartItem =getCartItemByCartAndItem(cart, item);
 

@@ -14,12 +14,14 @@ import java.util.stream.Collectors;
 @Data
 public class ItemReviewsDto {
     private Long itemId;
+    private String itemName;
     private Long reviewCount;
     private List<ReviewDto> reviews = new ArrayList<>();
     private List<String> imageUrls = new ArrayList<>();
 
     public ItemReviewsDto(@NotNull Item item, List<Review> reviews){
         this.itemId = item.getId();
+        this.itemName = item.getName();
         this.reviewCount = (long) item.getReviews().size();
         this.reviews = createReviewDtos(reviews);
         this.imageUrls = aggregateImageUrls(reviews);
