@@ -11,6 +11,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import market.demo.domain.item.QItem;
+import market.demo.domain.item.QReview;
 import market.demo.domain.search.ItemSearchCondition;
 import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
@@ -81,6 +82,12 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
         List<ItemSearchDto> content = query.offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+
+        List<Long> itemIds = content.stream().map(ItemSearchDto::getId).collect(Collectors.toList());
+        Map<Long, Long> reviewCounts = getReviewCounts(itemIds);
+
+        // 리뷰 카운트를 DTO에 설정
+        content.forEach(dto -> dto.setReviewCount(reviewCounts.getOrDefault(dto.getId(), 0L)));
 
         JPAQuery<Long> countQuery = queryFactory
                 .select(item.count())
@@ -279,5 +286,28 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
             }
         }
         return null;
+    }
+
+    // 리뷰 카운트 조회 메서드
+    private Map<Long, Long> getReviewCounts(List<Long> itemIds) {
+        if (itemIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        QReview review = QReview.review; // Review 엔티티의 Querydsl 모델
+
+        List<Tuple> counts = queryFactory
+                .select(item.id, review.count())
+                .from(item)
+                .leftJoin(review).on(review.item.eq(item)) // Review 엔티티와 조인
+                .where(item.id.in(itemIds))
+                .groupBy(item.id)
+                .fetch();
+
+        return counts.stream()
+                .collect(Collectors.toMap(
+                        tuple -> tuple.get(item.id),
+                        tuple -> tuple.get(review.count())
+                ));
     }
 }

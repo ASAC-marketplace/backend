@@ -67,6 +67,7 @@ public class ItemController {
         itemService.changeReviewCount(reviewId, 1);
         return ResponseEntity.ok("도움돼요 추가 성공");
     }
+
     @PostMapping("/reviews/helpless")
     public ResponseEntity<String> helplessReviews(@RequestParam Long reviewId){
         itemService.changeReviewCount(reviewId, -1);

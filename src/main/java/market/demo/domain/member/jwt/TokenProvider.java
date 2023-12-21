@@ -82,13 +82,11 @@ public class TokenProvider implements InitializingBean {
         CustomUserDetail customUserDetail = (CustomUserDetail)  authentication.getPrincipal();
         String email = customUserDetail.getEmail(); // 이메일 가져오기
 
-
         Long memberId = customUserDetail.getMemberId();
         String loginId = customUserDetail.getLoginId(); // loginId 추가
 
         long now = (new Date()).getTime();
         Date validity = new Date(now + this.tokenValidityInMilliseconds);
-
 
         // JWT 토큰 생성 및 반환
         return Jwts.builder()
