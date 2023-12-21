@@ -35,20 +35,23 @@ public class CartController {
         return ResponseEntity.ok("장바구니 아이템 삭제되었습니다.");
     }
 
-    @GetMapping("/{loginId}")
-    public ResponseEntity<CartDto> showCart (@PathVariable("loginId") String loginId){
+    @GetMapping()
+    public ResponseEntity<CartDto> showCart (){
+        String loginId = tokenProvider.getLoginIdFromCurrentRequest();
         return ResponseEntity.ok(cartService.showCart(loginId));
     }
 
     @PostMapping("/item/add")
-    public ResponseEntity<String> addCartItem (@RequestParam Long cartId, Long itemId){
-        cartService.changeCartItem(cartId, itemId, 1);
+    public ResponseEntity<String> addCartItem (@RequestParam Long itemId){
+        String loginId = tokenProvider.getLoginIdFromCurrentRequest();
+        cartService.changeCartItem(loginId, itemId, 1);
         return ResponseEntity.ok("아이템 개수 추가 성공");
     }
 
    @PostMapping("/item/minus")
-    public ResponseEntity<String> minusCartItem (@RequestParam Long cartId, Long itemId){
-        cartService.changeCartItem(cartId, itemId, -1 );
+    public ResponseEntity<String> minusCartItem (@RequestParam Long itemId){
+       String loginId = tokenProvider.getLoginIdFromCurrentRequest();
+        cartService.changeCartItem(loginId, itemId, -1 );
         return ResponseEntity.ok("아이템 개수 감소 성공");
     }
 }

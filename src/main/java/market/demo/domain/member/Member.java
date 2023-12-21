@@ -181,15 +181,7 @@ public class Member {
         }
     }
 
-    public void checkInvalidPassword(String password){
-        if(!this.password.equals(password))
-            throw new InvalidPasswordException("비밀번호가 맞지 않습니다.");
-    }
-
     public void changeMemberInfo(ModifyMemberInfoDto modifyMemberInfoDto){
-        if(modifyMemberInfoDto.getNewPassword().isEmpty()) this.password = modifyMemberInfoDto.getPassword();
-        else this.password =modifyMemberInfoDto.getNewPassword();
-
         this.loginId = modifyMemberInfoDto.getLoginId();
         this.email = modifyMemberInfoDto.getEmail();
         this.phoneNumber = modifyMemberInfoDto.getPhoneNumber();

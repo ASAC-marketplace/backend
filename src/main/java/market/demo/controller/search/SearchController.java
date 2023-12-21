@@ -1,6 +1,8 @@
 package market.demo.controller.search;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import market.demo.domain.member.jwt.TokenProvider;
 import market.demo.domain.search.ItemSearchCondition;
 import market.demo.dto.search.CountsAndPriceRangeDto;
 import market.demo.dto.search.ItemAutoDto;
@@ -15,10 +17,12 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/api/search")
 public class SearchController {
 
     private final SearchService searchService;
+    private final TokenProvider tokenProvider;
 
     @GetMapping("/complexitem")
     public ItemSearchResponse searchItemComplex(ItemSearchCondition condition, Pageable pageable) {
@@ -44,7 +48,9 @@ public class SearchController {
 
     //13번 추천 검색어
     @GetMapping("/recommend-keyword")
-    public ResponseEntity<List<ItemRecommendDto>> getRecommendKeyowrd(@RequestParam String loginId){
+    public ResponseEntity<List<ItemRecommendDto>> getRecommendKeyword(){
+        String loginId = tokenProvider.getLoginIdFromCurrentRequest();
+        log.info("ID: "+loginId);
         return ResponseEntity.ok(searchService.getRecommendKeyword(loginId));
     }
 }
