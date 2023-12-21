@@ -22,9 +22,11 @@ public class ItemSearchDto {
     private Integer itemPrice;
     private String promotionUrl;
     private Integer discountedPrice;
+    private Long reviewCount;
 
     @QueryProjection
-    public ItemSearchDto(Long id, String name, Long categoryId, String categoryName, ItemStatus status, PromotionType promotionType, Integer stockQuantity, String brand, LocalDate registeredDate, Integer discountRate, Integer itemPrice, String promotionUrl, Integer discountedPrice) {
+    public ItemSearchDto(Long id, String name, Long categoryId, String categoryName, ItemStatus status, PromotionType promotionType, Integer stockQuantity, String brand, LocalDate registeredDate, Integer discountRate, Integer itemPrice,
+                         String promotionUrl, Integer discountedPrice) {
         this.id = id;
         this.name = name;
         this.categoryId = categoryId;
