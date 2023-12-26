@@ -12,9 +12,9 @@
 <br />
 
 ## Contributor <br/>
-&nbsp;&nbsp;⭐ <strong>에드</strong> <br />
-&nbsp;&nbsp;⭐ <strong>세라</strong> <br />
-&nbsp;&nbsp;⭐ <strong>루시</strong> <br />
+&nbsp;&nbsp;<strong>ED</strong> <br />
+&nbsp;&nbsp;<strong>Sarah</strong> <br />
+&nbsp;&nbsp;<strong>Lucy</strong> <br />
 
 <br />
 
