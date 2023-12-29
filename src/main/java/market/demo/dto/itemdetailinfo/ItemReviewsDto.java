@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import market.demo.domain.item.Item;
 import market.demo.domain.item.Review;
+import market.demo.domain.member.Member;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -19,17 +20,17 @@ public class ItemReviewsDto {
     private List<ReviewDto> reviews = new ArrayList<>();
     private List<String> imageUrls = new ArrayList<>();
 
-    public ItemReviewsDto(@NotNull Item item, List<Review> reviews){
+    public ItemReviewsDto(@NotNull Item item, List<Review> reviews, Member member){
         this.itemId = item.getId();
         this.itemName = item.getName();
         this.reviewCount = (long) item.getReviews().size();
-        this.reviews = createReviewDtos(reviews);
+        this.reviews = createReviewDtos(reviews, member);
         this.imageUrls = aggregateImageUrls(reviews);
     }
 
-    private List<ReviewDto> createReviewDtos(List<Review> reviews) {
+    private List<ReviewDto> createReviewDtos(List<Review> reviews, Member member) {
         return reviews.stream()
-                .map(ReviewDto::new)
+                .map((Review review) -> new ReviewDto(review,member))
                 .collect(Collectors.toList());
     }
 

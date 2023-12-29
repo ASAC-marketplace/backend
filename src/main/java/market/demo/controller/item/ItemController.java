@@ -24,7 +24,6 @@ import java.util.Map;
 @Slf4j
 public class ItemController {
     private final ItemService itemService;
-    private final OrderService orderService;
     private final TokenProvider tokenProvider;
 
     //배너 추가
@@ -76,7 +75,6 @@ public class ItemController {
         itemService.changeReviewCount(reviewId, -1);
         return ResponseEntity.ok("도움돼요 취소 성공");
     }
-
     //17 쿠폰 받기
     @PostMapping("/coupon")
     public ResponseEntity<String> getCouponMember(@RequestParam String loginId, Long couponId){

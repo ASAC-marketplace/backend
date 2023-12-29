@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 @Entity
 @Getter
 @Setter
@@ -47,6 +49,15 @@ public class Member {
     private LocalDate birthday;
     private String provider;
     private String providerId;
+
+    @ManyToMany
+    @JoinTable(
+            name = "member_liked_reviews",
+            joinColumns = @JoinColumn(name = "member_id"),
+            inverseJoinColumns = @JoinColumn(name = "review_id")
+    )
+    private List<Review> likedReviews = new ArrayList<>();
+
     //Set<Role> roles;
 
     @ManyToMany
@@ -186,5 +197,10 @@ public class Member {
         this.email = modifyMemberInfoDto.getEmail();
         this.phoneNumber = modifyMemberInfoDto.getPhoneNumber();
         this.memberName = modifyMemberInfoDto.getMemberName();
+    }
+
+    public void setLikedReview(int i, Review review){
+        if(i == 1) this.likedReviews.add(review);
+        else this.likedReviews.remove(review);
     }
 }
