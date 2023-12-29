@@ -60,9 +60,8 @@ public class SearchService {
         return itemRepositoryCustom.searchPageComplex(condition, pageable);
     }
 
-    @CachePut(value = "searchKeywords", key = "#keyword")
+//    @CachePut(value = "searchKeywords", key = "#keyword")
     public void recodeSearchKeyword(String keyword) {
-        // 검색 기록 저장, frequency도 같이 더해서 저장(searchKeyword)
         SearchHistory searchHistory = new SearchHistory();
         searchHistory.setKeyword(keyword);
         searchHistory.setSearchedAt(LocalDateTime.now());
@@ -71,7 +70,7 @@ public class SearchService {
         searchKeywordCache.merge(keyword, 1, Integer::sum);
     }
 
-    @Cacheable(value = "searchKeywords")
+//    @Cacheable(value = "searchKeywords")
     public List<String> getTopSearchKeywordsFromNow() {
         // 캐시에서 검색 키워드와 빈도수를 조회하고, 빈도수가 높은 순으로 정렬하여 반환
         return searchKeywordCache.entrySet().stream()
@@ -138,7 +137,7 @@ public class SearchService {
                 .orElseGet(() -> new AgeGenderFrequency(searchKeyword, member.getAgeRange(), member.getGender()));
     }
 
-    @CacheEvict(value = "searchKeywords", allEntries = true)
+//    @CacheEvict(value = "searchKeywords", allEntries = true)
     public void clearSearchKeywordsCache() {
         // 캐시에서 모든 검색 키워드 삭제
         searchKeywordCache.clear();

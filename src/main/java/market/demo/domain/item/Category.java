@@ -15,6 +15,7 @@ public class Category {
     @GeneratedValue
     @Column(name = "category_id")
     private Long id;
+
     private String name;
 
     // parent -> null 대분류, 소분류는 parent 필드에 대분류 카테고리를 참조

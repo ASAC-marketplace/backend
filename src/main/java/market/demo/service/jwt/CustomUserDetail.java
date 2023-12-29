@@ -10,14 +10,12 @@ import java.util.Collection;
 @Getter
 public class CustomUserDetail extends User {
     private final Long memberId;
-    private final String loginId; // loginId 필드 추가
     private final String email;
 
     public CustomUserDetail(String username, String password,
-                            Collection<? extends GrantedAuthority> authorities, Long memberId, String loginId, String email) {
+                            Collection<? extends GrantedAuthority> authorities, Long memberId, String email) {
         super(username, password, authorities);
         this.memberId = memberId;
-        this.loginId = loginId; // loginId 초기화
         this.email = email; // 이메일 초기화
     }
 }

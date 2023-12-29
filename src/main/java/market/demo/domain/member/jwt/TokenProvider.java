@@ -83,7 +83,7 @@ public class TokenProvider implements InitializingBean {
         String email = customUserDetail.getEmail(); // 이메일 가져오기
 
         Long memberId = customUserDetail.getMemberId();
-        String loginId = customUserDetail.getLoginId(); // loginId 추가
+        String loginId = customUserDetail.getUsername();
 
         long now = (new Date()).getTime();
         Date validity = new Date(now + this.tokenValidityInMilliseconds);

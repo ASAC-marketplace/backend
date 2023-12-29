@@ -16,8 +16,9 @@ public class CorsConfig {
         config.addAllowedOriginPattern("*");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
+        config.addExposedHeader("Authorization"); // 'Authorization' 헤더 노출
 
-        source.registerCorsConfiguration("/api/**", config);
+        source.registerCorsConfiguration("/*", config);
         return new CorsFilter(source);
     }
 }

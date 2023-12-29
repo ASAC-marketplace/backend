@@ -56,7 +56,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests.anyRequest().permitAll())
                 .oauth2Login(oauth2Login -> oauth2Login
-                        .loginPage("/login")
                         .successHandler(successHandler())
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(oAuth2UserService)
@@ -103,6 +102,9 @@ public class SecurityConfig {
 
             String jwt = tokenProvider.createToken(authentication);
             response.addHeader("Authorization", "Bearer " + jwt);
+            response.addHeader("Access-Control-Expose-Headers", "Authorization");
+            log.info("jwt = {}", jwt);
+            log.info("memberInfoSocialDto1 = {}" , memberInfoSocialDto1);
 
             // 데이터베이스에서 사용자 조회
             Optional<Member> memberOptional = memberRepository.findByEmail(email);
@@ -111,19 +113,21 @@ public class SecurityConfig {
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
                 response.getWriter().write(jsonMemberInfo1);
-//                response.sendRedirect("/login/add"); // 사용자가 없으면 회원가입 페이지로 리다이렉트
+                response.sendRedirect("/oauth2/redirect/no"); // 사용자가 없으면 회원가입 페이지로 리다이렉트
             } else {
                 Member member = memberOptional.get();
                 if (member.getProvider() != null) {
                     // 소셜 연동된 계정인 경우
                     response.setStatus(HttpServletResponse.SC_OK);
+                    response.sendRedirect("/oauth2/redirect/yes"); // 사용자가 없으면 회원가입 페이지로 리다이렉트
                 } else {
+                    //노가입
                     String jsonMemberInfo2 = new ObjectMapper().writeValueAsString(memberInfoSocialDto1);
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");
                     response.getWriter().write(jsonMemberInfo2);
                     // 연동 안된 경우
-//                    response.sendRedirect("/login/verify");
+                    response.sendRedirect("/oauth2/redirect/full"); // 사용자가 없으면 회원가입 페이지로 리다이렉트
                 }
             }
         });

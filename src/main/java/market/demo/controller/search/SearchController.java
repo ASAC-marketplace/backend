@@ -4,10 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.member.jwt.TokenProvider;
 import market.demo.domain.search.ItemSearchCondition;
-import market.demo.dto.search.CountsAndPriceRangeDto;
-import market.demo.dto.search.ItemAutoDto;
-import market.demo.dto.search.ItemRecommendDto;
-import market.demo.dto.search.ItemSearchResponse;
+import market.demo.dto.search.*;
+import market.demo.repository.ItemRepositoryCustom;
+import market.demo.repository.ItemRepositoryImpl;
 import market.demo.service.SearchService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -22,11 +21,14 @@ import java.util.List;
 public class SearchController {
 
     private final SearchService searchService;
+    private final ItemRepositoryCustom itemRepositoryCustom;
     private final TokenProvider tokenProvider;
 
     @GetMapping("/complexitem")
     public ItemSearchResponse searchItemComplex(ItemSearchCondition condition, Pageable pageable) {
-        searchService.recodeSearchKeyword(condition.getName());
+        if (condition.getName() != null) {
+            searchService.recodeSearchKeyword(condition.getName());
+        }
         return searchService.searchResponse(condition, pageable);
     }
 
@@ -41,6 +43,11 @@ public class SearchController {
         return searchService.getCountsAndPrice(condition);
     }
 
+    @GetMapping("/counts-nocategory")
+    public CountsAndPriceRangeNoCategoryDto getCountsNoCateogry(ItemSearchCondition condition) {
+        return itemRepositoryCustom.getCountsNoCategory(condition);
+    }
+
     @GetMapping("/autokeyword")
     public List<ItemAutoDto> findAutoKeyword(String keyword, int limit) {
         return searchService.findItemNamesByKeyword(keyword, limit);
@@ -48,9 +55,9 @@ public class SearchController {
 
     //13번 추천 검색어
     @GetMapping("/recommend-keyword")
-    public ResponseEntity<List<ItemRecommendDto>> getRecommendKeyword(){
+    public ResponseEntity<List<ItemRecommendDto>> getRecommendKeyword() {
         String loginId = tokenProvider.getLoginIdFromCurrentRequest();
-        log.info("ID: "+loginId);
+        log.info("ID: " + loginId);
         return ResponseEntity.ok(searchService.getRecommendKeyword(loginId));
     }
 }

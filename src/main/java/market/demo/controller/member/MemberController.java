@@ -156,6 +156,8 @@ public class MemberController {
 
         String jwt = tokenProvider.createTokenNormal(authentication);
 
+        log.info("authentication = {}", authentication);
+
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
 

@@ -1,6 +1,8 @@
 package market.demo.dto.search;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import market.demo.domain.type.PromotionType;
 
 import java.util.List;

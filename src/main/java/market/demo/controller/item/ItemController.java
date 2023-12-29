@@ -1,11 +1,11 @@
 package market.demo.controller.item;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.member.jwt.TokenProvider;
 import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
+import market.demo.dto.category.CategoryDto;
 import market.demo.dto.item.ItemDto;
 import market.demo.dto.item.ItemMainEndDto;
 import market.demo.dto.itemdetailinfo.ItemDetailDto;
@@ -99,5 +99,10 @@ public class ItemController {
         log.info("찜하기 삭제");
         itemService.minusWish(loginId, itemId);
         return ResponseEntity.ok("찜하기 취소되었습니다.");
+    }
+
+    @GetMapping("/category")
+    public List<CategoryDto> listAllCategories() {
+        return itemService.findAllCategoriesWithSubcategories();
     }
 }

@@ -35,11 +35,10 @@ public class CustomUserDetailService implements UserDetailsService {
                 .collect(Collectors.toList());
 
         return new CustomUserDetail(
-                member.getId().toString(),
+                username,
                 member.getPassword(),
                 grantedAuthorities,
                 member.getId(), // Member 객체에서 memberId를 전달
-                member.getLoginId(), // loginId 추가
                 member.getEmail()
         );
     }

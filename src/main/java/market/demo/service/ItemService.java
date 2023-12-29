@@ -11,6 +11,7 @@ import market.demo.domain.member.Coupon;
 import market.demo.domain.member.Member;
 import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
+import market.demo.dto.category.CategoryDto;
 import market.demo.dto.item.ItemDto;
 import market.demo.dto.item.ItemMainEndDto;
 import market.demo.dto.item.QItemDto;
@@ -37,6 +38,7 @@ import market.demo.domain.item.QReview;
 public class ItemService {
     private final ItemRepository itemRepository;
     private final ItemDetailRepository itemDetailRepository;
+    private final ItemRepositoryCustom itemRepositoryCustom;
     private final ReviewRepository reviewRepository;
     private final CouponRepository couponRepository;
     private final MemberRepository memberRepository;
@@ -195,7 +197,7 @@ public class ItemService {
                 .where(item.promotionType.eq(promotionType))
                 .groupBy(item.id, item.name, item.discountRate, item.itemPrice, itemDetail.promotionImageUrl)
                 .orderBy(item.registerdDate.desc())
-                .offset((page - 1) * size)
+                .offset((long) (page - 1) * size)
                 .limit(size)
                 .fetch();
     }
@@ -251,5 +253,8 @@ public class ItemService {
         wishListRepository.save(wishlist);
     }
 
+    public List<CategoryDto> findAllCategoriesWithSubcategories() {
+        return itemRepositoryCustom.findAllCategoriesWithSubcategories();
+    }
     //
 }

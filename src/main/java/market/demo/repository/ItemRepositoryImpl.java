@@ -10,12 +10,17 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import market.demo.domain.item.Category;
 import market.demo.domain.item.QItem;
 import market.demo.domain.item.QReview;
 import market.demo.domain.search.ItemSearchCondition;
 import market.demo.domain.status.ItemStatus;
 import market.demo.domain.type.PromotionType;
+import market.demo.dto.category.CategoryDto;
+import market.demo.dto.category.SubCategoryDto;
 import market.demo.dto.search.*;
+import market.demo.exception.InvalidDataException;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -24,8 +29,6 @@ import org.springframework.data.support.PageableExecutionUtils;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 
 import static market.demo.domain.item.QCategory.category;
 import static market.demo.domain.item.QItem.item;
@@ -35,6 +38,7 @@ import static org.springframework.util.StringUtils.hasText;
 @RequiredArgsConstructor
 public class ItemRepositoryImpl implements ItemRepositoryCustom {
     private final JPAQueryFactory queryFactory;
+    private final CategoryRepository categoryRepository;
 
     @Override
     public ItemSearchResponse searchPageComplex(ItemSearchCondition condition, Pageable pageable) {
@@ -71,7 +75,6 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                         discountRateBetween(condition.getMinDiscountRate(), condition.getMaxDiscountRate()),
                         priceRangeEq(condition.getPriceRange()),
                         itemPriceBetween(condition.getMinPrice(), condition.getMaxPrice()));
-
 
         // Pageable의 정렬 조건 적용
         for (Sort.Order order : pageable.getSort()) {
@@ -116,6 +119,48 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
     }
 
     @Override
+    public CountsAndPriceRangeNoCategoryDto getCountsNoCategory(ItemSearchCondition condition) {
+        Tuple priceRangeTuple = findPriceRange(condition);
+        List<String> priceRanges = createPriceRanges(priceRangeTuple);
+
+//        Map<String, Long> categoryCounts = getCategoryCounts(condition);
+        Map<String, Long> brandCounts = getBrandCounts(condition);
+        Map<PromotionType, Long> promotionCounts = getPromotionTypeCounts(condition);
+
+        CountsAndPriceRangeNoCategoryDto dto = new CountsAndPriceRangeNoCategoryDto(brandCounts, promotionCounts, priceRanges);
+
+        return dto;
+    }
+
+    @Override
+    public List<CategoryDto> findAllCategoriesWithSubcategories() {
+        // 대분류 카테고리 조회
+        List<CategoryDto> parentCategories = queryFactory
+                .select(Projections.constructor(CategoryDto.class,
+                        category.id,
+                        category.name
+                ))
+                .from(category)
+                .where(category.parent.isNull())
+                .fetch();
+
+        // 각 대분류 카테고리에 대해 소분류 카테고리 조회
+        parentCategories.forEach(parentCategory -> {
+            List<SubCategoryDto> subCategories = queryFactory
+                    .select(Projections.constructor(SubCategoryDto.class,
+                            category.name
+                    ))
+                    .from(category)
+                    .where(category.parent.id.eq(parentCategory.getId()))
+                    .fetch();
+
+            parentCategory.setSubCategories(subCategories);
+        });
+
+        return parentCategories;
+    }
+
+    @Override
     public List<ItemAutoDto> findItemNamesByKeyword(String keyword, int limit) {
         QItem item = QItem.item;
 
@@ -133,13 +178,31 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
         return hasText(name) ? item.name.contains(name) : null;
     }
 
-    private BooleanExpression categoryIdEq(Long categoryId) {
+    private BooleanExpression categoryNameEq(List<String> categoryNames) {
+        if (categoryNames == null || categoryNames.isEmpty()) {
+            return null;
+        }
 
-        return categoryId != null ? item.category.id.eq(categoryId) : null;
+        // 카테고리 이름 리스트에서 첫 번째 카테고리 이름으로 카테고리를 찾음
+        Category category = categoryRepository.findByName(categoryNames.get(0))
+                .orElseThrow(() -> new InvalidDataException("카테고리에 해당하는 아이템이 없습니다."));
+
+        // 대분류 카테고리인 경우 해당 카테고리 ID 및 자식 카테고리 ID로 검색
+        if (category != null && category.getParent() == null) {
+            List<Long> categoryIds = new ArrayList<>();
+            categoryIds.add(category.getId());
+            for (Category child : category.getChildren()) {
+                categoryIds.add(child.getId());
+            }
+            return item.category.id.in(categoryIds);
+        } else {
+            // 소분류 카테고리인 경우 카테고리 이름으로 검색
+            return item.category.name.in(categoryNames);
+        }
     }
 
-    private BooleanExpression categoryNameEq(List<String> categoryName) {
-        return categoryName != null && !categoryName.isEmpty() ? item.category.name.in(categoryName) : null;
+    private BooleanExpression categoryNameEq(String categoryName) {
+        return hasText(categoryName) ? category.name.eq(categoryName) : null;
     }
 
     private BooleanExpression brandEq(List<String> brand) {
@@ -190,14 +253,18 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
         }
     }
 
-    private Map<String, Long> getCategoryCounts(ItemSearchCondition condition) {
+    @Cacheable(value = "categoryCounts", key = "#condition")
+    public Map<String, Long> getCategoryCounts(ItemSearchCondition condition) {
         List<Tuple> categoryCounts = queryFactory
                 .select(category.name, item.count())
                 .from(item)
                 .leftJoin(item.category, category)
                 .where(
                         category.parent.isNotNull(),
-                        nameEq(condition.getName())) //소분류만
+                        nameEq(condition.getName()),
+                        categoryNameEq(condition.getCategoryName()),
+                        statusEq(condition.getStatus())
+                ) //소분류만
                 .groupBy(category.name)
                 .fetch();
 
@@ -208,12 +275,16 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                 ));
     }
 
-    private Map<String, Long> getBrandCounts(ItemSearchCondition condition) {
+    @Cacheable(value = "brandCounts", key = "#condition")
+    public Map<String, Long> getBrandCounts(ItemSearchCondition condition) {
         List<Tuple> brandCounts = queryFactory
                 .select(item.brand, item.count())
                 .from(item)
                 .where(
-                        nameEq(condition.getName())
+                        nameEq(condition.getName()),
+                        categoryNameEq(condition.getCategoryName()),
+                        brandEq(condition.getBrand()),
+                        statusEq(condition.getStatus())
                 )
                 .groupBy(item.brand)
                 .fetch();
@@ -226,12 +297,17 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                 ));
     }
 
-    private Map<PromotionType, Long> getPromotionTypeCounts(ItemSearchCondition condition) {
+    @Cacheable(value = "promotionCounts", key = "#condition")
+    public Map<PromotionType, Long> getPromotionTypeCounts(ItemSearchCondition condition) {
         List<Tuple> promotionTypeCounts = queryFactory
                 .select(item.promotionType, item.count())
                 .from(item)
                 .where(
-                        nameEq(condition.getName())
+                        nameEq(condition.getName()),
+                        categoryNameEq(condition.getCategoryName()),
+                        brandEq(condition.getBrand()),
+                        promotionTypeEq(condition.getPromotionType()),
+                        statusEq(condition.getStatus())
                 )
                 .groupBy(item.promotionType)
                 .fetch();
@@ -248,7 +324,9 @@ public class ItemRepositoryImpl implements ItemRepositoryCustom {
                 .select(item.itemPrice.min(), item.itemPrice.max())
                 .from(item)
                 .where(
-                        nameEq(condition.getName())
+                        nameEq(condition.getName()),
+                        categoryNameEq(condition.getCategoryName()),
+                        statusEq(condition.getStatus())
                 )
                 .fetchOne();
     }
