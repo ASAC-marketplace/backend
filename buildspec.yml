@@ -4,13 +4,15 @@ env:
   variables:
     AWS_DEFAULT_REGION: "ap-northeast-2"
     AWS_ACCOUNT_ID: "ed"
-    REPOSITORY_URI: "ecr.aws/z8v3e5w8/test"
+    REPOSITORY_URI: "public.ecr.aws/z8v3e5w8/test"
     IMAGE_TAG: "tag"
 
 phases:
   pre_build:
     commands:
       - echo Pre-build phase...
+      - echo Logging in to Amazon ECR...
+      - $(aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com)
 
   build:
     commands:
