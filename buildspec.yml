@@ -4,7 +4,7 @@ env:
   variables:
     AWS_DEFAULT_REGION: "ap-northeast-2"
     AWS_ACCOUNT_ID: "ed"
-    REPOSITORY_URI: "public.ecr.aws/z8v3e5w8/test"
+    REPOSITORY_URI: "ecr.aws/z8v3e5w8/test"
     IMAGE_TAG: "tag"
 
 phases:
