@@ -1,13 +1,16 @@
 version: 0.2
 
+env:
+  variables:
+    AWS_DEFAULT_REGION: "ap-northeast-2"
+    AWS_ACCOUNT_ID: "ed"
+    REPOSITORY_URI: "public.ecr.aws/z8v3e5w8/asacecr"
+    IMAGE_TAG: "tag"
+
 phases:
   pre_build:
     commands:
       - echo Pre-build phase...
-      - aws ecr-public get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin public.ecr.aws/z8v3e5w8
-      - REPOSITORY_URI=public.ecr.aws/z8v3e5w8/asacecr
-      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - IMAGE_TAG=${COMMIT_HASH:=latest}
 
   build:
     commands:
@@ -18,8 +21,4 @@ phases:
     commands:
       - echo Pushing the Docker image...
       - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo Writing image definitions file...
-      - printf '[{"name":"asacmarket","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 
-artifacts:
-  files: imagedefinitions.json
