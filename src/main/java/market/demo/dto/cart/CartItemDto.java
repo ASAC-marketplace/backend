@@ -3,12 +3,14 @@ package market.demo.dto.cart;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import market.demo.domain.item.Item;
 import market.demo.domain.order.CartItem;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 @Data
+@Slf4j
 public class CartItemDto {
     private Long itemId;
     private String itemName;
@@ -27,8 +29,8 @@ public class CartItemDto {
         this.discountRate = item.getDiscountRate();
         this.itemPrice = item.getItemPrice();
         this.itemCount = cartItem.getQuantity();
-        this.totalPrice = item.getItemPrice() * cartItem.getQuantity();
-        this.salePrice = (int) (this.getTotalPrice() * calDiscountPercentage(item));
+        this.salePrice = (itemPrice * discountRate) / 100;
+        this.totalPrice = itemPrice - salePrice;
         this.promotionImageUrl = item.getItemDetail().getPromotionImageUrl();
     }
 

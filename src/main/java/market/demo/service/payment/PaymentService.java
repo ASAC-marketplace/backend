@@ -128,7 +128,7 @@ public class PaymentService {
         }
 
         // 결제 금액 검증
-        if (order.getTotalAmount() != paymentAmount) {
+        if (order.getTotalAmount() + 3000 != paymentAmount) {
             throw new PaymentProcessingException("주문 금액과 결제 금액이 일치하지 않습니다.");
         }
 

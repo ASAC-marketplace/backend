@@ -22,9 +22,14 @@ public class OrderController {
     //결제 api
     @PostMapping("/payment")
     public ResponseEntity<PaymentResponseDto> initiatePayment(@RequestBody PaymentRequestDto paymentRequestDto) {
+        // totalPrice에 3000원 추가
+        Long updatedTotalPrice = paymentRequestDto.getTotalPrice() + 3000;
+        paymentRequestDto.setTotalPrice(updatedTotalPrice);
+
         PaymentResponseDto response = paymentService.initiatePayment(paymentRequestDto);
         return ResponseEntity.ok(response);
     }
+
 
     //19 주문 api
     @GetMapping()
