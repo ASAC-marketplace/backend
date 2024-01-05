@@ -1,8 +1,11 @@
 package market.demo.controller.member;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import market.demo.domain.member.Member;
 import market.demo.domain.member.jwt.JwtFilter;
 import market.demo.domain.member.jwt.TokenProvider;
 import market.demo.dto.itemdetailinfo.CouponDto;
@@ -18,6 +21,8 @@ import market.demo.dto.MemberDeletionRequest;
 import market.demo.dto.changememberinfo.CheckMemberInfoDto;
 import market.demo.dto.changememberinfo.MemberInfoDto;
 import market.demo.dto.changememberinfo.ModifyMemberInfoDto;
+import market.demo.dto.social.CustomOAuth2User;
+import market.demo.dto.social.MemberRegistrationDto;
 import market.demo.dto.social.PasswordVerificationRequestDto;
 import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.recoverypassword.RecoveryPasswordRequestDto;
@@ -31,10 +36,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/members")
@@ -135,13 +144,18 @@ public class MemberController {
 
     @PostMapping("/socialRegister")
     public ResponseEntity<String> registerMember(
-            @Valid
-            @RequestBody market.demo.dto.social.MemberRegistrationDto
-                    request) {
-        memberService.socialRegisterNewMember(request, request.getProviderEmail(), request.getProvider(), request.getProviderId());
+            @RequestBody market.demo.dto.social.MemberRegistrationDto request
+//            , @AuthenticationPrincipal CustomOAuth2User customOAuth2User
+    ) {
+//        String email = customOAuth2User.getEmail();
+        memberService.socialRegisterNewMember(request
+//                , request.getProviderEmail()
+//                , request.getProvider()
+//                , request.getProviderId()
+        );
         return ResponseEntity.ok().body("회원 등록 성공");
     }
-    //
+
 
     //48 일반 로그인
     @PostMapping("/authenticate")

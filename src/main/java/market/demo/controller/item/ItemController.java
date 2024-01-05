@@ -60,21 +60,28 @@ public class ItemController {
     //17 api 상품 리뷰 노출
     @GetMapping("/reviews")
     public ResponseEntity<ItemReviewsDto> showItemReviews(@RequestParam Long itemId){
-        return ResponseEntity.ok(itemService.searchItemReview(itemId));
+        String loginId = tokenProvider.getLoginIdFromCurrentRequest();
+
+        return ResponseEntity.ok(itemService.searchItemReview(itemId, loginId));
     }
 
-    //17 api 도움돼요
-    @PostMapping("/reviews/helpful")
-    public ResponseEntity<String> helpfulReviews(@RequestParam Long reviewId){
-        itemService.changeReviewCount(reviewId, 1);
-        return ResponseEntity.ok("도움돼요 추가 성공");
-    }
+//    //17 api 도움돼요
+//    @PostMapping("/reviews/helpful")
+//    public ResponseEntity<String> helpfulReviews(@RequestParam Long reviewId){
+//        String loginId = tokenProvider.getLoginIdFromCurrentRequest();
+//
+//        itemService.changeReviewCount(reviewId, 1, loginId);
+//        return ResponseEntity.ok("도움돼요 추가 성공");
+//    }
+//
+//    @PostMapping("/reviews/helpless")
+//    public ResponseEntity<String> helplessReviews(@RequestParam Long reviewId){
+//        String loginId = tokenProvider.getLoginIdFromCurrentRequest();
+//
+//        itemService.changeReviewCount(reviewId, -1, loginId);
+//        return ResponseEntity.ok("도움돼요 취소 성공");
+//    }
 
-    @PostMapping("/reviews/helpless")
-    public ResponseEntity<String> helplessReviews(@RequestParam Long reviewId){
-        itemService.changeReviewCount(reviewId, -1);
-        return ResponseEntity.ok("도움돼요 취소 성공");
-    }
     //17 쿠폰 받기
     @PostMapping("/coupon")
     public ResponseEntity<String> getCouponMember(@RequestParam String loginId, Long couponId){

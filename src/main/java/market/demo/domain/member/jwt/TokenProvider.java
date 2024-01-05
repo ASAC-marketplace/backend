@@ -57,6 +57,9 @@ public class TokenProvider implements InitializingBean {
         CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
         Long memberId = customOAuth2User.getMemberId();
         String loginId = customOAuth2User.getLoginId(); // loginId 추가
+        String email = customOAuth2User.getEmail();
+        String provider = customOAuth2User.getProvider();
+        String providerId = customOAuth2User.getProviderId();
 
         log.info("memberId = {}", memberId);
 
@@ -69,6 +72,8 @@ public class TokenProvider implements InitializingBean {
                 .claim("memberId", memberId)
                 .claim("loginId", loginId)
                 .claim(AUTHORITIES_KEY, authorities)
+                .claim("provider", provider)
+                .claim("providerId", providerId)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(validity)
                 .compact();

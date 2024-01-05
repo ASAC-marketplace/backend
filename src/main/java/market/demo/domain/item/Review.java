@@ -56,10 +56,10 @@ public class Review {
     //Review 등록
 
 
-    public Review(Item item, Member member, int rating, String comment, LocalDateTime reviewWriteDate, List<String> imageUrls) {
+    public Review(Item item, Member member,String comment, LocalDateTime reviewWriteDate, List<String> imageUrls) {
         this.item = item;
         this.member = member;
-        this.rating = rating;
+//        this.rating = rating;
         this.comment = comment;
         this.reviewWriteDate = reviewWriteDate;
         this.imageUrls = imageUrls;

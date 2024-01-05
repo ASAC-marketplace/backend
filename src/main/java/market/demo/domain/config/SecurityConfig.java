@@ -15,10 +15,12 @@ import market.demo.service.oauth2.OAuth2UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -40,6 +42,7 @@ public class SecurityConfig {
     private final OAuth2UserService oAuth2UserService;
     private final TokenProvider tokenProvider;
     private final CorsFilter corsFilter;
+    private final CorsConfig corsConfig;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final MemberRepository memberRepository;
@@ -103,31 +106,32 @@ public class SecurityConfig {
             String jwt = tokenProvider.createToken(authentication);
             response.addHeader("Authorization", "Bearer " + jwt);
             response.addHeader("Access-Control-Expose-Headers", "Authorization");
+//            response.addHeader("Access-Control-Expose-Headers", email);
             log.info("jwt = {}", jwt);
-            log.info("memberInfoSocialDto1 = {}" , memberInfoSocialDto1);
+            log.info("memberInfoSocialDto1 = {}", memberInfoSocialDto1);
 
             // 데이터베이스에서 사용자 조회
             Optional<Member> memberOptional = memberRepository.findByEmail(email);
             if (memberOptional.isEmpty()) {
-                String jsonMemberInfo1 = new ObjectMapper().writeValueAsString(memberInfoSocialDto1);
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                response.getWriter().write(jsonMemberInfo1);
-                response.sendRedirect("/oauth2/redirect/no"); // 사용자가 없으면 회원가입 페이지로 리다이렉트
+//                String jsonMemberInfo1 = new ObjectMapper().writeValueAsString(memberInfoSocialDto1);
+//                response.setContentType("application/json");
+//                response.setCharacterEncoding("UTF-8");
+//                response.getWriter().write(jsonMemberInfo1);
+//                request.getSession().setAttribute("memberInfoSocial", memberInfoSocialDto1);
+//                log.info("선림 = {}", memberInfoSocialDto1.getEmail());
+                response.sendRedirect("/oauth2/redirect/no");
             } else {
                 Member member = memberOptional.get();
                 if (member.getProvider() != null) {
                     // 소셜 연동된 계정인 경우
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.sendRedirect("/oauth2/redirect/yes"); // 사용자가 없으면 회원가입 페이지로 리다이렉트
+//                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.sendRedirect("/oauth2/redirect/full");
                 } else {
-                    //노가입
-                    String jsonMemberInfo2 = new ObjectMapper().writeValueAsString(memberInfoSocialDto1);
-                    response.setContentType("application/json");
-                    response.setCharacterEncoding("UTF-8");
-                    response.getWriter().write(jsonMemberInfo2);
-                    // 연동 안된 경우
-                    response.sendRedirect("/oauth2/redirect/full"); // 사용자가 없으면 회원가입 페이지로 리다이렉트
+//                    String jsonMemberInfo2 = new ObjectMapper().writeValueAsString(memberInfoSocialDto1);
+//                    response.setContentType("application/json");
+//                    response.setCharacterEncoding("UTF-8");
+//                    response.getWriter().write(jsonMemberInfo2);
+                    response.sendRedirect("/oauth2/redirect/yes"); // 사용자가 없으면 회원가입 페이지로 리다이렉트
                 }
             }
         });

@@ -1,5 +1,6 @@
 package market.demo.repository;
 
+import market.demo.domain.item.Item;
 import market.demo.domain.member.Member;
 import market.demo.domain.order.Order;
 import market.demo.domain.status.OrderStatus;
@@ -24,5 +25,4 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByIdWithItems(@Param("orderId") Long orderId);
 
     Optional<List<Order>> findAllByMemberAndOrderStatusAndOrderDateTimeAfter(Member member, OrderStatus orderStatus, LocalDateTime orderDateTime);
-
 }

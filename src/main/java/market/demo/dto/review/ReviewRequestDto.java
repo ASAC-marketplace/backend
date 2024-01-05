@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import market.demo.advice.MemberIdAwardDto;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -13,11 +14,10 @@ import java.util.List;
 @NoArgsConstructor
 public class ReviewRequestDto implements MemberIdAwardDto {
 
-    @NotNull
     private Long memberId;
     private Long itemId;
     private String comment;
-    private Integer rating;
+//    private Integer rating;
 
     private List<String> imageUrls;
 

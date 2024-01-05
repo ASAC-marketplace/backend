@@ -16,9 +16,12 @@ import market.demo.dto.mypage.MyPageDto;
 import market.demo.dto.recoverypassword.FindIdDto;
 import market.demo.dto.recoverypassword.PasswordChangeDto;
 import market.demo.dto.registermember.MemberRegistrationDto;
+import market.demo.dto.social.CustomOAuth2User;
 import market.demo.exception.*;
 import market.demo.repository.MemberRepository;
 import market.demo.service.jwt.SecurityUtil;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -170,17 +173,37 @@ public class MemberService {
         memberRepository.save(member);
     }
 
-    public void socialRegisterNewMember(market.demo.dto.social.MemberRegistrationDto registrationDto, String email, String provider, String providerId) {
+    public Member socialRegisterNewMember(market.demo.dto.social.MemberRegistrationDto registrationDto) {
+        // 현재 인증된 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomOAuth2User customOAuth2User = null;
+        if (authentication != null && authentication.getPrincipal() instanceof CustomOAuth2User) {
+            customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
+        }
+
+        // CustomOAuth2User 정보가 있는 경우, DTO 업데이트
+        if (customOAuth2User != null) {
+            registrationDto.setProviderEmail(customOAuth2User.getEmail());
+            registrationDto.setProvider(customOAuth2User.getProvider());
+            registrationDto.setProviderId(customOAuth2User.getProviderId());
+        }
+
+        // 회원 생성 및 저장
         Member member = Member.createMemberWithProviderInfo(
                 registrationDto.getMemberName(),
-                email,
+                registrationDto.getProviderEmail(), // 업데이트된 이메일 사용
+//                customOAuth2User.getEmail(),
                 registrationDto.getLoginId(),
                 passwordEncoder.encode(registrationDto.getPassword()),
                 registrationDto.getPhoneNumber(),
-                provider,
-                providerId
+                registrationDto.getProvider(),      // 업데이트된 프로바이더 사용
+//                customOAuth2User.getProvider(),
+//                customOAuth2User.getProviderId()
+                registrationDto.getProviderId()     // 업데이트된 프로바이더 ID 사용
         );
         memberRepository.save(member);
+
+        return member;
     }
 
     @Transactional

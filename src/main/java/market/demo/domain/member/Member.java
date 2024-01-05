@@ -69,7 +69,7 @@ public class Member {
 
     //sns 연동
 
-    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private Cart cart;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -113,6 +113,7 @@ public class Member {
         member.password = password;
         member.authorities = authorities;
         member.wishlist = new Wishlist(member); // Wishlist 초기화
+        member.cart = new Cart(member);
         return member;
     }
 
@@ -165,6 +166,13 @@ public class Member {
         this.provider = provider;
         this.providerId = providerId;
     }
+
+    public void updateSocialLoginInfo(String email, String provider, String providerId) {
+        this.email = email;
+        this.provider = provider;
+        this.providerId = providerId;
+    }
+
 
     public void setAuthorities(Set<Authority> authorities) {
         this.authorities = authorities;
